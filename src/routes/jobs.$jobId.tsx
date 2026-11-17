@@ -65,7 +65,7 @@ function JobPage() {
                     <div className="text-xs text-muted-foreground">{c.role}</div>
                     <div className="mt-1"><StatusBadge status={ev.status} /></div>
                   </td>
-                  {[ev.JR.score, ev.FR.score, ev.HP.score, competencyScore(c.competencies.ai, job.flexibility), competencyScore(c.competencies.systems, job.flexibility), competencyScore(c.competencies.learning, job.flexibility)].map((v, i) => (
+                  {[ev.JR.score, ev.FR.score, ev.HP.score, competencyScore(c.competencies["ai"], job.flexibility), competencyScore(c.competencies["systems"], job.flexibility), competencyScore(c.competencies["learning"], job.flexibility)].map((v, i) => (
                     <td key={i} className="py-3 font-mono">{v ?? "—"}</td>
                   ))}
                   <td className="py-3 font-mono">{ev.coverage}%</td>

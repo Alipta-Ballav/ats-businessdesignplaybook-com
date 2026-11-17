@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { evaluate, matchMode, transferCredit } from "./scoring";
 import { SEED_CANDIDATES, SEED_JOBS } from "./seed";
 
-const job = SEED_JOBS[0];
+const job = SEED_JOBS[0]!;
 const tomas = SEED_CANDIDATES.find((c) => c.id === "c-tomas")!;
 const ana = SEED_CANDIDATES.find((c) => c.id === "c-ana")!;
 
