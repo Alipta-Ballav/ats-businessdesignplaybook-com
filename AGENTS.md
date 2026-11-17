@@ -30,3 +30,6 @@ use the editor.
 <!-- LOVABLE:END -->
 
 - All scores are computed deterministically in src/lib/scoring.ts (AI may only extract evidence, never assign final numbers) — PRD requires explainable, reproducible scoring.
+- AI (src/lib/ai/extract.server.ts) only extracts evidence; src/lib/evidence.ts drops any quote not found verbatim in the resume — keeps scores grounded and reproducible.
+- Personas live in public.user_roles (candidate | recruiter), set at signup via metadata trigger or once via choose_role RPC — roles never stored on profiles.
+- App data is read/written from the browser client under RLS (src/lib/db.ts); only resume reading runs server-side — keeps the AI key off the client.

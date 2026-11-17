@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import {
   Outlet,
   Link,
@@ -11,6 +11,10 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
+import { Toaster } from "@/components/ui/sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { q } from "@/lib/db";
+import { useNavigate } from "@tanstack/react-router";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
@@ -122,22 +126,53 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-
+  const router = useRouter();
+  useEffect(() => {
+    const { data } = supabase.auth.onAuthStateChange((event) => {
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+      router.invalidate();
+      if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+    });
+    return () => data.subscription.unsubscribe();
+  }, []);
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <div className="min-h-screen font-sans">
-        <header className="border-b bg-card">
-          <div className="mx-auto flex max-w-6xl items-center gap-6 px-6 py-4">
-            <Link to="/" className="font-display text-xl font-semibold">FutureTalent<span className="ml-1 rounded bg-accent px-1.5 text-sm text-accent-foreground">AI</span></Link>
-            <nav className="flex gap-4 text-sm text-muted-foreground">
-              <Link to="/" activeOptions={{ exact: true }} activeProps={{ className: "text-foreground font-medium" }}>Dashboard</Link>
-              <Link to="/jobs/new" activeProps={{ className: "text-foreground font-medium" }}>New job</Link>
-            </nav>
-          </div>
-        </header>
+        <Header />
         <main className="mx-auto max-w-6xl px-6 py-8"><Outlet /></main>
       </div>
+      <Toaster />
     </QueryClientProvider>
+  );
+}
+
+function Header() {
+  const { queryClient } = Route.useRouteContext();
+  const nav = useNavigate();
+  const { data: me } = useQuery(q.me());
+  const signOut = async () => {
+    await queryClient.cancelQueries(); queryClient.clear();
+    await supabase.auth.signOut();
+    nav({ to: "/auth", replace: true });
+  };
+  const active = { className: "text-foreground font-medium" };
+  return (
+    <header className="border-b bg-card">
+      <div className="mx-auto flex max-w-6xl items-center gap-6 px-6 py-4">
+        <Link to="/" className="font-display text-xl font-semibold">FutureTalent<span className="ml-1 rounded bg-accent px-1.5 text-sm text-accent-foreground">AI</span></Link>
+        <nav className="flex flex-1 gap-4 text-sm text-muted-foreground">
+          {me?.role === "recruiter" && <><Link to="/recruiter" activeOptions={{ exact: true }} activeProps={active}>Dashboard</Link><Link to="/recruiter/jobs/new" activeProps={active}>New role</Link></>}
+          {me?.role === "candidate" && <Link to="/candidate" activeProps={active}>Check my resume</Link>}
+          <Link to="/roles" activeProps={active}>Open roles</Link>
+        </nav>
+        {me ? (
+          <div className="flex items-center gap-3 text-sm"><span className="hidden text-muted-foreground sm:inline">{me.name || me.email}{me.role && ` · ${me.role}`}</span>
+            <button onClick={signOut} className="rounded-md border px-3 py-1.5">Sign out</button></div>
+        ) : (
+          <div className="flex gap-2 text-sm"><Link to="/auth" search={{ mode: "signin" }} className="rounded-md border px-3 py-1.5">Sign in</Link>
+            <Link to="/auth" search={{ mode: "signup" }} className="rounded-md bg-primary px-3 py-1.5 text-primary-foreground">Sign up</Link></div>
+        )}
+      </div>
+    </header>
   );
 }
