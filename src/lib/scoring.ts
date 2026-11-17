@@ -140,3 +140,27 @@ export function atsFormatPenalty(system: string, resume: string): number {
   const pts = r.reduce((n, x) => n + (x.severity === "high" ? 8 : s.style === "legacy" ? 4 : 0), 0);
   return Math.min(25, s.style === "legacy" ? pts : Math.round(pts / 2));
 }
+
+/** Future Talent Index: the tool's own 8 published dimensions, built from the same grounded competency evidence. No job description needed. */
+export const FTI_DIMENSIONS: { id: string; name: string; weight: number; comps: string[]; tip: string }[] = [
+  { id: "domain", name: "Domain & Functional Expertise", weight: 15, comps: ["functional", "domain", "relevance"], tip: "Name the products, platforms and design disciplines you've gone deep in." },
+  { id: "ai", name: "AI Fluency & Intelligence", weight: 15, comps: ["ai"], tip: "Show a concrete project where you designed with or for AI, LLMs or automation." },
+  { id: "systems", name: "Systems Thinking", weight: 15, comps: ["systems"], tip: "Describe a design system, platform or multi-team problem you shaped." },
+  { id: "critical", name: "Critical & Analytical Thinking", weight: 15, comps: ["problem", "flexibility", "decision"], tip: "Explain how research or data changed a decision you made." },
+  { id: "learning", name: "Learning Agility", weight: 10, comps: ["learning"], tip: "Mention a new skill, tool or domain you picked up quickly and applied." },
+  { id: "business", name: "Business & Strategic Acumen", weight: 10, comps: ["strategic", "outcomes"], tip: "Tie your work to revenue, retention, cost or another business metric." },
+  { id: "human", name: "Human Collaboration & Influence", weight: 10, comps: ["social", "growth"], tip: "Show how you aligned leaders, partners or grew a team." },
+  { id: "innovation", name: "Innovation & Execution", weight: 10, comps: ["creative", "execution"], tip: "Describe an idea you took from experiment to shipped outcome." },
+];
+
+/** Neutral (flexibility 50) scoring; a dimension with no evidence scores 0. */
+export function futureTalentIndex(c: Pick<Candidate, "competencies">) {
+  const dims = FTI_DIMENSIONS.map((d) => {
+    const vals = d.comps.map((id) => competencyScore(c.competencies[id], 50) ?? 0);
+    const score = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
+    const quotes = d.comps.map((id) => c.competencies[id]?.quote).filter((q): q is string => !!q);
+    return { ...d, score, quotes };
+  });
+  const total = Math.round(dims.reduce((a, d) => a + d.score * d.weight, 0) / 100);
+  return { total, dims };
+}

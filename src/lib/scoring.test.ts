@@ -54,3 +54,16 @@ describe("target ATS", () => {
     expect(atsFormatPenalty("Workday", bad)).toBeGreaterThan(atsFormatPenalty("Ashby", bad));
   });
 });
+
+import { FTI_DIMENSIONS, futureTalentIndex } from "./scoring";
+describe("Future Talent Index", () => {
+  it("weights total 100 across 8 dimensions", () => {
+    expect(FTI_DIMENSIONS).toHaveLength(8);
+    expect(FTI_DIMENSIONS.reduce((a, d) => a + d.weight, 0)).toBe(100);
+  });
+  it("empty resume scores 0, full impact evidence scores 100", () => {
+    expect(futureTalentIndex({ competencies: {} }).total).toBe(0);
+    const all = Object.fromEntries(FTI_DIMENSIONS.flatMap((d) => d.comps).map((id) => [id, { proficiency: 5, level: 4 as const, quote: "x", source: "" }]));
+    expect(futureTalentIndex({ competencies: all }).total).toBe(100);
+  });
+});

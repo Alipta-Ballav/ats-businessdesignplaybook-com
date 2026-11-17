@@ -14,6 +14,7 @@ import { ScoreDetails, ScoreHeader } from "@/components/ScoreReport";
 import { Card, StatusBadge } from "@/components/ui-bits";
 import { AtsSimulator } from "@/components/AtsSimulator";
 import { AtsTarget } from "@/components/AtsTarget";
+import { FtiReport } from "@/components/FtiReport";
 
 export const Route = createFileRoute("/check")({
   validateSearch: (s: Record<string, unknown>): { job?: string | undefined } => ({ job: typeof s["job"] === "string" ? s["job"] : undefined }),
@@ -38,16 +39,18 @@ function CheckPage() {
   const { job: jobParam } = Route.useSearch();
   const { data: picked } = useQuery({ ...q.job(jobParam ?? ""), enabled: !!jobParam });
   const [title, setTitle] = useState(""); const [jd, setJd] = useState(""); const [resume, setResume] = useState("");
-  const [busy, setBusy] = useState(false); const [result, setResult] = useState<GuestScan | null>(null);
+  const [busy, setBusy] = useState(false); const [mode, setMode] = useState<"profile" | "role">("profile"); const [result, setResult] = useState<GuestScan | null>(null);
   const read = useServerFn(readResumeGuest);
-  useEffect(() => { if (picked) { setTitle(picked.job.title); setJd(picked.job.description); } }, [picked]);
+  useEffect(() => { if (picked) { setMode("role"); setTitle(picked.job.title); setJd(picked.job.description); } }, [picked]);
   useEffect(() => { const g = loadGuestScan(); if (g && !jobParam) { setResult(g); setTitle(g.jobTitle); setJd(g.jobDescription); setResume(g.resume); } }, [jobParam]);
 
   const run = async () => {
     setBusy(true);
     try {
-      const ev = await read({ data: { resume, jobTitle: title, jobDescription: jd, requirements: picked?.job.mandatory ?? [] } });
-      const g: GuestScan = { jobId: picked?.job.id ?? null, jobTitle: title, jobDescription: jd, resume, evidence: ev, createdAt: new Date().toISOString() };
+      const prof = mode === "profile";
+      const jt = prof ? "Future Talent Index" : title, jdesc = prof ? "" : jd;
+      const ev = await read({ data: { resume, jobTitle: jt, jobDescription: jdesc, requirements: prof ? [] : picked?.job.mandatory ?? [] } });
+      const g: GuestScan = { jobId: prof ? null : picked?.job.id ?? null, jobTitle: jt, jobDescription: jdesc, resume, evidence: ev, createdAt: new Date().toISOString() };
       saveGuestScan(g); setResult(g); window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (e) { toast.error((e as Error).message); }
     setBusy(false);
@@ -56,6 +59,16 @@ function CheckPage() {
   if (result) {
     const { job, cand } = toPair(result); const ev = evaluate(job, cand); const tips = resumeTips(job, cand);
     const signup = { mode: "signup" as const, as: "candidate" as const, redirect: "/candidate" };
+    if (!result.jobDescription.trim()) return (
+      <div className="space-y-6">
+        <button onClick={() => setResult(null)} className="text-sm text-muted-foreground">← Check again</button>
+        <FtiReport c={cand} />
+        <Card className="flex flex-wrap items-center justify-between gap-4 border-primary">
+          <div><p className="font-display text-lg">Now test your fit for a specific role</p><p className="text-sm text-muted-foreground">Paste a job link or description to see must-haves and ATS scores.</p></div>
+          <button onClick={() => { setResult(null); setMode("role"); }} className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">Check against a job</button>
+        </Card>
+      </div>
+    );
     return (
       <div className="space-y-6">
         <button onClick={() => setResult(null)} className="text-sm text-muted-foreground">← Check another role</button>
@@ -79,6 +92,7 @@ function CheckPage() {
             <ul className="space-y-3">{tips.slice(0, 10).map((t, i) => (
               <li key={i} className="rounded border p-3 text-sm"><span className="font-medium">{t.title}</span><p className="mt-1 text-muted-foreground">{t.detail}</p></li>))}</ul>)}
         </Card>
+        <FtiReport c={cand} />
         <AtsTarget job={job} c={cand} resume={result.resume ?? ""} />
         <AtsSimulator job={job} c={cand} />
         <ScoreDetails job={job} c={cand} audience="candidate" />
@@ -89,16 +103,21 @@ function CheckPage() {
     <div className="space-y-8">
       <div><p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Free · no sign-up needed</p>
         <h1 className="mt-2 font-display text-4xl">Check your resume against a role</h1></div>
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="space-y-3">
+      <div className="flex flex-wrap gap-2">
+        {([["profile", "Audit my profile", "Future Talent Index · resume only"], ["role", "Test fit for a role", "Resume + job description · ATS match"]] as const).map(([m, t, d]) => (
+          <button key={m} onClick={() => setMode(m)} className={`rounded-md border px-4 py-3 text-left ${mode === m ? "border-primary bg-accent text-accent-foreground" : ""}`}>
+            <span className="block text-sm font-medium">{t}</span><span className="block text-xs text-muted-foreground">{d}</span></button>))}
+      </div>
+      <div className={mode === "role" ? "grid gap-6 lg:grid-cols-2" : "max-w-2xl"}>
+        {mode === "role" && <Card className="space-y-3">
           <div className="flex items-center justify-between"><h2 className="font-display text-lg">The role</h2><Link to="/roles" className="text-xs underline">Pick from open roles</Link></div>
           <JobUrlImport onImport={(t, d) => { setTitle(t); setJd(d); }} />
           <label className="block text-sm">Job title<input className={input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Product Designer" /></label>
           <label className="block text-sm">Job description<textarea rows={10} className={input} value={jd} onChange={(e) => setJd(e.target.value)} placeholder="Paste the job posting you're targeting…" /></label>
-        </Card>
+        </Card>}
         <Card><ResumeInput value={resume} onChange={setResume} /></Card>
       </div>
-      <button disabled={busy || !title.trim() || jd.trim().length < 40 || resume.trim().length < 80} onClick={run} className="rounded-md bg-primary px-5 py-2 text-sm font-medium text-primary-foreground disabled:opacity-40">{busy ? "Reading your resume… (about 30s)" : "Get my score"}</button>
+      <button disabled={busy || resume.trim().length < 80 || (mode === "role" && (!title.trim() || jd.trim().length < 40))} onClick={run} className="rounded-md bg-primary px-5 py-2 text-sm font-medium text-primary-foreground disabled:opacity-40">{busy ? "Reading your resume… (about 30s)" : "Get my score"}</button>
     </div>
   );
 }
