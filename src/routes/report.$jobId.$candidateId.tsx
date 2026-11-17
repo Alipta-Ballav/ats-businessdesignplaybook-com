@@ -14,14 +14,14 @@ export const Route = createFileRoute("/report/$jobId/$candidateId")({
   component: Report,
 });
 
-const STATUSES = ["Strong alignment", "Promising transferable fit", "Requires further assessment", "Significant gaps identified"];
+const STATUSES: string[] = ["Strong alignment", "Promising transferable fit", "Requires further assessment", "Significant gaps identified"];
 
 function Report() {
   const { jobId, candidateId } = Route.useParams();
   const { jobs, candidates } = useStore();
   const job = jobs.find((j) => j.id === jobId);
   const c = candidates.find((x) => x.id === candidateId);
-  const [status, setStatus] = useState(STATUSES[0]);
+  const [status, setStatus] = useState<string>("Strong alignment");
   const [why, setWhy] = useState("");
   if (!job || !c) return <p>Report not found. <Link to="/" className="underline">Back</Link></p>;
   const ev = evaluate(job, c);

@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { actions } from "@/lib/store";
-import { PRESETS, type Job } from "@/lib/scoring";
+import { type Job } from "@/lib/scoring";
 import { EvalConfig } from "@/components/EvalConfig";
 import { Card } from "@/components/ui-bits";
 
@@ -21,7 +21,7 @@ function NewJob() {
   const nav = useNavigate();
   const [job, setJob] = useState<Job>({
     id: "", title: "", func: "UX and Product Design", seniority: "Mid-level", description: "",
-    preset: "Balanced Match", ...PRESETS["Balanced Match"], mandatory: [], preferred: [], createdAt: "",
+    preset: "Balanced Match", flexibility: 50, weights: { JR: 30, FR: 40, HP: 30 }, mandatory: [], preferred: [], createdAt: "",
   });
   const [mand, setMand] = useState("");
   const [pref, setPref] = useState("");

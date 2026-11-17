@@ -18,7 +18,7 @@ export function EvalConfig({ job, onChange }: { job: Job; onChange: (j: Job) => 
         <p className="mb-2 text-sm">Preset</p>
         <div className="flex flex-wrap gap-2">
           {Object.keys(PRESETS).map((p) => (
-            <button key={p} type="button" onClick={() => onChange({ ...job, preset: p, ...PRESETS[p] })}
+            <button key={p} type="button" onClick={() => onChange({ ...job, preset: p, flexibility: PRESETS[p]!.flexibility, weights: PRESETS[p]!.weights })}
               className={`rounded-md border px-3 py-1.5 text-sm ${job.preset === p ? "border-primary bg-primary text-primary-foreground" : "bg-background"}`}>{p}</button>
           ))}
         </div>
