@@ -49,14 +49,15 @@ export const q = {
       return { id: user.id, email: user.email ?? "", name: profile.data?.full_name ?? "", role: (roles.data?.[0]?.role ?? null) as Role | null };
     },
   }),
-  myJobs: (uid: string) => queryOptions({ queryKey: ["jobs", "mine", uid], queryFn: async () => must(await supabase.from("jobs").select("*").eq("recruiter_id", uid).order("created_at", { ascending: false })).map(toJob) }),
-  openJobs: () => queryOptions({ queryKey: ["jobs", "open"], queryFn: async () => must(await supabase.from("jobs").select("*").eq("is_open", true).order("created_at", { ascending: false })).map(toJob) }),
+  myJobs: (uid: string) => queryOptions({ queryKey: ["jobs", "mine", uid], queryFn: async () => list(await supabase.from("jobs").select("*").eq("recruiter_id", uid).order("created_at", { ascending: false })).map(toJob) }),
+  openJobs: () => queryOptions({ queryKey: ["jobs", "open"], queryFn: async () => list(await supabase.from("jobs").select("*").eq("is_open", true).order("created_at", { ascending: false })).map(toJob) }),
   job: (id: string) => queryOptions({ queryKey: ["job", id], queryFn: async () => { const r = must(await supabase.from("jobs").select("*").eq("id", id).maybeSingle()); return r ? { job: toJob(r), recruiterId: r.recruiter_id, isOpen: r.is_open } : null; } }),
-  applicants: (jobId: string) => queryOptions({ queryKey: ["apps", jobId], queryFn: async () => must(await supabase.from("applications").select("*").eq("job_id", jobId).order("created_at")).map(toCandidate) }),
-  applicantCounts: () => queryOptions({ queryKey: ["apps", "counts"], queryFn: async () => must(await supabase.from("applications").select("id, job_id, evidence, override_status")) }),
+  applicants: (jobId: string) => queryOptions({ queryKey: ["apps", jobId], queryFn: async () => list(await supabase.from("applications").select("*").eq("job_id", jobId).order("created_at")).map(toCandidate) }),
+  applicantCounts: () => queryOptions({ queryKey: ["apps", "counts"], queryFn: async () => list(await supabase.from("applications").select("id, job_id, evidence, override_status")) }),
   application: (id: string) => queryOptions({ queryKey: ["app", id], queryFn: async () => { const r = must(await supabase.from("applications").select("*").eq("id", id).maybeSingle()); return r ? { cand: toCandidate(r), resume: r.resume_text } : null; } }),
-  myApplications: (uid: string) => queryOptions({ queryKey: ["apps", "mine", uid], queryFn: async () => must(await supabase.from("applications").select("id, job_id, created_at, jobs(title)").eq("candidate_user_id", uid)) }),
-  scans: (uid: string) => queryOptions({ queryKey: ["scans", uid], queryFn: async () => must(await supabase.from("scans").select("*").eq("user_id", uid).order("created_at", { ascending: false })) }),
+  myApplications: (uid: string) => queryOptions({ queryKey: ["apps", "mine", uid], queryFn: async () => list(await supabase.from("applications").select("id, job_id, created_at, jobs(title)").eq("candidate_user_id", uid)) }),
+  scans: (uid: string) => queryOptions({ queryKey: ["scans", uid], queryFn: async () => list(await supabase.from("scans").select("*").eq("user_id", uid).order("created_at", { ascending: false })) }),
   scan: (id: string) => queryOptions({ queryKey: ["scan", id], queryFn: async () => must(await supabase.from("scans").select("*").eq("id", id).maybeSingle()) }),
 };
 export { must };
+function list<T>(r: { data: T[] | null; error: { message: string } | null }): T[] { if (r.error) throw new Error(r.error.message); return r.data ?? []; }

@@ -10,9 +10,9 @@ import type { Role } from "@/lib/db";
 type Search = { mode?: "signin" | "signup" | undefined; as?: Role | undefined; redirect?: string | undefined };
 export const Route = createFileRoute("/auth")({
   validateSearch: (s: Record<string, unknown>): Search => ({
-    mode: s.mode === "signup" ? "signup" : s.mode === "signin" ? "signin" : undefined,
-    as: s.as === "recruiter" ? "recruiter" : s.as === "candidate" ? "candidate" : undefined,
-    redirect: typeof s.redirect === "string" && s.redirect.startsWith("/") && !s.redirect.startsWith("//") ? s.redirect : undefined,
+    mode: s["mode"] === "signup" ? "signup" : s["mode"] === "signin" ? "signin" : undefined,
+    as: s["as"] === "recruiter" ? "recruiter" : s["as"] === "candidate" ? "candidate" : undefined,
+    redirect: typeof s["redirect"] === "string" && s["redirect"].startsWith("/") && !s["redirect"].startsWith("//") ? s["redirect"] : undefined,
   }),
   head: () => ({ meta: [
     { title: "Sign in or create an account — FutureTalent AI" },
