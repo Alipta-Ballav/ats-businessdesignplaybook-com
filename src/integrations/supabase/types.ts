@@ -14,16 +14,212 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      applications: {
+        Row: {
+          candidate_user_id: string | null
+          created_at: string
+          domain: string
+          evidence: Json
+          id: string
+          job_id: string
+          job_role: string
+          name: string
+          override_at: string | null
+          override_rationale: string | null
+          override_status: string | null
+          resume_text: string
+          years: number
+        }
+        Insert: {
+          candidate_user_id?: string | null
+          created_at?: string
+          domain?: string
+          evidence: Json
+          id?: string
+          job_id: string
+          job_role?: string
+          name: string
+          override_at?: string | null
+          override_rationale?: string | null
+          override_status?: string | null
+          resume_text: string
+          years?: number
+        }
+        Update: {
+          candidate_user_id?: string | null
+          created_at?: string
+          domain?: string
+          evidence?: Json
+          id?: string
+          job_id?: string
+          job_role?: string
+          name?: string
+          override_at?: string | null
+          override_rationale?: string | null
+          override_status?: string | null
+          resume_text?: string
+          years?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jobs: {
+        Row: {
+          created_at: string
+          description: string
+          flexibility: number
+          func: string
+          id: string
+          is_open: boolean
+          mandatory: Json
+          preferred: Json
+          preset: string
+          recruiter_id: string
+          seniority: string
+          title: string
+          weights: Json
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          flexibility?: number
+          func: string
+          id?: string
+          is_open?: boolean
+          mandatory?: Json
+          preferred?: Json
+          preset?: string
+          recruiter_id: string
+          seniority: string
+          title: string
+          weights?: Json
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          flexibility?: number
+          func?: string
+          id?: string
+          is_open?: boolean
+          mandatory?: Json
+          preferred?: Json
+          preset?: string
+          recruiter_id?: string
+          seniority?: string
+          title?: string
+          weights?: Json
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string | null
+          headline: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string | null
+          headline?: string | null
+          id: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string | null
+          headline?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      scans: {
+        Row: {
+          created_at: string
+          evidence: Json
+          id: string
+          job_description: string
+          job_id: string | null
+          job_title: string
+          mandatory: Json
+          resume_text: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          evidence: Json
+          id?: string
+          job_description: string
+          job_id?: string | null
+          job_title: string
+          mandatory?: Json
+          resume_text: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          evidence?: Json
+          id?: string
+          job_description?: string
+          job_id?: string | null
+          job_title?: string
+          mandatory?: Json
+          resume_text?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scans_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      choose_role: {
+        Args: { _role: Database["public"]["Enums"]["app_role"] }
+        Returns: undefined
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "candidate" | "recruiter"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +346,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["candidate", "recruiter"],
+    },
   },
 } as const
