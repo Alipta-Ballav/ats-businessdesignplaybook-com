@@ -27,7 +27,7 @@ function Report() {
   const gaps = COMPETENCIES.filter((x) => !c.competencies[x.id]);
   const record = async () => {
     const { error } = await supabase.from("applications").update({ override_status: status, override_rationale: why.trim(), override_at: new Date().toISOString() }).eq("id", c.id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setWhy(""); qc.invalidateQueries({ queryKey: ["app", appId] }); qc.invalidateQueries({ queryKey: ["apps"] }); toast.success("Decision recorded");
   };
   return (

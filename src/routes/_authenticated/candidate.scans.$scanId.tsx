@@ -31,7 +31,7 @@ function ScanResult() {
     if (!me || !s.job_id) return; setBusy(true);
     const { error } = await supabase.from("applications").insert({ job_id: s.job_id, candidate_user_id: me.id, name: me.name || cand.name, job_role: cand.role, years: cand.years, domain: cand.domain, resume_text: s.resume_text, evidence: { mandatory: cand.mandatory, competencies: cand.competencies } });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     qc.invalidateQueries({ queryKey: ["apps"] }); toast.success("Application sent with your evidence report");
   };
   return (

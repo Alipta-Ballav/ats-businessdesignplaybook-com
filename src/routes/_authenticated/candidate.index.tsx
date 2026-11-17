@@ -11,7 +11,7 @@ import { ResumeInput } from "@/components/ResumeInput";
 import { Card, StatusBadge } from "@/components/ui-bits";
 
 export const Route = createFileRoute("/_authenticated/candidate/")({
-  validateSearch: (s: Record<string, unknown>): { job?: string } => ({ job: typeof s.job === "string" ? s.job : undefined }),
+  validateSearch: (s: Record<string, unknown>): { job?: string | undefined } => ({ job: typeof s["job"] === "string" ? s["job"] : undefined }),
   head: () => ({ meta: [{ title: "Check my resume — FutureTalent AI" }, { name: "description", content: "See how your resume scores for a role and exactly what to improve." }, { property: "og:title", content: "Check my resume — FutureTalent AI" }, { property: "og:description", content: "Evidence-based resume scoring with fix-it tips." }] }),
   component: CandidateHome,
 });
@@ -34,7 +34,7 @@ function CandidateHome() {
       const reqs = picked?.job.mandatory ?? [];
       const ex = await read({ data: { resume, jobTitle: title, jobDescription: jd, requirements: reqs } });
       const r = must(await supabase.from("scans").insert({ user_id: me.id, job_id: picked?.job.id ?? null, job_title: title, job_description: jd, mandatory: ex.requirements, resume_text: resume, evidence: ex }).select("id").single());
-      nav({ to: "/candidate/scans/$scanId", params: { scanId: r.id } });
+      nav({ to: "/candidate/scans/$scanId", params: { scanId: r!.id } });
     } catch (e) { toast.error((e as Error).message); setBusy(false); }
   };
   return (

@@ -27,7 +27,7 @@ function JobPage() {
   const [adding, setAdding] = useState(false);
   const [resume, setResume] = useState(""); const [busy, setBusy] = useState(false);
   const read = useServerFn(readResume);
-  const timer = useRef<ReturnType<typeof setTimeout>>();
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => { if (data) setJob(data.job); }, [data]);
 
   if (isLoading) return <p className="text-sm text-muted-foreground">Loading…</p>;

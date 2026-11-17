@@ -25,7 +25,7 @@ mandatory: for each requirement, met (directly evidenced), transferable (only ad
 name/role/years/domain: candidate's name, most recent title, total years of experience, main industry. Use "" or 0 if unknown.`;
 
 export async function extractEvidence(input: { resume: string; jobTitle: string; jobDescription: string; requirements: Requirement[] }): Promise<RawExtraction> {
-  const apiKey = process.env.LOVABLE_API_KEY;
+  const apiKey = process.env["LOVABLE_API_KEY"];
   if (!apiKey) throw new Error("AI is not configured.");
   const runId = createLovableAiGatewayRunIdFetch();
   const provider = createOpenAI({

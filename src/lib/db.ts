@@ -17,11 +17,11 @@ export function toJob(r: Tables<"jobs">): Job {
 }
 export function toCandidate(r: Tables<"applications">): Candidate {
   const e = r.evidence as unknown as Pick<Extracted, "mandatory" | "competencies">;
-  return {
+  const c: Candidate = {
     id: r.id, jobId: r.job_id, name: r.name, role: r.job_role, years: r.years, domain: r.domain,
     mandatory: e.mandatory ?? {}, competencies: e.competencies ?? {},
-    override: r.override_status ? { status: r.override_status, rationale: r.override_rationale ?? "", at: r.override_at ?? "" } : undefined,
-  };
+    };
+  return r.override_status ? { ...c, override: { status: r.override_status, rationale: r.override_rationale ?? "", at: r.override_at ?? "" } } : c;
 }
 /** A candidate's self-check uses a balanced policy so the score is comparable across scans. */
 export function scanToPair(s: Tables<"scans">): { job: Job; cand: Candidate } {
@@ -34,7 +34,7 @@ export function scanToPair(s: Tables<"scans">): { job: Job; cand: Candidate } {
   return { job, cand: { id: s.id, jobId: job.id, name: e.name, role: e.role, years: e.years, domain: e.domain, mandatory: e.mandatory, competencies: e.competencies } };
 }
 
-const must = <T,>(r: { data: T | null; error: { message: string } | null }) => { if (r.error) throw new Error(r.error.message); return r.data as T; };
+function must<T>(r: { data: T; error: { message: string } | null }): T { if (r.error) throw new Error(r.error.message); return r.data; }
 
 export const q = {
   me: () => queryOptions({

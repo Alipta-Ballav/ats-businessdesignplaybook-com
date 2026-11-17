@@ -7,7 +7,7 @@ import { lovable } from "@/integrations/lovable/index";
 import { Card } from "@/components/ui-bits";
 import type { Role } from "@/lib/db";
 
-type Search = { mode?: "signin" | "signup"; as?: Role; redirect?: string };
+type Search = { mode?: "signin" | "signup" | undefined; as?: Role | undefined; redirect?: string | undefined };
 export const Route = createFileRoute("/auth")({
   validateSearch: (s: Record<string, unknown>): Search => ({
     mode: s.mode === "signup" ? "signup" : s.mode === "signin" ? "signin" : undefined,

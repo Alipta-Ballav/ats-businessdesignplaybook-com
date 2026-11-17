@@ -28,7 +28,7 @@ function NewJob() {
         flexibility: job.flexibility, preset: job.preset, mandatory: job.mandatory, weights: job.weights,
         preferred: pref.split(",").map((s) => s.trim()).filter(Boolean),
       }).select("id").single());
-      nav({ to: "/recruiter/jobs/$jobId", params: { jobId: r.id } });
+      nav({ to: "/recruiter/jobs/$jobId", params: { jobId: r!.id } });
     } catch (e) { toast.error((e as Error).message); setBusy(false); }
   };
   return (
