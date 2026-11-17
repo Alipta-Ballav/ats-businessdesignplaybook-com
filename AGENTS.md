@@ -28,3 +28,5 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+- All scores are computed deterministically in src/lib/scoring.ts (AI may only extract evidence, never assign final numbers) — PRD requires explainable, reproducible scoring.
