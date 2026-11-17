@@ -8,6 +8,7 @@ import { evaluate } from "@/lib/scoring";
 import { resumeTips } from "@/lib/tips";
 import { ScoreDetails, ScoreHeader } from "@/components/ScoreReport";
 import { Card, StatusBadge } from "@/components/ui-bits";
+import { AtsSimulator } from "@/components/AtsSimulator";
 
 export const Route = createFileRoute("/_authenticated/candidate/scans/$scanId")({
   head: () => ({ meta: [{ title: "Your resume score — FutureTalent AI" }, { name: "description", content: "Your scores, the evidence behind them, and how to improve." }, { property: "og:title", content: "Your resume score — FutureTalent AI" }, { property: "og:description", content: "Your scores, the evidence behind them, and how to improve." }] }),
@@ -55,6 +56,7 @@ function ScanResult() {
               <span className="font-medium">{t.title}</span><p className="mt-1 text-muted-foreground">{t.detail}</p>
             </li>))}</ul>)}
       </Card>
+      <AtsSimulator job={job} c={cand} />
       <ScoreDetails job={job} c={cand} audience="candidate" />
       <p className="text-xs text-muted-foreground">Scores use a balanced policy. Each employer may weigh things differently. AI only finds quotes from your resume; scores come from fixed, published rules.</p>
     </div>

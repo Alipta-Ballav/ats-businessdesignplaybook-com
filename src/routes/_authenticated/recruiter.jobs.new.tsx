@@ -17,7 +17,7 @@ const input = "w-full rounded-md border bg-background px-3 py-2 text-sm";
 function NewJob() {
   const nav = useNavigate();
   const { data: me } = useQuery(q.me());
-  const [job, setJob] = useState<Job>({ id: "", title: "", func: "UX and Product Design", seniority: "Mid-level", description: "", preset: "Balanced Match", flexibility: 50, weights: { JR: 30, FR: 40, HP: 30 }, mandatory: [], preferred: [], createdAt: "" });
+  const [job, setJob] = useState<Job>({ id: "", title: "", func: "Product Design", seniority: "Senior Product Designer", description: "", preset: "Balanced Match", flexibility: 50, weights: { JR: 30, FR: 40, HP: 30 }, mandatory: [], preferred: [], createdAt: "" });
   const [mand, setMand] = useState(""); const [pref, setPref] = useState(""); const [busy, setBusy] = useState(false);
   const total = job.weights.JR + job.weights.FR + job.weights.HP;
   const save = async () => {

@@ -1,7 +1,7 @@
-import { matchMode, PRESETS, DIM_NAMES, type Dimension, type Job } from "@/lib/scoring";
+import { matchMode, PRESETS, DESIGN_LEVELS, DIM_NAMES, type Dimension, type Job } from "@/lib/scoring";
 
-export const FUNCTIONS = ["UX and Product Design", "Software Engineering", "Product Management", "Business and Strategy", "Marketing", "Data Science and Analytics", "Operations", "Leadership", "Finance", "Human Resources"];
-export const SENIORITY = ["Junior", "Mid-level", "Senior", "Principal / Staff", "Leadership / Executive"];
+export const FUNCTIONS = ["Product Design", "UX Design", "UX Research", "Design Systems", "Content Design", "Design Leadership"];
+export const SENIORITY = ["Senior Product Designer", "Staff / Principal Designer", "Design Manager / Lead", "Head / Director of Design"];
 const input = "w-full rounded-md border bg-background px-3 py-2 text-sm";
 
 export function EvalConfig({ job, onChange }: { job: Job; onChange: (j: Job) => void }) {
@@ -12,7 +12,7 @@ export function EvalConfig({ job, onChange }: { job: Job; onChange: (j: Job) => 
         <label className="text-sm">Job function
           <select className={input} value={job.func} onChange={(e) => onChange({ ...job, func: e.target.value })}>{FUNCTIONS.map((f) => <option key={f}>{f}</option>)}</select></label>
         <label className="text-sm">Seniority
-          <select className={input} value={job.seniority} onChange={(e) => onChange({ ...job, seniority: e.target.value })}>{SENIORITY.map((f) => <option key={f}>{f}</option>)}</select></label>
+          <select className={input} value={job.seniority} onChange={(e) => { const l = DESIGN_LEVELS[e.target.value]; onChange(l ? { ...job, seniority: e.target.value, preset: "Custom", flexibility: l.flexibility, weights: l.weights } : { ...job, seniority: e.target.value }); }}>{SENIORITY.map((f) => <option key={f}>{f}</option>)}</select></label>
       </div>
       <div>
         <p className="mb-2 text-sm">Preset</p>

@@ -7,3 +7,5 @@
 - [ ] PDF / Word resume upload (paste text for now)
 - [ ] Opt-in talent passport (recruiters discover high-scoring candidates)
 - [ ] Practical assessments (Build 7)
+- [x] Design-only focus: design skills, design levels, reviewer simulator
+- [ ] Pro checkout for custom ATS tuning (locked preview for now, per user)

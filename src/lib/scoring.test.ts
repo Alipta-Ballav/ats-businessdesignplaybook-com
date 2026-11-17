@@ -31,3 +31,13 @@ describe("scoring rules", () => {
     expect(transferCredit(100)).toBe(1);
   });
 });
+
+import { DESIGN_LEVELS, SCREEN_LENSES } from "./scoring";
+describe("design presets", () => {
+  it("weights total 100", () => {
+    for (const p of [...Object.values(DESIGN_LEVELS), ...Object.values(SCREEN_LENSES)]) expect(p.weights.JR + p.weights.FR + p.weights.HP).toBe(100);
+  });
+  it("recruiter screen is the strictest lens", () => {
+    expect(SCREEN_LENSES["Recruiter screen"]!.flexibility).toBeLessThan(SCREEN_LENSES["VP / Head of Design"]!.flexibility);
+  });
+});

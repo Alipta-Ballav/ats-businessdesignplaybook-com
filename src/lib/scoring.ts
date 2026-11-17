@@ -4,21 +4,21 @@ export const EVIDENCE_LABELS: Record<EvidenceLevel, string> = {
   1: "Claimed", 2: "Applied", 3: "Demonstrated", 4: "Impact", 5: "Transfer",
 };
 export const COMPETENCIES: { id: string; name: string; dim: Dimension }[] = [
-  { id: "functional", name: "Functional expertise", dim: "JR" },
-  { id: "domain", name: "Domain expertise", dim: "JR" },
-  { id: "execution", name: "Execution capability", dim: "JR" },
-  { id: "relevance", name: "Experience relevance", dim: "JR" },
-  { id: "outcomes", name: "Business outcomes", dim: "JR" },
-  { id: "ai", name: "AI fluency", dim: "FR" },
-  { id: "systems", name: "Systems intelligence", dim: "FR" },
+  { id: "functional", name: "Design craft & interaction quality", dim: "JR" },
+  { id: "domain", name: "Product domain knowledge", dim: "JR" },
+  { id: "execution", name: "End-to-end delivery & shipping", dim: "JR" },
+  { id: "relevance", name: "Relevant design experience", dim: "JR" },
+  { id: "outcomes", name: "Business & user impact (metrics)", dim: "JR" },
+  { id: "ai", name: "AI-augmented design fluency", dim: "FR" },
+  { id: "systems", name: "Design systems & scale", dim: "FR" },
   { id: "learning", name: "Learning agility", dim: "FR" },
-  { id: "flexibility", name: "Cognitive flexibility", dim: "FR" },
-  { id: "problem", name: "Problem intelligence", dim: "FR" },
-  { id: "creative", name: "Creative intelligence", dim: "HP" },
-  { id: "strategic", name: "Strategic intelligence", dim: "HP" },
-  { id: "social", name: "Social intelligence", dim: "HP" },
-  { id: "decision", name: "Decision intelligence", dim: "HP" },
-  { id: "growth", name: "Growth orientation", dim: "HP" },
+  { id: "flexibility", name: "Research rigor & discovery", dim: "FR" },
+  { id: "problem", name: "Problem framing", dim: "FR" },
+  { id: "creative", name: "Creative vision", dim: "HP" },
+  { id: "strategic", name: "Design strategy & product vision", dim: "HP" },
+  { id: "social", name: "Cross-functional influence", dim: "HP" },
+  { id: "decision", name: "Decision making & prioritisation", dim: "HP" },
+  { id: "growth", name: "Team leadership & mentorship", dim: "HP" },
 ];
 export const DIM_NAMES: Record<Dimension, string> = { JR: "Job Readiness", FR: "Future Readiness", HP: "Human Potential" };
 
@@ -97,4 +97,19 @@ export const PRESETS: Record<string, { flexibility: number; weights: Record<Dime
   "Balanced Match": { flexibility: 50, weights: { JR: 30, FR: 40, HP: 30 } },
   "Potential-led Hiring": { flexibility: 85, weights: { JR: 20, FR: 35, HP: 45 } },
   "Future-ready Talent": { flexibility: 70, weights: { JR: 20, FR: 55, HP: 25 } },
+};
+
+/** Design-career seniority archetypes: how each level is typically screened. */
+export const DESIGN_LEVELS: Record<string, { flexibility: number; weights: Record<Dimension, number>; focus: string }> = {
+  "Senior Product Designer": { flexibility: 40, weights: { JR: 50, FR: 30, HP: 20 }, focus: "Deep craft and end-to-end delivery" },
+  "Staff / Principal Designer": { flexibility: 50, weights: { JR: 35, FR: 40, HP: 25 }, focus: "Design systems leverage and org-wide impact" },
+  "Design Manager / Lead": { flexibility: 55, weights: { JR: 30, FR: 25, HP: 45 }, focus: "Team mentorship, delivery and design ops" },
+  "Head / Director of Design": { flexibility: 65, weights: { JR: 20, FR: 30, HP: 50 }, focus: "Org strategy and executive partnership" },
+};
+
+/** Who is reading the resume: each lens is a fixed, published screening policy. */
+export const SCREEN_LENSES: Record<string, { flexibility: number; weights: Record<Dimension, number>; who: string }> = {
+  "Recruiter screen": { flexibility: 15, weights: { JR: 60, FR: 25, HP: 15 }, who: "Strict must-haves and exact experience" },
+  "Hiring manager": { flexibility: 50, weights: { JR: 40, FR: 35, HP: 25 }, who: "Craft, delivery and relevant impact" },
+  "VP / Head of Design": { flexibility: 75, weights: { JR: 20, FR: 35, HP: 45 }, who: "Strategy, leadership and outcomes" },
 };
