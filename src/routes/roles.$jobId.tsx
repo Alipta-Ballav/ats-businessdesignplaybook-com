@@ -22,7 +22,7 @@ function Role() {
         <p className="whitespace-pre-wrap text-sm">{job.description || "No description provided."}</p>
         {job.mandatory.length > 0 && <div><p className="text-sm font-medium">Must-haves</p><ul className="list-disc pl-5 text-sm text-muted-foreground">{job.mandatory.map((m) => <li key={m.name}>{m.name}</li>)}</ul></div>}
       </Card>
-      <Link to="/candidate" search={{ job: job.id }} className="inline-block rounded-md bg-primary px-5 py-2 text-sm font-medium text-primary-foreground">Check my fit & apply</Link>
+      <Link to="/check" search={{ job: job.id }} className="inline-block rounded-md bg-primary px-5 py-2 text-sm font-medium text-primary-foreground">Check my fit & apply</Link>
     </div>
   );
 }

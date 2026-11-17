@@ -29,7 +29,7 @@ function Landing() {
             <li>Bullet-level tips: turn "claimed" into "proven impact"</li>
             <li>Apply to posted roles with your evidence report</li>
           </ul>
-          <Link to="/auth" search={{ mode: "signup", as: "candidate" }} className="inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">Check my resume — free</Link>
+          <Link to="/check" search={{ job: undefined }} className="inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">Check my resume — free</Link>
         </Card>
         <Card className="space-y-3">
           <p className="font-mono text-xs uppercase text-muted-foreground">For recruiters</p>

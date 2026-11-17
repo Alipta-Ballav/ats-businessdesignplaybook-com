@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { clearGuestScan, loadGuestScan } from "@/lib/guest-scan";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { q, must, scanToPair } from "@/lib/db";
@@ -25,6 +26,13 @@ function CandidateHome() {
   const { data: picked } = useQuery({ ...q.job(jobParam ?? ""), enabled: !!jobParam });
   const [title, setTitle] = useState(""); const [jd, setJd] = useState(""); const [resume, setResume] = useState(""); const [busy, setBusy] = useState(false);
   const read = useServerFn(readResume);
+  const imported = useRef(false);
+  useEffect(() => {
+    const g = loadGuestScan();
+    if (!me || !g || imported.current) return; imported.current = true;
+    supabase.from("scans").insert({ user_id: me.id, job_id: g.jobId, job_title: g.jobTitle, job_description: g.jobDescription, mandatory: g.evidence.requirements, resume_text: g.resume, evidence: g.evidence as never }).select("id").single()
+      .then(({ data, error }) => { if (error || !data) { toast.error("Couldn't save your earlier report"); return; } clearGuestScan(); toast.success("Your report was saved to your account"); nav({ to: "/candidate/scans/$scanId", params: { scanId: data.id } }); });
+  }, [me]);
   useEffect(() => { if (picked) { setTitle(picked.job.title); setJd(picked.job.description); } }, [picked]);
   useEffect(() => { if (!resume && scans[0]) setResume(scans[0].resume_text); }, [scans]);
 

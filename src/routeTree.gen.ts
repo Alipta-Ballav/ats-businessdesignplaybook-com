@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CheckRouteImport } from './routes/check'
 import { Route as AuthenticatedWelcomeRouteImport } from './routes/_authenticated/welcome'
 import { Route as RolesIndexRouteImport } from './routes/roles.index'
 import { Route as RolesJobIdRouteImport } from './routes/roles.$jobId'
@@ -34,6 +35,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckRoute = CheckRouteImport.update({
+  id: '/check',
+  path: '/check',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedWelcomeRoute = AuthenticatedWelcomeRouteImport.update({
@@ -91,6 +97,7 @@ const AuthenticatedRecruiterJobsNewRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/check': typeof CheckRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/roles/$jobId': typeof RolesJobIdRoute
   '/roles/': typeof RolesIndexRoute
@@ -104,6 +111,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/check': typeof CheckRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/roles/$jobId': typeof RolesJobIdRoute
   '/roles': typeof RolesIndexRoute
@@ -119,6 +127,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/check': typeof CheckRoute
   '/_authenticated/welcome': typeof AuthenticatedWelcomeRoute
   '/roles/$jobId': typeof RolesJobIdRoute
   '/roles/': typeof RolesIndexRoute
@@ -134,6 +143,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/check'
     | '/welcome'
     | '/roles/$jobId'
     | '/roles/'
@@ -147,6 +157,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/check'
     | '/welcome'
     | '/roles/$jobId'
     | '/roles'
@@ -161,6 +172,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/check'
     | '/_authenticated/welcome'
     | '/roles/$jobId'
     | '/roles/'
@@ -176,6 +188,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  CheckRoute: typeof CheckRoute
   RolesJobIdRoute: typeof RolesJobIdRoute
   RolesIndexRoute: typeof RolesIndexRoute
 }
@@ -201,6 +214,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/check': {
+      id: '/check'
+      path: '/check'
+      fullPath: '/check'
+      preLoaderRoute: typeof CheckRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/welcome': {
@@ -298,6 +318,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  CheckRoute: CheckRoute,
   RolesJobIdRoute: RolesJobIdRoute,
   RolesIndexRoute: RolesIndexRoute,
 }
