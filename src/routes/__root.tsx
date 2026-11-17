@@ -81,11 +81,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "FutureTalent AI" },
+      { name: "description", content: "Future talent intelligence for recruiters." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "FutureTalent AI" },
+      { property: "og:description", content: "Future talent intelligence for recruiters." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
@@ -95,6 +95,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
   }),
@@ -124,7 +126,18 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <div className="min-h-screen font-sans">
+        <header className="border-b bg-card">
+          <div className="mx-auto flex max-w-6xl items-center gap-6 px-6 py-4">
+            <Link to="/" className="font-display text-xl font-semibold">FutureTalent<span className="ml-1 rounded bg-accent px-1.5 text-sm text-accent-foreground">AI</span></Link>
+            <nav className="flex gap-4 text-sm text-muted-foreground">
+              <Link to="/" activeOptions={{ exact: true }} activeProps={{ className: "text-foreground font-medium" }}>Dashboard</Link>
+              <Link to="/jobs/new" activeProps={{ className: "text-foreground font-medium" }}>New job</Link>
+            </nav>
+          </div>
+        </header>
+        <main className="mx-auto max-w-6xl px-6 py-8"><Outlet /></main>
+      </div>
     </QueryClientProvider>
   );
 }
