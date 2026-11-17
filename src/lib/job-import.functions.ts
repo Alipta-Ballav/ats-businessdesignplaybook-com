@@ -20,18 +20,32 @@ export const importJobFromUrl = createServerFn({ method: "POST" })
     return { url: u.toString() };
   })
   .handler(async ({ data }) => {
-    try { const r = await direct(data.url); if (!("error" in r)) return r;
-      const fb = await viaReader(data.url); return fb ?? r; }
-    catch (e) { console.error("job import failed", e); return (await viaReader(data.url).catch(() => null)) ?? { error: "Couldn't reach that page. Paste the description instead." }; }
+    const li = data.url.match(/linkedin\.com\/jobs\/(?:view\/(?:[^/?]*-)?|.*currentJobId=)(\d+)/);
+    const id = li?.[1];
+    const guest = id ? `https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/${id}` : data.url;
+    const view = id ? `https://www.linkedin.com/jobs/view/${id}` : data.url;
+    let last: { error: string } = { error: "Couldn't reach that page. Paste the description instead." };
+    const attempts: Array<() => Promise<Awaited<ReturnType<typeof direct>> | null>> = [
+      () => direct(guest),
+      () => viaReader(guest),
+      () => viaReader(view),
+      () => new Promise((r) => setTimeout(r, 1200)).then(() => direct(guest)),
+      () => direct(view),
+    ];
+    for (const a of attempts) {
+      try { const r = await a(); if (r && !("error" in r)) return r; if (r) last = r; }
+      catch (e) { console.error("job import attempt failed", e); }
+    }
+    return { error: last.error.includes("429") ? "LinkedIn is limiting requests right now. Try again in a minute, or paste the description." : last.error };
   });
 
 async function viaReader(orig: string): Promise<{ title: string; company: string; description: string } | null> {
-  const li = orig.match(/linkedin\.com\/jobs\/(?:view\/(?:[^/?]*-)?|.*currentJobId=)(\d+)/);
-  const target = li ? `https://www.linkedin.com/jobs/view/${li[1]}` : orig;
+  const target = orig;
   const res = await fetch(`https://r.jina.ai/${target}`, { headers: { Accept: "text/plain"} });
   if (!res.ok) { console.error("reader status", res.status); return null; }
   const txt = (await res.text()).trim();
   const title = (txt.match(/^Title:\s*(.+)$/m)?.[1] ?? "").replace(/\s*\|\s*LinkedIn.*$/, "").trim();
+  if (/authwall|sign in to view/i.test(txt.slice(0, 2000)) && txt.length < 3000) return null;
   const body = txt.split(/^Markdown Content:\s*$/m)[1]?.trim() ?? txt;
   if (body.length < 200) return null;
   return { title: title.slice(0, 200), company: "", description: body.slice(0, 10000) };

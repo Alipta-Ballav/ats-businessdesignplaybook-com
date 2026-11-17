@@ -8,6 +8,13 @@
       "when": 1794913470140,
       "tag": "0000_accounts_jobs_scans",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794927374235,
+      "tag": "0001_migration",
+      "breakpoints": true
     }
   ]
 }
