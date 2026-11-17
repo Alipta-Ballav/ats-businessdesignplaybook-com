@@ -1,3 +1,4 @@
+import { ProGate } from "@/components/ProGate";
 import { matchMode, PRESETS, DESIGN_LEVELS, DIM_NAMES, type Dimension, type Job } from "@/lib/scoring";
 
 export const FUNCTIONS = ["Product Design", "UX Design", "UX Research", "Design Systems", "Content Design", "Design Leadership"];
@@ -11,8 +12,6 @@ export function EvalConfig({ job, onChange }: { job: Job; onChange: (j: Job) => 
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="text-sm">Job function
           <select className={input} value={job.func} onChange={(e) => onChange({ ...job, func: e.target.value })}>{FUNCTIONS.map((f) => <option key={f}>{f}</option>)}</select></label>
-        <label className="text-sm">Seniority
-          <select className={input} value={job.seniority} onChange={(e) => { const l = DESIGN_LEVELS[e.target.value]; onChange(l ? { ...job, seniority: e.target.value, preset: "Custom", flexibility: l.flexibility, weights: l.weights } : { ...job, seniority: e.target.value }); }}>{SENIORITY.map((f) => <option key={f}>{f}</option>)}</select></label>
       </div>
       <div>
         <p className="mb-2 text-sm">Preset</p>
@@ -23,6 +22,10 @@ export function EvalConfig({ job, onChange }: { job: Job; onChange: (j: Job) => 
           ))}
         </div>
       </div>
+      <ProGate title="Tune the screen yourself" blurb="Set strictness, skill weights and target design level for this role.">
+        <div className="space-y-5">
+          <label className="block text-sm">Target design level
+          <select className={input} value={job.seniority} onChange={(e) => { const l = DESIGN_LEVELS[e.target.value]; onChange(l ? { ...job, seniority: e.target.value, preset: "Custom", flexibility: l.flexibility, weights: l.weights } : { ...job, seniority: e.target.value }); }}>{SENIORITY.map((f) => <option key={f}>{f}</option>)}</select></label>
       <div>
         <div className="flex justify-between text-sm"><span>Evaluation flexibility</span><span className="font-mono">{job.flexibility} · {matchMode(job.flexibility)}</span></div>
         <input type="range" min={0} max={100} value={job.flexibility} aria-label="Evaluation flexibility"
@@ -40,6 +43,8 @@ export function EvalConfig({ job, onChange }: { job: Job; onChange: (j: Job) => 
           ))}
         </div>
       </div>
+        </div>
+      </ProGate>
     </div>
   );
 }

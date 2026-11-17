@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Lock } from "lucide-react";
+import { ProGate } from "@/components/ProGate";
 import { DESIGN_LEVELS, DIM_NAMES, SCREEN_LENSES, evaluate, matchMode, type Candidate, type Dimension, type Job } from "@/lib/scoring";
 import { Card, StatusBadge } from "@/components/ui-bits";
 
@@ -8,6 +8,9 @@ export function AtsSimulator({ job, c }: { job: Job; c: Candidate }) {
   const [lens, setLens] = useState("Hiring manager");
   const l = SCREEN_LENSES[lens]!;
   const ev = evaluate({ ...job, flexibility: l.flexibility, weights: l.weights }, c);
+  const [tune, setTune] = useState({ flexibility: 50, weights: { JR: 40, FR: 35, HP: 25 } as Record<Dimension, number>, level: "" });
+  const tw = tune.weights.JR + tune.weights.FR + tune.weights.HP;
+  const tuned = evaluate({ ...job, flexibility: tune.flexibility, weights: tune.weights }, c);
   return (
     <Card>
       <h2 className="mb-1 font-display text-lg">Who's reading your resume?</h2>
@@ -24,18 +27,17 @@ export function AtsSimulator({ job, c }: { job: Job; c: Candidate }) {
       </div>
       <div className="mt-3 text-sm">With the {lens.toLowerCase()} you'd be rated: <StatusBadge status={ev.status} /></div>
 
-      <div className="relative mt-6 rounded-md border p-4">
-        <div aria-hidden className="pointer-events-none select-none space-y-4 opacity-40 blur-[1px]">
-          <div><p className="text-sm">Design level</p><div className="mt-1 flex flex-wrap gap-2">{Object.keys(DESIGN_LEVELS).map((d) => <span key={d} className="rounded border px-2 py-1 text-xs">{d}</span>)}</div></div>
-          <div><div className="flex justify-between text-sm"><span>Strictness</span><span className="font-mono">{matchMode(50)}</span></div><div className="mt-2 h-2 rounded bg-muted" /></div>
-          <div className="grid grid-cols-3 gap-2">{(["JR", "FR", "HP"] as Dimension[]).map((d) => <div key={d} className="rounded border p-2 text-xs">{DIM_NAMES[d]}</div>)}</div>
+      <div className="mt-6"><ProGate title="Tune the screen yourself" blurb="Set strictness, skill weights and your target level, from Senior Designer to Director of Design.">
+        <div className="space-y-4">
+          <div><p className="text-sm">Target design level</p><div className="mt-1 flex flex-wrap gap-2">{Object.entries(DESIGN_LEVELS).map(([d, x]) => (
+            <button key={d} type="button" onClick={() => setTune({ flexibility: x.flexibility, weights: x.weights, level: d })} className={`rounded border px-2 py-1 text-xs ${tune.level === d ? "border-primary bg-accent" : ""}`}>{d}</button>))}</div></div>
+          <div><div className="flex justify-between text-sm"><span>Strictness</span><span className="font-mono">{tune.flexibility} · {matchMode(tune.flexibility)}</span></div>
+            <input type="range" min={0} max={100} value={tune.flexibility} aria-label="Strictness" onChange={(e) => setTune({ ...tune, level: "", flexibility: Number(e.target.value) })} className="mt-2 w-full accent-[var(--primary)]" /></div>
+          <div className="grid grid-cols-3 gap-2">{(["JR", "FR", "HP"] as Dimension[]).map((d) => (
+            <label key={d} className="text-xs text-muted-foreground">{DIM_NAMES[d]} %<input type="number" min={0} max={100} value={tune.weights[d]} onChange={(e) => setTune({ ...tune, level: "", weights: { ...tune.weights, [d]: Number(e.target.value) } })} className="w-full rounded border bg-background px-2 py-1 text-sm" /></label>))}</div>
+          <p className="text-sm">Your tuned score: <span className="font-mono">{tw === 100 ? (tuned.composite ?? "—") : "weights must total 100%"}</span> <StatusBadge status={tuned.status} /></p>
         </div>
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/70 p-4 text-center">
-          <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground"><Lock className="h-3 w-3" /> Pro</span>
-          <p className="font-medium">Tune the screen yourself</p>
-          <p className="max-w-sm text-xs text-muted-foreground">Set strictness, skill weights and your target level, from Senior Designer to Director of Design. Coming soon.</p>
-        </div>
-      </div>
+      </ProGate></div>
     </Card>
   );
 }
