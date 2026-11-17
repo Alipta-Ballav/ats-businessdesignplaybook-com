@@ -20,7 +20,25 @@ export const importJobFromUrl = createServerFn({ method: "POST" })
     return { url: u.toString() };
   })
   .handler(async ({ data }) => {
-    let url = data.url;
+    try { const r = await direct(data.url); if (!("error" in r)) return r;
+      const fb = await viaReader(data.url); return fb ?? r; }
+    catch (e) { console.error("job import failed", e); return (await viaReader(data.url).catch(() => null)) ?? { error: "Couldn't reach that page. Paste the description instead." }; }
+  });
+
+async function viaReader(orig: string): Promise<{ title: string; company: string; description: string } | null> {
+  const li = orig.match(/linkedin\.com\/jobs\/(?:view\/(?:[^/?]*-)?|.*currentJobId=)(\d+)/);
+  const target = li ? `https://www.linkedin.com/jobs/view/${li[1]}` : orig;
+  const res = await fetch(`https://r.jina.ai/${target}`, { headers: { Accept: "text/plain"} });
+  if (!res.ok) { console.error("reader status", res.status); return null; }
+  const txt = (await res.text()).trim();
+  const title = (txt.match(/^Title:\s*(.+)$/m)?.[1] ?? "").replace(/\s*\|\s*LinkedIn.*$/, "").trim();
+  const body = txt.split(/^Markdown Content:\s*$/m)[1]?.trim() ?? txt;
+  if (body.length < 200) return null;
+  return { title: title.slice(0, 200), company: "", description: body.slice(0, 10000) };
+}
+
+async function direct(input: string): Promise<{ title: string; company: string; description: string } | { error: string }> {
+    let url = input;
     const li = url.match(/linkedin\.com\/jobs\/(?:view\/(?:[^/?]*-)?|.*currentJobId=)(\d+)/);
     if (li) url = `https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/${li[1]}`;
     const res = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36", Accept: "text/html", "Accept-Language": "en" }, redirect: "follow" });
@@ -47,4 +65,4 @@ export const importJobFromUrl = createServerFn({ method: "POST" })
     }
     if (description.length < 120) return { error: "Couldn't read the full job description from that link. Paste it instead." };
     return { title: title.slice(0, 200), company: company.slice(0, 120), description: description.slice(0, 10000) };
-  });
+}

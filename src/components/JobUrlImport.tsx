@@ -12,7 +12,7 @@ export function JobUrlImport({ onImport }: { onImport: (title: string, descripti
       const r = await run({ data: { url } });
       if ("error" in r) toast.error(r.error);
       else { onImport(r.company ? `${r.title} · ${r.company}` : r.title, r.description); toast.success("Job details filled in"); setUrl(""); }
-    } catch { toast.error("That doesn't look like a valid link."); }
+    } catch (e) { const m = (e as Error)?.message ?? ""; toast.error(/URL|link/i.test(m) ? "That doesn't look like a valid link." : "Import failed. Try again, or paste the description."); }
     setBusy(false);
   };
   return (
