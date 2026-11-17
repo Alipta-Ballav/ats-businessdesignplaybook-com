@@ -13,6 +13,7 @@ import { ResumeInput } from "@/components/ResumeInput";
 import { ScoreDetails, ScoreHeader } from "@/components/ScoreReport";
 import { Card, StatusBadge } from "@/components/ui-bits";
 import { AtsSimulator } from "@/components/AtsSimulator";
+import { AtsTarget } from "@/components/AtsTarget";
 
 export const Route = createFileRoute("/check")({
   validateSearch: (s: Record<string, unknown>): { job?: string | undefined } => ({ job: typeof s["job"] === "string" ? s["job"] : undefined }),
@@ -78,6 +79,7 @@ function CheckPage() {
             <ul className="space-y-3">{tips.slice(0, 10).map((t, i) => (
               <li key={i} className="rounded border p-3 text-sm"><span className="font-medium">{t.title}</span><p className="mt-1 text-muted-foreground">{t.detail}</p></li>))}</ul>)}
         </Card>
+        <AtsTarget job={job} c={cand} resume={result.resume ?? ""} />
         <AtsSimulator job={job} c={cand} />
         <ScoreDetails job={job} c={cand} audience="candidate" />
       </div>

@@ -41,3 +41,16 @@ describe("design presets", () => {
     expect(SCREEN_LENSES["Recruiter screen"]!.flexibility).toBeLessThan(SCREEN_LENSES["VP / Head of Design"]!.flexibility);
   });
 });
+
+import { ATS_SYSTEMS, atsFormatPenalty, formatRisks } from "./scoring";
+describe("target ATS", () => {
+  it("Workday is stricter than Greenhouse and Ashby", () => {
+    expect(ATS_SYSTEMS["Workday"]!.flexibility).toBeLessThan(ATS_SYSTEMS["Greenhouse"]!.flexibility);
+    expect(ATS_SYSTEMS["Workday"]!.flexibility).toBeLessThan(ATS_SYSTEMS["Ashby"]!.flexibility);
+  });
+  it("formatting risks cost more on Workday than on Ashby", () => {
+    const bad = "Jane  Designer\tPortfolio\t\tLead";
+    expect(formatRisks(bad).length).toBeGreaterThan(0);
+    expect(atsFormatPenalty("Workday", bad)).toBeGreaterThan(atsFormatPenalty("Ashby", bad));
+  });
+});

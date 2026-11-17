@@ -113,3 +113,30 @@ export const SCREEN_LENSES: Record<string, { flexibility: number; weights: Recor
   "Hiring manager": { flexibility: 50, weights: { JR: 40, FR: 35, HP: 25 }, who: "Craft, delivery and relevant impact" },
   "VP / Head of Design": { flexibility: 75, weights: { JR: 20, FR: 35, HP: 45 }, who: "Strategy, leadership and outcomes" },
 };
+
+/** Target ATS platforms: each is a fixed, published parsing + screening policy. */
+export const ATS_SYSTEMS: Record<string, { flexibility: number; weights: Record<Dimension, number>; style: "legacy" | "semantic"; how: string }> = {
+  Workday: { flexibility: 10, weights: { JR: 65, FR: 20, HP: 15 }, style: "legacy", how: "Rigid parsing and strict keyword matching" },
+  Greenhouse: { flexibility: 45, weights: { JR: 45, FR: 30, HP: 25 }, style: "semantic", how: "Structured scorecards, reads context" },
+  Ashby: { flexibility: 55, weights: { JR: 40, FR: 35, HP: 25 }, style: "semantic", how: "Modern semantic matching, credits transferable skills" },
+};
+
+/** Deterministic formatting checks; legacy parsers are hurt by all of them, semantic ones only by "high". */
+export function formatRisks(resume: string): { issue: string; fix: string; severity: "high" | "medium" }[] {
+  const t = resume ?? ""; const out: { issue: string; fix: string; severity: "high" | "medium" }[] = [];
+  if (t.trim().length < 400) out.push({ issue: "Very little text could be read", fix: "Your file may be an image or scanned PDF. Export a text-based PDF or Word file.", severity: "high" });
+  if (!/\b(experience|employment|work history)\b/i.test(t)) out.push({ issue: "No standard \"Experience\" heading", fix: "Use a plain heading like \"Experience\" so the parser finds your jobs.", severity: "high" });
+  if (!/\b(skills|tools)\b/i.test(t)) out.push({ issue: "No \"Skills\" section", fix: "Add a short Skills section listing tools and methods (Figma, research, design systems).", severity: "medium" });
+  if (!/[\w.+-]+@[\w-]+\.[\w.]+/.test(t)) out.push({ issue: "No email address found", fix: "Put your email in plain text at the top, not in a header image.", severity: "medium" });
+  if (/\t{2,}|\S {4,}\S/.test(t)) out.push({ issue: "Looks like columns or a table", fix: "Use a single-column layout; multi-column text gets scrambled.", severity: "medium" });
+  if (/[\u2605\u2606\u25CF\u25CB\u2B50]/.test(t)) out.push({ issue: "Skill rating dots or stars", fix: "Replace graphics-based ratings with plain words.", severity: "medium" });
+  return out;
+}
+
+/** Score penalty applied for formatting risks under a given ATS. */
+export function atsFormatPenalty(system: string, resume: string): number {
+  const s = ATS_SYSTEMS[system]; if (!s) return 0;
+  const r = formatRisks(resume);
+  const pts = r.reduce((n, x) => n + (x.severity === "high" ? 8 : s.style === "legacy" ? 4 : 0), 0);
+  return Math.min(25, s.style === "legacy" ? pts : Math.round(pts / 2));
+}

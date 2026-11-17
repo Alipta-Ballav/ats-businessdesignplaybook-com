@@ -22,7 +22,7 @@ export const importJobFromUrl = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     let url = data.url;
     const li = url.match(/linkedin\.com\/jobs\/(?:view\/(?:[^/?]*-)?|.*currentJobId=)(\d+)/);
-    if (li) url = `https://www.linkedin.com/jobs/view/${li[1]}`;
+    if (li) url = `https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/${li[1]}`;
     const res = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36", Accept: "text/html", "Accept-Language": "en" }, redirect: "follow" });
     if (!res.ok) return { error: `That page couldn't be opened (${res.status}). Paste the description instead.` };
     const html = (await res.text()).slice(0, 2_000_000);
@@ -36,6 +36,7 @@ export const importJobFromUrl = createServerFn({ method: "POST" })
       const li = html.match(/class="show-more-less-html__markup[^"]*"[^>]*>([\s\S]*?)<\/div>/);
       if (li) description = decode(li[1]!);
     }
+    if (!title && li) { const h = html.match(/<h2[^>]*top-card-layout__title[^>]*>([\s\S]*?)<\/h2>/) ?? html.match(/<a[^>]*topcard__link[^>]*>[\s\S]*?<h2[^>]*>([\s\S]*?)<\/h2>/); if (h) title = decode(h[1]!); }
     if (!title) {
       const t = html.match(/<meta[^>]+property="og:title"[^>]+content="([^"]*)"/i) ?? html.match(/<title>([^<]*)<\/title>/i);
       title = t ? decode(t[1]!).replace(/\s*\|\s*LinkedIn.*$/, "") : "";
