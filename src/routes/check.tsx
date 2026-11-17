@@ -1,3 +1,4 @@
+import { JobUrlImport } from "@/components/JobUrlImport";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -89,6 +90,7 @@ function CheckPage() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="space-y-3">
           <div className="flex items-center justify-between"><h2 className="font-display text-lg">The role</h2><Link to="/roles" className="text-xs underline">Pick from open roles</Link></div>
+          <JobUrlImport onImport={(t, d) => { setTitle(t); setJd(d); }} />
           <label className="block text-sm">Job title<input className={input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Product Designer" /></label>
           <label className="block text-sm">Job description<textarea rows={10} className={input} value={jd} onChange={(e) => setJd(e.target.value)} placeholder="Paste the job posting you're targeting…" /></label>
         </Card>
