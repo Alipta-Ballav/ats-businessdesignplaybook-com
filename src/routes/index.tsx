@@ -2,10 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowRight, CheckCircle2, Gauge, Quote, ShieldCheck, Sparkles, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { FTI_DIMENSIONS, DESIGN_LEVELS } from "@/lib/scoring";
+import { ATS_SYSTEMS, FTI_DIMENSIONS, DESIGN_LEVELS } from "@/lib/scoring";
 
 const TITLE = "UX Design ATS Checker — FutureTalent AI";
-const DESC = "Get a free, explainable ATS score for your design resume. Every point is tied to a verbatim quote, calibrated for Workday, Greenhouse and Ashby.";
+const DESC = "Get a free, explainable ATS score for your design resume. Every point is tied to a verbatim quote, calibrated across 8 ATS engines: Workday, Greenhouse, Ashby, Taleo, iCIMS, SuccessFactors, Lever and BambooHR.";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [
@@ -18,14 +18,14 @@ export const Route = createFileRoute("/")({
 
 const pillars = [
   { icon: Quote, t: "Verbatim evidence, not keyword spam", d: "Every score links to an exact line in your resume. Anything we can't quote doesn't count." },
-  { icon: Gauge, t: "Calibrated per ATS engine", d: "See how strict Workday parsing compares with Greenhouse and Ashby matching — before you apply." },
+  { icon: Gauge, t: "Calibrated per ATS engine", d: "Eight engines simulated separately — from rigid Workday and Taleo parsing to Greenhouse and Ashby context matching — before you apply." },
   { icon: Wand2, t: "Fix and rescore, line by line", d: "Turn vague bullets into proven impact with your own true details, then watch the score move." },
 ];
 
 const compare = [
   ["Audience", "Every job under the sun", "Built only for UX, product & design leaders"],
   ["Scoring", "Black-box AI score", "Every point tied to a verbatim quote from your resume"],
-  ["ATS engines", "One generic checklist", "Workday, Greenhouse & Ashby simulated separately"],
+  ["ATS engines", "One generic checklist", "8 engines simulated separately — Workday, Greenhouse, Ashby, Taleo, iCIMS, SuccessFactors, Lever, BambooHR"],
   ["Fixes", "\"Add more metrics\"", "Rewrite a bullet with your real numbers, rescore live"],
   ["Export", "Broken layouts", "ATS-safe single-column Word file"],
   ["Price", "$29–49 / month", "1 free scan, then ₹49 once — for life"],
@@ -64,6 +64,52 @@ function BeforeAfter() {
   );
 }
 
+const ENGINE_GROUPS = [
+  { style: "legacy" as const, label: "Strict parsers", who: "Oracle, SAP, enterprise and large corporates", note: "Literal keyword matching. A missing exact term can knock you out before a human sees the file." },
+  { style: "semantic" as const, label: "Semantic readers", who: "Startups, scale-ups, agencies and product teams", note: "Read context and transferable skills. Craft evidence counts even when the wording differs." },
+];
+
+function Engines() {
+  return (
+    <section className="mx-auto max-w-6xl px-6">
+      <p className="text-sm font-medium text-primary">ATS engine calibration</p>
+      <h2 className="mt-2 max-w-3xl text-3xl">Eight engines. Eight different answers.</h2>
+      <p className="mt-3 max-w-2xl text-muted-foreground">The same resume scores differently depending on which system parses it. We simulate all eight and show you the spread — so you fix the resume that's actually reading you.</p>
+      <div className="mt-10 space-y-10">
+        {ENGINE_GROUPS.map((g) => {
+          const items = Object.entries(ATS_SYSTEMS).filter(([, s]) => s.style === g.style);
+          return (
+            <div key={g.label}>
+              <div className="flex flex-wrap items-baseline justify-between gap-2 border-b pb-3">
+                <div className="flex items-center gap-3">
+                  <span className={`h-2 w-2 rounded-full ${g.style === "legacy" ? "bg-destructive" : "bg-success"}`} />
+                  <h3 className="text-lg">{g.label}</h3>
+                  <span className="font-mono text-xs text-muted-foreground">{items.length} engines</span>
+                </div>
+                <p className="text-xs text-muted-foreground">{g.who}</p>
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">{g.note}</p>
+              <div className="mt-4 grid gap-px overflow-hidden rounded-xl border bg-border sm:grid-cols-2 lg:grid-cols-4">
+                {items.map(([name, s]) => (
+                  <div key={name} className="bg-card p-5">
+                    <div className="flex items-center justify-between">
+                      <p className="font-medium">{name}</p>
+                      <span className="rounded bg-secondary px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground">{s.flexibility}/100</span>
+                    </div>
+                    <div className="mt-3 h-1.5 rounded-full bg-muted"><div className={`h-1.5 rounded-full ${g.style === "legacy" ? "bg-destructive/70" : "bg-success/70"}`} style={{ width: `${s.flexibility}%` }} /></div>
+                    <p className="mt-3 text-xs text-muted-foreground">{s.how}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <p className="mt-4 text-xs text-muted-foreground">Flexibility is the published strictness we apply per engine: 0 is exact-term matching, 100 gives full credit to transferable evidence.</p>
+    </section>
+  );
+}
+
 function Landing() {
   const [lvl, setLvl] = useState(0);
   const levels = Object.entries(DESIGN_LEVELS).map(([label, v]) => ({ label, ...v }));
@@ -95,7 +141,8 @@ function Landing() {
                 <div key={n}><div className="flex justify-between text-xs"><span>{n}</span><span className="font-mono text-muted-foreground">{v}</span></div>
                   <div className="mt-1 h-1.5 rounded-full bg-muted"><div className="h-1.5 rounded-full bg-gradient-primary" style={{ width: `${v}%` }} /></div></div>)}</div>
             </div>
-            <div className="mt-5 flex gap-2">{["Workday 71", "Greenhouse 80", "Ashby 84"].map((a) => <span key={a} className="rounded-md border bg-secondary px-2 py-1 font-mono text-xs">{a}</span>)}</div>
+            <div className="mt-5 flex flex-wrap gap-1.5">{[["Taleo", 62], ["Workday", 71], ["iCIMS", 69], ["SuccessFactors", 68], ["Lever", 77], ["Greenhouse", 80], ["BambooHR", 79], ["Ashby", 84]].map(([a, v]) => <span key={a} className="rounded-md border bg-secondary px-2 py-1 font-mono text-[11px]">{a} {v}</span>)}</div>
+            <p className="mt-2 text-[11px] text-muted-foreground">All 8 engines, scored separately on one resume.</p>
             <blockquote className="mt-5 border-l-2 border-primary pl-3 text-sm text-muted-foreground">“Led the design system migration across 4 product teams, cutting UI defects 32%.”<span className="mt-1 block text-xs text-success">✓ Verified verbatim in resume</span></blockquote>
           </div>
         </div>
@@ -112,6 +159,8 @@ function Landing() {
 
 
       <BeforeAfter />
+
+      <Engines />
 
       <section className="mx-auto max-w-6xl px-6">
         <p className="text-sm font-medium text-primary">How we compare</p>

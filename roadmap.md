@@ -11,4 +11,6 @@
 - [x] Phase 1: test diagnostic rules and verify candidate/recruiter flows
 - Deferred: Phase 2 simulated reviewer deliberation; Phase 3 interview rehearsal and portfolio evidence
 - [x] Design-only focus: design skills, design levels, reviewer simulator
+- [x] Highlight all 8 ATS engines: home page section, grouped engine picker, report tab label
+- [x] Explain the design-only positioning rationale to the user (positioning kept as-is)
 - Deferred: Pro checkout for custom ATS tuning (locked preview for now, per user)

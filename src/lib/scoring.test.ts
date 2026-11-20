@@ -44,6 +44,21 @@ describe("design presets", () => {
 
 import { ATS_SYSTEMS, atsFormatPenalty, formatRisks } from "./scoring";
 describe("target ATS", () => {
+  it("ships 8 engines: 4 strict parsers and 4 semantic readers", () => {
+    expect(Object.keys(ATS_SYSTEMS).sort()).toEqual(
+      ["Ashby", "BambooHR", "Greenhouse", "Lever", "SuccessFactors", "Taleo", "Workday", "iCIMS"].sort(),
+    );
+    const strict = Object.entries(ATS_SYSTEMS).filter(([, s]) => s.style === "legacy");
+    const semantic = Object.entries(ATS_SYSTEMS).filter(([, s]) => s.style === "semantic");
+    expect(strict).toHaveLength(4);
+    expect(semantic).toHaveLength(4);
+    for (const [, s] of [...strict, ...semantic]) expect(s.how.length).toBeGreaterThan(10);
+  });
+  it("Taleo is the strictest and Ashby the most flexible engine", () => {
+    const flex = Object.values(ATS_SYSTEMS).map((s) => s.flexibility);
+    expect(ATS_SYSTEMS["Taleo"]!.flexibility).toBe(Math.min(...flex));
+    expect(ATS_SYSTEMS["Ashby"]!.flexibility).toBe(Math.max(...flex));
+  });
   it("Workday is stricter than Greenhouse and Ashby", () => {
     expect(ATS_SYSTEMS["Workday"]!.flexibility).toBeLessThan(ATS_SYSTEMS["Greenhouse"]!.flexibility);
     expect(ATS_SYSTEMS["Workday"]!.flexibility).toBeLessThan(ATS_SYSTEMS["Ashby"]!.flexibility);

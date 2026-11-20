@@ -109,7 +109,7 @@ function CheckPage() {
                   <li key={i} className="flex gap-4 py-3 text-sm"><span className="font-mono text-xs text-muted-foreground">{String(i + 1).padStart(2, "0")}</span><div><p className="font-medium">{t.title}</p><p className="mt-0.5 text-muted-foreground">{t.detail}</p></div></li>))}</ol>)}
             </Card></> },
           { id: "profile", label: "Talent profile", content: <FtiReport c={cand} /> },
-          { id: "ats", label: "ATS systems", content: <><AtsTarget job={job} c={cand} resume={result.resume ?? ""} /><AtsSimulator job={job} c={cand} /></> },
+          { id: "ats", label: "8 ATS engines", content: <><AtsTarget job={job} c={cand} resume={result.resume ?? ""} /><AtsSimulator job={job} c={cand} /></> },
           { id: "role", label: "The role", content: <JobDiagnostics title={result.jobTitle} description={result.jobDescription} /> },
           { id: "evidence", label: "Evidence", content: <ScoreDetails job={job} c={cand} audience="candidate" /> },
         ]} />
