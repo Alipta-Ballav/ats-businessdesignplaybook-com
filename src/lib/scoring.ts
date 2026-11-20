@@ -158,13 +158,40 @@ export const FTI_DIMENSIONS: { id: string; name: string; weight: number; comps: 
   { id: "learning", name: "Learning Agility & Innovation", weight: 10, comps: ["learning", "creative"], skills: ["Learning agility", "Cognitive flexibility", "Creative thinking", "Creative synthesis", "Experimentation", "Adaptability", "Unlearning & relearning", "Intellectual curiosity", "Innovation management", "Knowledge transfer"], tip: "Mention a new domain or tool you learned fast, or an experiment you ran and what it taught you." },
 ];
 
-/** Neutral (flexibility 50) scoring; a dimension with no evidence scores 0. */
-export function futureTalentIndex(c: Pick<Candidate, "competencies">) {
+export const LEVELS = ["Senior Product Designer", "Staff / Principal Designer", "Design Manager / Lead", "Head / Director of Design"] as const;
+export type Level = (typeof LEVELS)[number];
+/** Per-level weights across the 8 Product & UX dimensions (each row sums to 100). */
+export const LEVEL_WEIGHTS: Record<Level, Record<string, number>> = {
+  "Senior Product Designer": { craft: 25, research: 15, product: 10, systems: 10, ai: 15, critical: 10, leadership: 5, learning: 10 },
+  "Staff / Principal Designer": { craft: 15, research: 10, product: 15, systems: 20, ai: 15, critical: 10, leadership: 10, learning: 5 },
+  "Design Manager / Lead": { craft: 10, research: 10, product: 15, systems: 10, ai: 10, critical: 10, leadership: 25, learning: 10 },
+  "Head / Director of Design": { craft: 5, research: 5, product: 20, systems: 10, ai: 10, critical: 10, leadership: 30, learning: 10 },
+};
+export const LEVEL_EXAMPLES: Record<Level, string> = {
+  "Senior Product Designer": "Redesigned onboarding end to end after 15 usability sessions, lifting activation 12%.",
+  "Staff / Principal Designer": "Built the token-based design system adopted by 6 squads, cutting UI build time 30%.",
+  "Design Manager / Lead": "Hired and mentored 5 designers and set up critique rituals that halved rework.",
+  "Head / Director of Design": "Set the design vision with the CPO, grew the org to 20 and tied design OKRs to revenue.",
+};
+/** Deterministic level from title keywords first, then years of experience. */
+export function inferLevel(years: number, role: string): Level {
+  const r = role.toLowerCase();
+  if (/\b(head|director|vp|vice president|chief|cdo)\b/.test(r)) return "Head / Director of Design";
+  if (/\b(manager|lead)\b/.test(r)) return "Design Manager / Lead";
+  if (/\b(staff|principal)\b/.test(r)) return "Staff / Principal Designer";
+  if (years >= 12) return "Head / Director of Design";
+  if (years >= 6) return "Staff / Principal Designer";
+  return "Senior Product Designer";
+}
+
+/** Neutral (flexibility 50) scoring; a dimension with no evidence scores 0. With a level, weights follow LEVEL_WEIGHTS. */
+export function futureTalentIndex(c: Pick<Candidate, "competencies">, level?: Level) {
+  const lw = level ? LEVEL_WEIGHTS[level] : undefined;
   const dims = FTI_DIMENSIONS.map((d) => {
     const vals = d.comps.map((id) => competencyScore(c.competencies[id], 50) ?? 0);
     const score = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
     const quotes = d.comps.map((id) => c.competencies[id]?.quote).filter((q): q is string => !!q);
-    return { ...d, score, quotes };
+    return { ...d, weight: lw?.[d.id] ?? d.weight, score, quotes };
   });
   const total = Math.round(dims.reduce((a, d) => a + d.score * d.weight, 0) / 100);
   return { total, dims };

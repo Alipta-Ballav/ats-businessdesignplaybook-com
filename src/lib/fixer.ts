@@ -1,4 +1,4 @@
-import { COMPETENCIES, evaluate, futureTalentIndex, type Candidate, type Job } from "./scoring";
+import { COMPETENCIES, evaluate, futureTalentIndex, inferLevel, type Level, type Candidate, type Job } from "./scoring";
 import { inspectBullets } from "./diagnostics";
 import { resumeTips } from "./tips";
 
@@ -35,8 +35,8 @@ export function applySuggestion(resume: string, s: Pick<Suggestion, "kind" | "or
 }
 
 /** Headline score: FTI for a generic audit, composite fit for a job match. */
-export function headlineScore(job: Job, c: Candidate): number {
-  if (!job.description.trim()) return futureTalentIndex(c).total;
+export function headlineScore(job: Job, c: Candidate, level?: Level): number {
+  if (!job.description.trim()) return futureTalentIndex(c, level ?? inferLevel(c.years ?? 0, c.role ?? "")).total;
   return evaluate(job, c).composite ?? 0;
 }
 export { COMPETENCIES };

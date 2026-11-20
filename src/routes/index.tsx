@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowRight, CheckCircle2, Gauge, Quote, ShieldCheck, Sparkles, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ATS_SYSTEMS, FTI_DIMENSIONS, DESIGN_LEVELS } from "@/lib/scoring";
+import { ATS_SYSTEMS, FTI_DIMENSIONS, LEVELS, LEVEL_WEIGHTS, LEVEL_EXAMPLES } from "@/lib/scoring";
 
 const TITLE = "UX Design ATS Checker — FutureTalent AI";
 const DESC = "Get a free, explainable ATS score for your design resume. Every point is tied to a verbatim quote, calibrated across 8 ATS engines: Workday, Greenhouse, Ashby, Taleo, iCIMS, SuccessFactors, Lever and BambooHR.";
@@ -112,8 +112,8 @@ function Engines() {
 
 function Landing() {
   const [lvl, setLvl] = useState(0);
-  const levels = Object.entries(DESIGN_LEVELS).map(([label, v]) => ({ label, ...v }));
-  const cur = levels[lvl];
+  const cur = LEVELS[lvl]!;
+  const top = Object.entries(LEVEL_WEIGHTS[cur]).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([id, w]) => ({ name: FTI_DIMENSIONS.find((d) => d.id === id)?.name ?? id, w }));
   return (
     <div className="-mx-6 -mt-8 space-y-28 pb-16">
       <section className="bg-hero px-6 pt-20">
@@ -180,14 +180,19 @@ function Landing() {
           <div key={d.id} className="bg-card p-5"><p className="font-mono text-xs text-muted-foreground">0{i + 1} · {d.weight}%</p><p className="mt-2 font-medium">{d.name}</p><p className="mt-2 text-xs leading-relaxed text-muted-foreground">{d.skills.slice(0, 4).join(" · ")} +{d.skills.length - 4} more</p></div>)}</div>
       </section>
 
-      {levels.length > 0 && <section className="mx-auto max-w-6xl px-6">
-        <p className="text-sm font-medium text-primary">Seniority archetypes</p>
-        <h2 className="mt-2 text-3xl">The bar moves with the level</h2>
-        <div className="mt-8 inline-flex flex-wrap gap-1 rounded-lg border bg-secondary p-1">{levels.map((l, i) =>
-          <button key={i} onClick={() => setLvl(i)} className={`rounded-md px-3 py-1.5 text-sm transition ${i === lvl ? "bg-card shadow-sheet" : "text-muted-foreground hover:text-foreground"}`}>{l.label}</button>)}</div>
-        {cur && <div className="mt-5 rounded-xl border bg-card p-6 shadow-sheet"><p className="text-lg font-medium">{cur.label} · <span className="text-muted-foreground">{cur.focus}</span></p>
-          <p className="mt-1 text-sm text-muted-foreground">Evaluated with {cur.flexibility}/100 flexibility and weights tuned for this scope — so a Director isn't judged like an IC, and vice versa.</p></div>}
-      </section>}
+      <section className="mx-auto max-w-6xl px-6">
+        <p className="text-sm font-medium text-primary">Scored at your level</p>
+        <h2 className="mt-2 text-3xl">A Director isn't judged like a Senior Designer</h2>
+        <p className="mt-3 max-w-2xl text-muted-foreground">We read your years and latest title from the CV — no form to fill. Then the 8 dimensions are weighted for that level. You can switch to the level you're aiming for.</p>
+        <div className="mt-8 inline-flex flex-wrap gap-1 rounded-lg border bg-secondary p-1">{LEVELS.map((l, i) =>
+          <button key={l} onClick={() => setLvl(i)} className={`rounded-md px-3 py-1.5 text-sm transition ${i === lvl ? "bg-card shadow-sheet" : "text-muted-foreground hover:text-foreground"}`}>{l}</button>)}</div>
+        <div className="mt-5 grid gap-5 rounded-xl border bg-card p-6 shadow-sheet md:grid-cols-2">
+          <div><p className="text-sm font-medium">What matters most at this level</p>
+            <div className="mt-3 space-y-2">{top.map((t) => <div key={t.name}><div className="flex justify-between text-sm"><span>{t.name}</span><span className="font-mono text-muted-foreground">{t.w}%</span></div><div className="mt-1 h-1.5 rounded-full bg-muted"><div className="h-1.5 rounded-full bg-gradient-primary" style={{ width: `${t.w * 3}%` }} /></div></div>)}</div></div>
+          <div><p className="text-sm font-medium">A line recruiters expect to see</p>
+            <blockquote className="mt-3 border-l-2 border-primary pl-3 text-sm text-muted-foreground">“{LEVEL_EXAMPLES[cur]}”</blockquote></div>
+        </div>
+      </section>
 
       <section className="mx-auto grid max-w-6xl gap-5 px-6 md:grid-cols-2">
         <div className="rounded-xl border bg-card p-8 shadow-sheet"><Sparkles className="h-5 w-5 text-primary" /><h3 className="mt-4 text-2xl">For job seekers</h3>

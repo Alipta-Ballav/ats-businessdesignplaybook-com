@@ -7,6 +7,9 @@ export const isHeading = (l: string) => {
   return t === t.toUpperCase() && /[A-Z]/.test(t) || /^(summary|profile|experience|work experience|education|skills|projects|certifications|awards|additional evidence|publications|leadership|tools)$/i.test(t);
 };
 
+/** A job-title / company / dates line, e.g. "Lead Designer | Acme | 2021 – Present". */
+export const isRoleLine = (l: string) => { const t = l.trim(); return !BULLET.test(t) && t.length <= 120 && !/[.;]$/.test(t) && /((19|20)\d{2}|present|current)/i.test(t) && /[|–—·,-]/.test(t); };
+
 /** Turns plain resume text into an ATS-safe single-column Word document: name, section rules, real bullets. */
 export function resumeToDocx(text: string): Document {
   const lines = text.replace(/\r/g, "").split("\n");
@@ -17,6 +20,7 @@ export function resumeToDocx(text: string): Document {
     if (!l) return;
     if (i === first) { kids.push(new Paragraph({ alignment: AlignmentType.LEFT, spacing: { after: 60 }, children: [new TextRun({ text: l, bold: true, size: 36 })] })); return; }
     if (isHeading(l)) { kids.push(new Paragraph({ spacing: { before: 240, after: 80 }, border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: "1F2A44", space: 2 } }, children: [new TextRun({ text: l.toUpperCase(), bold: true, size: 22, color: "1F2A44" })] })); return; }
+    if (isRoleLine(l)) { kids.push(new Paragraph({ spacing: { before: 120, after: 40 }, children: [new TextRun({ text: l, bold: true })] })); return; }
     if (BULLET.test(l)) { kids.push(new Paragraph({ numbering: { reference: "b", level: 0 }, spacing: { after: 40 }, children: [new TextRun(l.replace(BULLET, ""))] })); return; }
     kids.push(new Paragraph({ spacing: { after: 60 }, children: [new TextRun(l)] }));
   });

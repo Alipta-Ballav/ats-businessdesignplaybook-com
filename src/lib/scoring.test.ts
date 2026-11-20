@@ -82,3 +82,18 @@ describe("Future Talent Index", () => {
     expect(futureTalentIndex({ competencies: all }).total).toBe(100);
   });
 });
+
+import { LEVELS, LEVEL_WEIGHTS, inferLevel } from "./scoring";
+describe("Seniority levels", () => {
+  it("each level's weights sum to 100", () => { for (const l of LEVELS) expect(Object.values(LEVEL_WEIGHTS[l]).reduce((a, b) => a + b, 0)).toBe(100); });
+  it("title wins over years", () => {
+    expect(inferLevel(4, "Head of Design")).toBe("Head / Director of Design");
+    expect(inferLevel(15, "Design Manager")).toBe("Design Manager / Lead");
+    expect(inferLevel(3, "Principal Designer")).toBe("Staff / Principal Designer");
+  });
+  it("falls back to years", () => {
+    expect(inferLevel(4, "Product Designer")).toBe("Senior Product Designer");
+    expect(inferLevel(8, "Product Designer")).toBe("Staff / Principal Designer");
+    expect(inferLevel(13, "")).toBe("Head / Director of Design");
+  });
+});

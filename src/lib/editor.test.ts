@@ -28,3 +28,14 @@ describe("newFacts design terms", () => {
     expect(newFacts("Led UX redesign for iOS in Q3", ["Led redesign"])).toEqual([]);
   });
 });
+
+import { revertFix } from "./editor";
+describe("revertFix", () => {
+  it("undoes an earlier rewrite without touching a later one", () => {
+    const d = "A new\nB new";
+    expect(revertFix(d, { added: "A new", removed: "A old" })).toBe("A old\nB new");
+  });
+  it("removes an added bullet", () => {
+    expect(revertFix("x\n- added line\n- other", { added: "added line", removed: "" })).toBe("x\n- other");
+  });
+});

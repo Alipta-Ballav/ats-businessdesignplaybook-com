@@ -30,3 +30,13 @@ export function estimateCandidate(c: Candidate, draft: string): Candidate {
 
 /** Free fixes count manual and AI fixes alike. */
 export const fixesUsed = (log: { source: "manual" | "ai" }[]) => log.length;
+
+export type FixEntry = { id: string; source: "manual" | "ai"; added: string; removed: string };
+/** Revert one applied fix, in any order: restore the original line, or drop the added bullet. */
+export function revertFix(draft: string, f: Pick<FixEntry, "added" | "removed">): string {
+  if (f.removed) return draft.includes(f.added) ? draft.replace(f.added, f.removed) : draft;
+  const lines = draft.split("\n"); const i = lines.findIndex((l) => l.trim() === `- ${f.added}`);
+  if (i < 0) return draft;
+  lines.splice(i, 1);
+  return lines.join("\n");
+}

@@ -1,4 +1,5 @@
-import { futureTalentIndex, type Candidate } from "@/lib/scoring";
+import { useState } from "react";
+import { futureTalentIndex, inferLevel, LEVELS, type Candidate, type Level } from "@/lib/scoring";
 import { Card, ScoreRing } from "@/components/ui-bits";
 
 const GROUPS: { name: string; ids: string[] }[] = [
@@ -15,8 +16,10 @@ const band = (s: number) =>
 
 const tier = (t: number) => t >= 75 ? "Principal / Staff ready" : t >= 60 ? "Senior designer level" : t >= 40 ? "Mid-level, building depth" : "Developing profile";
 
-export function FtiReport({ c }: { c: Pick<Candidate, "competencies"> }) {
-  const { total, dims } = futureTalentIndex(c);
+export function FtiReport({ c }: { c: Pick<Candidate, "competencies"> & Partial<Pick<Candidate, "years" | "role">> }) {
+  const detected = inferLevel(c.years ?? 0, c.role ?? "");
+  const [level, setLevel] = useState<Level>(detected);
+  const { total, dims } = futureTalentIndex(c, level);
   const sorted = [...dims].sort((a, b) => b.score - a.score);
   const strongest = sorted[0];
   const weak = [...dims].sort((a, b) => a.score - b.score).filter((d) => d.score < 60).slice(0, 3);
@@ -32,6 +35,13 @@ export function FtiReport({ c }: { c: Pick<Candidate, "competencies"> }) {
             <h2 className="font-display text-2xl font-semibold tracking-tight">Your Product & UX design profile across 8 dimensions</h2>
             <p className="text-sm text-muted-foreground">No job needed. Every score is backed by a line quoted from your resume.</p>
             <span className="inline-flex rounded-full border px-3 py-1 text-xs font-medium">{tier(total)}</span>
+            <div className="rounded-md border bg-muted/40 p-3 text-xs">
+              <p className="text-muted-foreground">We read you as: {c.years ? `${c.years} years` : "experience not stated"}{c.role ? ` · ${c.role}` : ""} → <b className="text-foreground">{detected}</b></p>
+              <label className="mt-2 flex flex-wrap items-center gap-2 font-medium">Scored as
+                <select className="rounded-md border bg-background px-2 py-1 font-normal" value={level} onChange={(e) => setLevel(e.target.value as Level)}>{LEVELS.map((l) => <option key={l}>{l}</option>)}</select>
+              </label>
+              <p className="mt-1 text-muted-foreground">Change it to see how you score at the level you're aiming for.</p>
+            </div>
           </div>
           <ScoreRing value={total} label="FTI score" tone="ink" />
         </div>
