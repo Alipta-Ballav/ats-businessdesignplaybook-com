@@ -5,12 +5,12 @@ import { PLANS, checkoutReady } from "@/lib/plans";
 
 export function PaywallModal({ open, onOpenChange, reason }: { open: boolean; onOpenChange: (o: boolean) => void; reason: string }) {
   return <Dialog open={open} onOpenChange={onOpenChange}>
-    <DialogContent className="max-w-2xl">
+    <DialogContent className="max-w-md">
       <DialogHeader>
         <DialogTitle className="flex items-center gap-2"><Lock className="h-4 w-4" />Unlock your UX resume</DialogTitle>
         <DialogDescription>{reason}</DialogDescription>
       </DialogHeader>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4">
         {PLANS.map((p) => <div key={p.id} className={`relative space-y-3 rounded-xl border p-5 ${p.best ? "border-primary shadow-glow" : ""}`}>
           {p.best && <span className="absolute -top-2.5 right-4 rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">Best value</span>}
           <div><p className="font-medium">{p.name}</p><p className="text-xs text-muted-foreground">{p.blurb}</p></div>

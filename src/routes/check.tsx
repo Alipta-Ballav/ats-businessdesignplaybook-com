@@ -17,6 +17,10 @@ import { AtsSimulator } from "@/components/AtsSimulator";
 import { AtsTarget } from "@/components/AtsTarget";
 import { FtiReport } from "@/components/FtiReport";
 import { ReportTabs } from "@/components/ReportTabs";
+import { BusinessPlaybook } from "@/components/BusinessPlaybook";
+import { PaywallModal } from "@/components/PaywallModal";
+import { usePro } from "@/lib/pro";
+import { FREE_SCANS, canScan, countScan, scansUsed } from "@/lib/plans";
 
 export const Route = createFileRoute("/check")({
   validateSearch: (s: Record<string, unknown>): { job?: string | undefined } => ({ job: typeof s["job"] === "string" ? s["job"] : undefined }),
@@ -43,10 +47,13 @@ function CheckPage() {
   const [title, setTitle] = useState(""); const [jd, setJd] = useState(""); const [resume, setResume] = useState("");
   const [busy, setBusy] = useState(false); const [mode, setMode] = useState<"profile" | "role">("profile"); const [result, setResult] = useState<GuestScan | null>(null);
   const read = useServerFn(readResumeGuest);
+  const pro = usePro(); const [wall, setWall] = useState(false); const [used, setUsed] = useState(0);
+  useEffect(() => { setUsed(scansUsed()); }, []);
   useEffect(() => { if (picked) { setMode("role"); setTitle(picked.job.title); setJd(picked.job.description); } }, [picked]);
   useEffect(() => { clearGuestScan(); }, []);
 
   const run = async () => {
+    if (!canScan(scansUsed(), pro)) { window.__lovableEvents?.track?.("project.paywall_shown", { trigger: "scan" }); setWall(true); return; }
     setBusy(true);
     try {
       const prof = mode === "profile";
@@ -54,7 +61,7 @@ function CheckPage() {
       window.__lovableEvents?.track?.("project.scan_started", { mode: prof ? "generic" : "job_target" });
       const ev = await read({ data: { resume, jobTitle: jt, jobDescription: jdesc, requirements: prof ? [] : picked?.job.mandatory ?? [] } });
       const g: GuestScan = { jobId: prof ? null : picked?.job.id ?? null, jobTitle: jt, jobDescription: jdesc, resume, evidence: ev, createdAt: new Date().toISOString() };
-      saveGuestScan(g); setResult(g); window.__lovableEvents?.track?.("project.report_opened", { mode: prof ? "generic" : "job_target", audience: "candidate", competencies: Object.keys(ev.competencies).length }); window.scrollTo({ top: 0, behavior: "smooth" });
+      saveGuestScan(g); countScan(); setUsed(scansUsed()); setResult(g); window.__lovableEvents?.track?.("project.report_opened", { mode: prof ? "generic" : "job_target", audience: "candidate", competencies: Object.keys(ev.competencies).length }); window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (e) { toast.error((e as Error).message); }
     setBusy(false);
   };
@@ -66,9 +73,10 @@ function CheckPage() {
       <div className="space-y-6">
         <button onClick={() => { clearGuestScan(); setResult(null); setResume(""); }} className="text-sm text-muted-foreground">← Check again</button>
         <FtiReport c={cand} />
+        <BusinessPlaybook resume={result.resume} />
         <ResumeFixer job={job} cand={cand} resume={result.resume} />
         <Card className="flex flex-wrap items-center justify-between gap-4 border-primary">
-          <div><p className="font-display text-lg">Now test your fit for a specific role</p><p className="text-sm text-muted-foreground">Paste a job link or description to see must-haves and ATS scores.</p></div>
+          <div><p className="font-display text-lg">Now test your fit for a specific role</p><p className="text-sm text-muted-foreground">Paste a job description to see must-haves and ATS scores.</p></div>
           <button onClick={() => { setResult(null); setMode("role"); }} className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">Check against a job</button>
         </Card>
       </div>
@@ -100,6 +108,7 @@ function CheckPage() {
                   <li key={i} className="flex gap-4 py-3 text-sm"><span className="font-mono text-xs text-muted-foreground">{String(i + 1).padStart(2, "0")}</span><div><p className="font-medium">{t.title}</p><p className="mt-0.5 text-muted-foreground">{t.detail}</p></div></li>))}</ol>)}
             </Card></> },
           { id: "profile", label: "Talent profile", content: <FtiReport c={cand} /> },
+          { id: "playbook", label: "Business impact", content: <BusinessPlaybook resume={result.resume} /> },
           { id: "ats", label: "ATS systems", content: <><AtsTarget job={job} c={cand} resume={result.resume ?? ""} /><AtsSimulator job={job} c={cand} /></> },
           { id: "role", label: "The role", content: <JobDiagnostics title={result.jobTitle} description={result.jobDescription} /> },
           { id: "evidence", label: "Evidence", content: <ScoreDetails job={job} c={cand} audience="candidate" /> },
@@ -126,6 +135,8 @@ function CheckPage() {
         <Card><ResumeInput value={resume} onChange={setResume} /></Card>
       </div>
       <button disabled={busy || resume.trim().length < 80 || (mode === "role" && (!title.trim() || jd.trim().length < 40))} onClick={run} className="rounded-md bg-primary px-5 py-2 text-sm font-medium text-primary-foreground disabled:opacity-40">{busy ? "Reading your resume… (about 30s)" : "Get my score"}</button>
+      {!pro && <p className="text-xs text-muted-foreground">{Math.max(0, FREE_SCANS - used)} of {FREE_SCANS} free scans left · then ₹49 per scan</p>}
+      <PaywallModal open={wall} onOpenChange={setWall} reason={`You have used your ${FREE_SCANS} free scans. Unlock another scan for ₹49.`} />
     </div>
   );
 }

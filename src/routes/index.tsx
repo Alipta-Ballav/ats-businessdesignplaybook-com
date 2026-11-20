@@ -39,7 +39,7 @@ function Landing() {
             <p className="max-w-xl text-lg text-muted-foreground">Made for UX, product and design leadership roles — from Senior to Director. Not a generic keyword scanner: an 8-dimension Future Talent Index, ATS engine calibration and quote-verified scoring — for job seekers and the people hiring them.</p>
             <div className="flex flex-wrap items-center gap-3">
               <Button asChild size="lg" className="bg-gradient-primary shadow-glow"><Link to="/check" search={{ job: undefined }}>Run free resume audit <ArrowRight /></Link></Button>
-              <Button asChild size="lg" variant="outline"><Link to="/check" search={{ job: undefined }}>Import a LinkedIn role</Link></Button>
+              <Button asChild size="lg" variant="outline"><Link to="/check" search={{ job: undefined }}>Score against a job</Link></Button>
             </div>
             <p className="flex items-center gap-2 text-xs text-muted-foreground"><CheckCircle2 className="h-4 w-4 text-success" />No signup required · Results in about a minute</p>
           </div>
