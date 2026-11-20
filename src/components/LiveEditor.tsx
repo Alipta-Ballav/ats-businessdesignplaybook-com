@@ -57,7 +57,7 @@ export function LiveEditor({ job, cand, resume }: { job: Job; cand: Candidate; r
     try {
       const { text } = await ai({ data: { original: active?.original ?? "", facts } });
       setAiDraft({ text, flags: newFacts(text, [active?.original ?? "", facts]) });
-    } catch (e) { toast.error((e as Error).message); }
+    } catch (e) { const m = (e as Error).message || ""; toast.error(/unauthori|401|auth/i.test(m) ? "Please sign in to use AI suggestions." : m || "AI suggestion failed. Try again."); }
     setBusy("");
   };
 
@@ -158,7 +158,7 @@ export function LiveEditor({ job, cand, resume }: { job: Job; cand: Candidate; r
   );
 
   const right = (
-    <div className="space-y-3 lg:sticky lg:top-4">
+    <div className="space-y-3 md:sticky md:top-4">
       <ResumePreview original={resume} draft={draft} />
       <div className="flex flex-wrap gap-2">
         <Button size="sm" onClick={word}>{pro ? <FileText /> : <Lock />}Download Word (.docx)</Button>
@@ -174,8 +174,8 @@ export function LiveEditor({ job, cand, resume }: { job: Job; cand: Candidate; r
         <h2 className="font-display text-2xl font-semibold tracking-tight">Edit on the left, see your resume on the right</h2>
         <p className="text-sm text-muted-foreground">Add only true details. AI only rephrases facts you give it; your saved resume is never changed.</p>
       </div>
-      <div className="hidden gap-6 lg:grid lg:grid-cols-2">{left}{right}</div>
-      <Tabs defaultValue="edit" className="lg:hidden">
+      <div className="hidden gap-6 md:grid md:grid-cols-2">{left}{right}</div>
+      <Tabs defaultValue="edit" className="md:hidden">
         <TabsList className="w-full"><TabsTrigger value="edit" className="flex-1">Edit</TabsTrigger><TabsTrigger value="preview" className="flex-1">Preview</TabsTrigger></TabsList>
         <TabsContent value="edit">{left}</TabsContent>
         <TabsContent value="preview">{right}</TabsContent>
