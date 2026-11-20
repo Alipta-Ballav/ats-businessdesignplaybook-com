@@ -100,7 +100,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: appCss,
       },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&family=IBM+Plex+Mono:wght@500&family=Source+Sans+3:wght@400;500;600&display=swap" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
   }),
@@ -157,9 +157,9 @@ function Header() {
   };
   const active = { className: "text-foreground font-medium" };
   return (
-    <header className="border-b bg-card">
+    <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-6 py-4">
-        <Link to="/" className="font-display text-xl font-semibold">FutureTalent<span className="ml-1 rounded bg-accent px-1.5 text-sm text-accent-foreground">AI</span></Link>
+        <Link to="/" className="font-display text-xl font-semibold">FutureTalent<span className="ml-1 rounded-md bg-gradient-primary px-1.5 text-sm text-primary-foreground">AI</span></Link>
         <nav className="flex flex-1 gap-4 text-sm text-muted-foreground">
           {me?.role === "recruiter" && <><Link to="/recruiter" activeOptions={{ exact: true }} activeProps={active}>Dashboard</Link><Link to="/recruiter/jobs/new" activeProps={active}>New evaluation</Link></>}
           {me?.role === "candidate" && <Link to="/candidate" activeProps={active}>Check my resume</Link>}

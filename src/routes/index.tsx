@@ -1,50 +1,105 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { ArrowRight, CheckCircle2, Gauge, Quote, ShieldCheck, Sparkles, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui-bits";
+import { FTI_DIMENSIONS, DESIGN_LEVELS } from "@/lib/scoring";
+
+const TITLE = "FutureTalent AI — Evidence-grounded ATS audits for UX & design leaders";
+const DESC = "Get a free, explainable ATS score for your design resume. Every point is tied to a verbatim quote, calibrated for Workday, Greenhouse and Ashby.";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [
-    { title: "FutureTalent AI — Evidence-based resume scoring for candidates and recruiters" },
-    { name: "description", content: "Candidates see exactly how their resume scores and how to fix it. Recruiters evaluate applicants with evidence, not keyword spam." },
-    { property: "og:title", content: "FutureTalent AI — ATS intelligence for UX & design leadership" },
-    { property: "og:description", content: "Explainable resume scores for job seekers and recruiters." },
-  , { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+    { title: TITLE }, { name: "description", content: DESC },
+    { property: "og:title", content: TITLE }, { property: "og:description", content: DESC },
+    { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" },
+  ] }),
   component: Landing,
 });
 
+const pillars = [
+  { icon: Quote, t: "Verbatim evidence, not keyword spam", d: "Every score links to an exact line in your resume. Anything we can't quote doesn't count." },
+  { icon: Gauge, t: "Calibrated per ATS engine", d: "See how strict Workday parsing compares with Greenhouse and Ashby matching — before you apply." },
+  { icon: Wand2, t: "Fix and rescore, line by line", d: "Turn vague bullets into proven impact with your own true details, then watch the score move." },
+];
+
 function Landing() {
+  const [lvl, setLvl] = useState(0);
+  const levels = Object.entries(DESIGN_LEVELS).map(([label, v]) => ({ label, ...v }));
+  const cur = levels[lvl];
   return (
-    <div className="space-y-14">
-      <section className="max-w-3xl space-y-4 pt-6">
-        <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">ATS intelligence for UX & design leadership</p>
-        <h1 className="font-display text-5xl leading-tight">FutureTalent AI</h1>
-        <p className="text-lg text-muted-foreground">Every score points to a line in the resume. No black-box rejections, no keyword games — for job seekers and for the people hiring them.</p>
-      </section>
-      <section className="grid gap-6 md:grid-cols-2">
-        <Card className="space-y-3">
-          <p className="font-mono text-xs uppercase text-muted-foreground">For job seekers</p>
-          <h2 className="font-display text-2xl">Know your score before you apply</h2>
-          <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-            <li>Scores for today's fit, future readiness and potential</li>
-            <li>See which must-haves your resume is missing</li>
-            <li>Bullet-level tips: turn "claimed" into "proven impact"</li>
-            <li>Diagnose role scope and strengthen resume evidence</li>
-          </ul>
-          <Button asChild><Link to="/check" search={{ job: undefined }}>Check my resume — free</Link></Button>
-        </Card>
-        <Card className="space-y-3">
-          <p className="font-mono text-xs uppercase text-muted-foreground">For recruiters</p>
-          <h2 className="font-display text-2xl">Evaluate eligibility with evidence</h2>
-          <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-            <li>Strict-to-flexible slider: exact match or transferable talent</li>
-            <li>Essential requirements are never waived</li>
-            <li>Every score linked to a verbatim resume quote</li>
-            <li>Recorded decisions with reasons, for audit</li>
-          </ul>
-          <Button asChild variant="outline"><Link to="/auth" search={{ mode: "signup", as: "recruiter" }}>Start evaluating</Link></Button>
-        </Card>
+    <div className="-mx-6 -mt-8 space-y-28 pb-16">
+      <section className="bg-hero px-6 pt-20">
+        <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[1.1fr_1fr]">
+          <div className="space-y-6">
+            <span className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs text-muted-foreground">
+              <span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" /><span className="relative inline-flex h-2 w-2 rounded-full bg-primary" /></span>
+              Next-gen ATS intelligence · Built for UX & design leaders
+            </span>
+            <h1 className="text-5xl leading-[1.05] md:text-6xl">Stop getting filtered out by keyword robots. <span className="text-gradient">Get an evidence-grounded audit.</span></h1>
+            <p className="max-w-xl text-lg text-muted-foreground">No black-box rejections. An 8-dimension Future Talent Index, ATS engine calibration and quote-verified scoring — for job seekers and the people hiring them.</p>
+            <div className="flex flex-wrap items-center gap-3">
+              <Button asChild size="lg" className="bg-gradient-primary shadow-glow"><Link to="/check" search={{ job: undefined }}>Run free resume audit <ArrowRight /></Link></Button>
+              <Button asChild size="lg" variant="outline"><Link to="/check" search={{ job: undefined }}>Import a LinkedIn role</Link></Button>
+            </div>
+            <p className="flex items-center gap-2 text-xs text-muted-foreground"><CheckCircle2 className="h-4 w-4 text-success" />No signup required · Results in about a minute</p>
+          </div>
+          <div className="rounded-2xl border bg-card p-6 shadow-glow">
+            <div className="flex items-center justify-between"><p className="text-sm font-medium">Future Talent Index</p><span className="rounded-full bg-success/15 px-2 py-0.5 text-xs text-success">Strong alignment</span></div>
+            <div className="mt-5 flex items-center gap-6">
+              <div className="grid h-28 w-28 place-items-center rounded-full" style={{ background: "conic-gradient(var(--primary) 295deg, var(--muted) 0)" }}>
+                <div className="grid h-[92px] w-[92px] place-items-center rounded-full bg-card"><span className="font-mono text-2xl">82</span></div>
+              </div>
+              <div className="flex-1 space-y-2">{[["Systems thinking", 88], ["AI fluency", 74], ["Influence", 81]].map(([n, v]) =>
+                <div key={n}><div className="flex justify-between text-xs"><span>{n}</span><span className="font-mono text-muted-foreground">{v}</span></div>
+                  <div className="mt-1 h-1.5 rounded-full bg-muted"><div className="h-1.5 rounded-full bg-gradient-primary" style={{ width: `${v}%` }} /></div></div>)}</div>
+            </div>
+            <div className="mt-5 flex gap-2">{["Workday 71", "Greenhouse 80", "Ashby 84"].map((a) => <span key={a} className="rounded-md border bg-secondary px-2 py-1 font-mono text-xs">{a}</span>)}</div>
+            <blockquote className="mt-5 border-l-2 border-primary pl-3 text-sm text-muted-foreground">“Led the design system migration across 4 product teams, cutting UI defects 32%.”<span className="mt-1 block text-xs text-success">✓ Verified verbatim in resume</span></blockquote>
+          </div>
+        </div>
       </section>
 
+      <section className="mx-auto max-w-6xl px-6">
+        <p className="text-sm font-medium text-primary">Why standard ATS fails designers</p>
+        <h2 className="mt-2 max-w-2xl text-3xl">Three things no keyword scanner does</h2>
+        <div className="mt-10 grid gap-5 md:grid-cols-3">{pillars.map(({ icon: I, t, d }) =>
+          <div key={t} className="rounded-xl border bg-card p-6 shadow-sheet transition hover:-translate-y-0.5 hover:border-primary/40">
+            <div className="grid h-10 w-10 place-items-center rounded-lg bg-accent text-accent-foreground"><I className="h-5 w-5" /></div>
+            <h3 className="mt-4 text-lg">{t}</h3><p className="mt-2 text-sm text-muted-foreground">{d}</p></div>)}</div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-6">
+        <p className="text-sm font-medium text-primary">The Future Talent Index</p>
+        <h2 className="mt-2 text-3xl">Eight dimensions of design leadership</h2>
+        <div className="mt-10 grid gap-px overflow-hidden rounded-xl border bg-border sm:grid-cols-2 lg:grid-cols-4">{FTI_DIMENSIONS.map((d, i) =>
+          <div key={d.id} className="bg-card p-5"><p className="font-mono text-xs text-muted-foreground">0{i + 1} · {d.weight}%</p><p className="mt-2 font-medium">{d.name}</p></div>)}</div>
+      </section>
+
+      {levels.length > 0 && <section className="mx-auto max-w-6xl px-6">
+        <p className="text-sm font-medium text-primary">Seniority archetypes</p>
+        <h2 className="mt-2 text-3xl">The bar moves with the level</h2>
+        <div className="mt-8 inline-flex flex-wrap gap-1 rounded-lg border bg-secondary p-1">{levels.map((l, i) =>
+          <button key={i} onClick={() => setLvl(i)} className={`rounded-md px-3 py-1.5 text-sm transition ${i === lvl ? "bg-card shadow-sheet" : "text-muted-foreground hover:text-foreground"}`}>{l.label}</button>)}</div>
+        {cur && <div className="mt-5 rounded-xl border bg-card p-6 shadow-sheet"><p className="text-lg font-medium">{cur.label} · <span className="text-muted-foreground">{cur.focus}</span></p>
+          <p className="mt-1 text-sm text-muted-foreground">Evaluated with {cur.flexibility}/100 flexibility and weights tuned for this scope — so a Director isn't judged like an IC, and vice versa.</p></div>}
+      </section>}
+
+      <section className="mx-auto grid max-w-6xl gap-5 px-6 md:grid-cols-2">
+        <div className="rounded-xl border bg-card p-8 shadow-sheet"><Sparkles className="h-5 w-5 text-primary" /><h3 className="mt-4 text-2xl">For job seekers</h3>
+          <p className="mt-2 text-sm text-muted-foreground">Generic score or score against a job, ATS engine previews, and a fix-and-rescore workflow that exports to Word.</p>
+          <Button asChild className="mt-6"><Link to="/check" search={{ job: undefined }}>Check my resume</Link></Button></div>
+        <div className="rounded-xl border bg-card p-8 shadow-sheet"><ShieldCheck className="h-5 w-5 text-primary" /><h3 className="mt-4 text-2xl">For recruiters</h3>
+          <p className="mt-2 text-sm text-muted-foreground">Strict-to-flexible screening, essentials never waived, every score backed by a quote, decisions recorded for audit.</p>
+          <Button asChild variant="outline" className="mt-6"><Link to="/auth" search={{ mode: "signup", as: "recruiter" }}>Start evaluating</Link></Button></div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-6">
+        <div className="rounded-2xl bg-gradient-primary p-12 text-center text-primary-foreground shadow-glow">
+          <h2 className="text-3xl md:text-4xl">Audit your UX resume in 60 seconds</h2>
+          <p className="mx-auto mt-3 max-w-lg opacity-90">Free, explainable and grounded in your own words.</p>
+          <Button asChild size="lg" variant="secondary" className="mt-6"><Link to="/check" search={{ job: undefined }}>Start free audit <ArrowRight /></Link></Button>
+        </div>
+      </section>
     </div>
   );
 }
