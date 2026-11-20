@@ -10,7 +10,7 @@ import { q } from "@/lib/db";
 import { readResumeGuest } from "@/lib/evaluate.functions";
 import { evaluate, type Candidate, type Job } from "@/lib/scoring";
 import { resumeTips } from "@/lib/tips";
-import { loadGuestScan, saveGuestScan, type GuestScan } from "@/lib/guest-scan";
+import { clearGuestScan, saveGuestScan, type GuestScan } from "@/lib/guest-scan";
 import { ResumeInput } from "@/components/ResumeInput";
 import { ScoreDetails, ScoreHeader } from "@/components/ScoreReport";
 import { Card, StatusBadge } from "@/components/ui-bits";
@@ -44,7 +44,7 @@ function CheckPage() {
   const [busy, setBusy] = useState(false); const [mode, setMode] = useState<"profile" | "role">("profile"); const [result, setResult] = useState<GuestScan | null>(null);
   const read = useServerFn(readResumeGuest);
   useEffect(() => { if (picked) { setMode("role"); setTitle(picked.job.title); setJd(picked.job.description); } }, [picked]);
-  useEffect(() => { const g = loadGuestScan(); if (g && !jobParam) { setResult(g); setTitle(g.jobTitle); setJd(g.jobDescription); setResume(g.resume); } }, [jobParam]);
+  useEffect(() => { clearGuestScan(); }, []);
 
   const run = async () => {
     setBusy(true);
@@ -63,7 +63,7 @@ function CheckPage() {
     const signup = { mode: "signup" as const, as: "candidate" as const, redirect: "/candidate" };
     if (!result.jobDescription.trim()) return (
       <div className="space-y-6">
-        <button onClick={() => setResult(null)} className="text-sm text-muted-foreground">← Check again</button>
+        <button onClick={() => { clearGuestScan(); setResult(null); setResume(""); }} className="text-sm text-muted-foreground">← Check again</button>
         <FtiReport c={cand} />
         <ResumeFixer job={job} cand={cand} resume={result.resume} />
         <Card className="flex flex-wrap items-center justify-between gap-4 border-primary">
@@ -74,7 +74,7 @@ function CheckPage() {
     );
     return (
       <div className="space-y-6">
-        <button onClick={() => setResult(null)} className="text-sm text-muted-foreground">← Check another role</button>
+        <button onClick={() => { clearGuestScan(); setResult(null); setResume(""); }} className="text-sm text-muted-foreground">← Check another role</button>
         <Card className="flex flex-wrap items-center justify-between gap-6">
           <div><p className="text-sm text-muted-foreground">Your fit for</p><h1 className="font-display text-3xl">{result.jobTitle}</h1>
             <div className="mt-2"><StatusBadge status={ev.status} /></div></div>
