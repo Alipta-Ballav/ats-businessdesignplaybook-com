@@ -175,9 +175,9 @@ function Landing() {
 
       <section className="mx-auto max-w-6xl px-6">
         <p className="text-sm font-medium text-primary">The Future Talent Index</p>
-        <h2 className="mt-2 text-3xl">Eight dimensions of design leadership</h2>
+        <h2 className="mt-2 text-3xl">Eight dimensions of Product & UX design</h2>
         <div className="mt-10 grid gap-px overflow-hidden rounded-xl border bg-border sm:grid-cols-2 lg:grid-cols-4">{FTI_DIMENSIONS.map((d, i) =>
-          <div key={d.id} className="bg-card p-5"><p className="font-mono text-xs text-muted-foreground">0{i + 1} · {d.weight}%</p><p className="mt-2 font-medium">{d.name}</p></div>)}</div>
+          <div key={d.id} className="bg-card p-5"><p className="font-mono text-xs text-muted-foreground">0{i + 1} · {d.weight}%</p><p className="mt-2 font-medium">{d.name}</p><p className="mt-2 text-xs leading-relaxed text-muted-foreground">{d.skills.slice(0, 4).join(" · ")} +{d.skills.length - 4} more</p></div>)}</div>
       </section>
 
       {levels.length > 0 && <section className="mx-auto max-w-6xl px-6">

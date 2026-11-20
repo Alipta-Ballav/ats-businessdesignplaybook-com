@@ -1,7 +1,7 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { NoObjectGeneratedError, Output, streamText } from "ai";
 import { z } from "zod";
-import { COMPETENCIES, type Requirement } from "../scoring";
+import { COMPETENCIES, FTI_DIMENSIONS, type Requirement } from "../scoring";
 import { createLovableAiGatewayRunIdFetch } from "./run-id.server";
 
 const schema = z.object({
@@ -17,6 +17,7 @@ export type RawExtraction = z.infer<typeof schema>;
 
 const INSTRUCTIONS = `You extract hiring evidence from a resume. You never score or rank — you only report evidence.
 Competencies (id: meaning): ${COMPETENCIES.map((c) => `${c.id}: ${c.name}`).join("; ")}.
+This tool evaluates Product & UX designers only. Map evidence using these 8 design dimensions and their sub-skills: ${FTI_DIMENSIONS.map((d) => `${d.name} [competencies: ${d.comps.join(", ")}] = ${d.skills.join(", ")}`).join(" | ")}.
 For each competency with evidence, return ONE entry: an exact verbatim quote copied character-for-character from the resume (8-200 chars), the resume section as source, proficiency 1-5, and evidence level:
 1 Claimed (listed/stated only), 2 Applied (used in work), 3 Demonstrated (concrete example/project), 4 Impact (measurable outcome), 5 Transfer (applied successfully in a different domain).
 Set transferable=true when the evidence comes from an adjacent role/domain rather than direct experience for this job. Omit competencies with no evidence — never invent.

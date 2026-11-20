@@ -2,9 +2,10 @@ import { futureTalentIndex, type Candidate } from "@/lib/scoring";
 import { Card, ScoreRing } from "@/components/ui-bits";
 
 const GROUPS: { name: string; ids: string[] }[] = [
-  { name: "Craft & architecture", ids: ["domain", "systems", "innovation"] },
-  { name: "Strategy & leadership", ids: ["business", "human", "critical"] },
-  { name: "Modern frontier", ids: ["ai", "learning"] },
+  { name: "Craft & research", ids: ["craft", "research"] },
+  { name: "Product & systems", ids: ["product", "systems"] },
+  { name: "Thinking & leadership", ids: ["critical", "leadership"] },
+  { name: "Frontier & growth", ids: ["ai", "learning"] },
 ];
 
 const band = (s: number) =>
@@ -28,7 +29,7 @@ export function FtiReport({ c }: { c: Pick<Candidate, "competencies"> }) {
         <div className="flex flex-wrap items-center justify-between gap-6 p-6">
           <div className="max-w-xl space-y-2">
             <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Future Talent Index</p>
-            <h2 className="font-display text-2xl font-semibold tracking-tight">Your profile across 8 dimensions</h2>
+            <h2 className="font-display text-2xl font-semibold tracking-tight">Your Product & UX design profile across 8 dimensions</h2>
             <p className="text-sm text-muted-foreground">No job needed. Every score is backed by a line quoted from your resume.</p>
             <span className="inline-flex rounded-full border px-3 py-1 text-xs font-medium">{tier(total)}</span>
           </div>
@@ -52,13 +53,14 @@ export function FtiReport({ c }: { c: Pick<Candidate, "competencies"> }) {
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="font-medium leading-tight">{d.name}</p>
-                      <p className="mt-0.5 text-xs text-muted-foreground">Weight {d.weight}%</p>
+                      <p className="mt-0.5 text-xs text-muted-foreground">Weight {d.weight}% · {d.skills.length} skills checked</p>
                     </div>
                     <div className="text-right">
                       <p className="font-mono text-2xl font-semibold leading-none">{d.score}</p>
                       <span className={`mt-1 inline-block rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider ${b.cls}`}>{b.label}</span>
                     </div>
                   </div>
+                  <p className="text-[11px] leading-relaxed text-muted-foreground">{d.skills.join(" · ")}</p>
                   <div className="h-1.5 overflow-hidden rounded-full bg-muted"><div className={`h-full rounded-full ${b.bar}`} style={{ width: `${d.score}%` }} /></div>
                   {d.quotes[0] ? (
                     <blockquote className="border-l-2 border-primary/50 pl-3 text-xs italic text-muted-foreground">
