@@ -1,5 +1,5 @@
 import { JobDiagnostics } from "@/components/JobDiagnostics";
-import { ResumeWorkshop } from "@/components/ResumeWorkshop";
+import { ResumeFixer } from "@/components/ResumeFixer";
 import { JobUrlImport } from "@/components/JobUrlImport";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -65,7 +65,7 @@ function CheckPage() {
       <div className="space-y-6">
         <button onClick={() => setResult(null)} className="text-sm text-muted-foreground">← Check again</button>
         <FtiReport c={cand} />
-        <ResumeWorkshop resume={result.resume} />
+        <ResumeFixer job={job} cand={cand} resume={result.resume} />
         <Card className="flex flex-wrap items-center justify-between gap-4 border-primary">
           <div><p className="font-display text-lg">Now test your fit for a specific role</p><p className="text-sm text-muted-foreground">Paste a job link or description to see must-haves and ATS scores.</p></div>
           <button onClick={() => { setResult(null); setMode("role"); }} className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">Check against a job</button>
@@ -96,7 +96,7 @@ function CheckPage() {
               <li key={i} className="rounded border p-3 text-sm"><span className="font-medium">{t.title}</span><p className="mt-1 text-muted-foreground">{t.detail}</p></li>))}</ul>)}
         </Card>
         <JobDiagnostics title={result.jobTitle} description={result.jobDescription} />
-        <ResumeWorkshop resume={result.resume} />
+        <ResumeFixer job={job} cand={cand} resume={result.resume} />
         <FtiReport c={cand} />
         <AtsTarget job={job} c={cand} resume={result.resume ?? ""} />
         <AtsSimulator job={job} c={cand} />
@@ -109,7 +109,7 @@ function CheckPage() {
       <div><p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Free · no sign-up needed</p>
         <h1 className="mt-2 font-display text-4xl">Check your resume against a role</h1></div>
       <div className="flex flex-wrap gap-2">
-        {([["profile", "Audit my profile", "Future Talent Index · resume only"], ["role", "Test fit for a role", "Resume + job description · ATS match"]] as const).map(([m, t, d]) => (
+        {([["profile", "Generic resume score", "Resume only · how strong is it overall"], ["role", "Score against a job", "Resume + job description · ATS match"]] as const).map(([m, t, d]) => (
           <button key={m} onClick={() => setMode(m)} className={`rounded-md border px-4 py-3 text-left ${mode === m ? "border-primary bg-accent text-accent-foreground" : ""}`}>
             <span className="block text-sm font-medium">{t}</span><span className="block text-xs text-muted-foreground">{d}</span></button>))}
       </div>

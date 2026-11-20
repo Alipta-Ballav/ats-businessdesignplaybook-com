@@ -36,3 +36,4 @@ use the editor.
 - Job diagnostics and bullet checks use transparent client-safe heuristics in diagnostics.ts, quote their inputs, and never detect AI authorship or assert employer facts — avoids unsupported diagnostic claims.
 - Bullet revisions compose only original text and user-supplied facts, and never mutate stored resumes automatically — preserves factual ownership and original evidence.
 - Retired marketplace URLs redirect to the ATS checker; existing database records are preserved — removes public discovery without destructive schema changes.
+- AI rescoring in ResumeFixer re-reads the edited draft via readResumeGuest; scores stay deterministic and the stored resume is never overwritten — candidate exports the revision.

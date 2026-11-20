@@ -1,5 +1,5 @@
 import { JobDiagnostics } from "@/components/JobDiagnostics";
-import { ResumeWorkshop } from "@/components/ResumeWorkshop";
+import { ResumeFixer } from "@/components/ResumeFixer";
 import { FtiReport } from "@/components/FtiReport";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -24,7 +24,7 @@ function ScanResult() {
   const { job, cand } = scanToPair(s);
   const ev = evaluate(job, cand);
   const tips = resumeTips(job, cand);
-  if (!s.job_description.trim()) return <div className="space-y-6"><Link to="/candidate" className="text-sm text-muted-foreground">← New check</Link><FtiReport c={cand} /><ResumeWorkshop resume={s.resume_text ?? ""} /></div>;
+  if (!s.job_description.trim()) return <div className="space-y-6"><Link to="/candidate" className="text-sm text-muted-foreground">← New check</Link><FtiReport c={cand} /><ResumeFixer job={job} cand={cand} resume={s.resume_text ?? ""} /></div>;
   return (
     <div className="space-y-6">
       <Link to="/candidate" className="text-sm text-muted-foreground">← New check</Link>
@@ -45,7 +45,7 @@ function ScanResult() {
             </li>))}</ul>)}
       </Card>
       <JobDiagnostics title={s.job_title} description={s.job_description} />
-      <ResumeWorkshop resume={s.resume_text ?? ""} />
+      <ResumeFixer job={job} cand={cand} resume={s.resume_text ?? ""} />
       <FtiReport c={cand} />
       <AtsTarget job={job} c={cand} resume={s.resume_text ?? ""} />
         <AtsSimulator job={job} c={cand} />

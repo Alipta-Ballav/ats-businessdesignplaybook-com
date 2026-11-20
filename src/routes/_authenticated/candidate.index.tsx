@@ -57,8 +57,8 @@ function CandidateHome() {
       <div><p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Know your score before you apply</p>
         <h1 className="mt-2 font-display text-4xl">Check your resume against a role</h1></div>
       <div className="flex flex-wrap gap-2" role="group" aria-label="Resume check mode">
-        <Button variant={mode === "profile" ? "default" : "outline"} onClick={() => setMode("profile")}>Audit my profile</Button>
-        <Button variant={mode === "role" ? "default" : "outline"} onClick={() => setMode("role")}>Test fit for a role</Button>
+        <Button variant={mode === "profile" ? "default" : "outline"} onClick={() => setMode("profile")}>Generic resume score</Button>
+        <Button variant={mode === "role" ? "default" : "outline"} onClick={() => setMode("role")}>Score against a job</Button>
       </div>
       <div className={mode === "role" ? "grid gap-6 lg:grid-cols-2" : "max-w-2xl"}>
         {mode === "role" && <Card className="space-y-3">
