@@ -1,4 +1,4 @@
-import { Briefcase, AlertTriangle, CheckCircle2, Circle } from "lucide-react";
+import { ArrowUpRight, Briefcase, AlertTriangle, CheckCircle2, Circle } from "lucide-react";
 import { Card } from "@/components/ui-bits";
 import { playbookAudit } from "@/lib/playbook";
 
@@ -23,5 +23,14 @@ export function BusinessPlaybook({ resume }: { resume: string }) {
       <ul className="mt-2 space-y-1">{a.vanity.map((v) => <li key={v} className="text-xs italic text-muted-foreground">“{v}”</li>)}</ul>
       <p className="mt-2 text-xs">Rewrite each with a formula above: what changed, for whom, and by how much.</p>
     </div>}
+    <a href="https://businessdesignplaybook.com/" target="_blank" rel="noopener noreferrer"
+      className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-primary/40 bg-primary/5 p-4 transition-colors hover:bg-primary/10">
+      <div className="space-y-1">
+        <p className="font-mono text-[10px] uppercase tracking-widest text-primary">The course behind this audit · by The Finishing School</p>
+        <p className="font-medium">Business Design Playbook</p>
+        <p className="max-w-xl text-xs text-muted-foreground">Learn pricing, cash and growth so you can present design impact with numbers. 8 modules, under 2 hours. Module 01 is free, full course ₹999.</p>
+      </div>
+      <span className="inline-flex items-center gap-1 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">Start Module 01 free <ArrowUpRight className="h-4 w-4" /></span>
+    </a>
   </Card>;
 }
