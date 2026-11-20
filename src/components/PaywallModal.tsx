@@ -40,13 +40,13 @@ export function PaywallModal({ open, onOpenChange, reason }: { open: boolean; on
         if (settled) return;
         try {
           const r = await confirm({ data: { paymentId: o.paymentId } });
-          if (r.status === "completed") { settled = true; notifyProChanged(); toast.success("Payment received. Your next scan is unlocked."); onOpenChange(false); }
+          if (r.status === "completed") { settled = true; notifyProChanged(); toast.success("Payment received. Everything is unlocked."); onOpenChange(false); }
         } catch (e) { toast.error((e as Error).message); }
         setBusy(false);
       };
       const rzp = new window.Razorpay({
         key: o.keyId, order_id: o.rzpOrderId, amount: o.amount, currency: o.currency,
-        name: "UX Design ATS Checker", description: "One more resume scan",
+        name: "UX Design ATS Checker", description: "Unlock all features",
         prefill: { email: s.session?.user.email ?? "" },
         handler: () => void finish(), modal: { ondismiss: () => void finish() },
       });

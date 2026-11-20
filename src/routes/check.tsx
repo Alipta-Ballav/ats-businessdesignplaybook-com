@@ -19,8 +19,7 @@ import { FtiReport } from "@/components/FtiReport";
 import { ReportTabs } from "@/components/ReportTabs";
 import { BusinessPlaybook } from "@/components/BusinessPlaybook";
 import { PaywallModal } from "@/components/PaywallModal";
-import { usePro, isAdmin, setReportUnlocked } from "@/lib/pro";
-import { useScanCredit } from "@/lib/payments.functions";
+import { usePro } from "@/lib/pro";
 import { FREE_SCANS, canScan, countScan, scansUsed } from "@/lib/plans";
 
 export const Route = createFileRoute("/check")({
@@ -47,7 +46,7 @@ function CheckPage() {
   const { data: picked } = useQuery({ ...q.job(jobParam ?? ""), enabled: !!jobParam });
   const [title, setTitle] = useState(""); const [jd, setJd] = useState(""); const [resume, setResume] = useState("");
   const [busy, setBusy] = useState(false); const [mode, setMode] = useState<"profile" | "role">("profile"); const [result, setResult] = useState<GuestScan | null>(null);
-  const read = useServerFn(readResumeGuest); const spendCredit = useServerFn(useScanCredit);
+  const read = useServerFn(readResumeGuest);
   const pro = usePro(); const [wall, setWall] = useState(false); const [used, setUsed] = useState(0);
   useEffect(() => { setUsed(scansUsed()); }, []);
   useEffect(() => { if (picked) { setMode("role"); setTitle(picked.job.title); setJd(picked.job.description); } }, [picked]);
@@ -57,15 +56,6 @@ function CheckPage() {
     if (!canScan(scansUsed(), pro)) { window.__lovableEvents?.track?.("project.paywall_shown", { trigger: "scan" }); setWall(true); return; }
     setBusy(true);
     try {
-      if (scansUsed() >= FREE_SCANS) {
-        setReportUnlocked(false);
-        const admin = await isAdmin();
-        if (!admin) {
-          const r = await spendCredit().catch(() => ({ ok: false }));
-          if (!r.ok) { setBusy(false); window.__lovableEvents?.track?.("project.paywall_shown", { trigger: "scan" }); setWall(true); return; }
-          setReportUnlocked(true);
-        }
-      }
       const prof = mode === "profile";
       const jt = prof ? "Future Talent Index" : title, jdesc = prof ? "" : jd;
       window.__lovableEvents?.track?.("project.scan_started", { mode: prof ? "generic" : "job_target" });
@@ -145,8 +135,8 @@ function CheckPage() {
         <Card><ResumeInput value={resume} onChange={setResume} /></Card>
       </div>
       <button disabled={busy || resume.trim().length < 80 || (mode === "role" && (!title.trim() || jd.trim().length < 40))} onClick={run} className="rounded-md bg-primary px-5 py-2 text-sm font-medium text-primary-foreground disabled:opacity-40">{busy ? "Reading your resume… (about 30s)" : "Get my score"}</button>
-      {!pro && <p className="text-xs text-muted-foreground">{Math.max(0, FREE_SCANS - used)} of {FREE_SCANS} free scans left · then ₹49 per scan</p>}
-      <PaywallModal open={wall} onOpenChange={setWall} reason={`You have used your ${FREE_SCANS} free scans. Unlock another scan for ₹49.`} />
+      {!pro && <p className="text-xs text-muted-foreground">{Math.max(0, FREE_SCANS - used)} of {FREE_SCANS} free scan left · then ₹49 once unlocks everything</p>}
+      <PaywallModal open={wall} onOpenChange={setWall} reason={"You have used your free scan. Pay ₹49 once to unlock unlimited scans, all fixes and the Word download."} />
     </div>
   );
 }

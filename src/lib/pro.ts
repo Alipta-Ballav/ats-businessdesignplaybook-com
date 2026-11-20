@@ -19,7 +19,7 @@ export async function creditsLeft(): Promise<number> {
   return data?.credits ?? 0;
 }
 
-/** Pro entitlement: admin role, unspent paid credits, or a report unlocked by a paid scan. */
+/** Pro entitlement: admin role, or any completed ₹49 payment (lifetime unlock). */
 export function usePro(): boolean {
   const [pro, setPro] = useState(false);
   useEffect(() => {
@@ -31,8 +31,8 @@ export function usePro(): boolean {
       if (!uid) { if (live) setPro(false); return; }
       const { data } = await supabase.from("user_roles").select("role").eq("user_id", uid).eq("role", "admin").maybeSingle();
       if (data) { if (live) setPro(true); return; }
-      const c = await creditsLeft();
-      if (live) setPro(c > 0);
+      const { data: paid } = await supabase.from("payments").select("id").eq("user_id", uid).eq("status", "completed").limit(1);
+      if (live) setPro(!!paid?.length);
     };
     void check();
     const on = () => { void check(); };
