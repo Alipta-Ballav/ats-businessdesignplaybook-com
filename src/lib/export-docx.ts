@@ -1,7 +1,7 @@
 import { AlignmentType, BorderStyle, Document, LevelFormat, Packer, Paragraph, TextRun } from "docx";
 
-const BULLET = /^\s*([-•*▪●–]|\d+[.)])\s+/;
-const isHeading = (l: string) => {
+export const BULLET = /^\s*([-•*▪●–]|\d+[.)])\s+/;
+export const isHeading = (l: string) => {
   const t = l.trim();
   if (!t || t.length > 40 || BULLET.test(t) || /[.,;]$/.test(t)) return false;
   return t === t.toUpperCase() && /[A-Z]/.test(t) || /^(summary|profile|experience|work experience|education|skills|projects|certifications|awards|additional evidence|publications|leadership|tools)$/i.test(t);

@@ -1,5 +1,5 @@
 import { JobDiagnostics } from "@/components/JobDiagnostics";
-import { ResumeFixer } from "@/components/ResumeFixer";
+import { LiveEditor } from "@/components/LiveEditor";
 import { FtiReport } from "@/components/FtiReport";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -26,7 +26,7 @@ function ScanResult() {
   const { job, cand } = scanToPair(s);
   const ev = evaluate(job, cand);
   const tips = resumeTips(job, cand);
-  if (!s.job_description.trim()) return <div className="space-y-6"><Link to="/candidate" className="text-sm text-muted-foreground">← New check</Link><FtiReport c={cand} /><BusinessPlaybook /><ResumeFixer job={job} cand={cand} resume={s.resume_text ?? ""} /></div>;
+  if (!s.job_description.trim()) return <div className="space-y-6"><Link to="/candidate" className="text-sm text-muted-foreground">← New check</Link><FtiReport c={cand} /><BusinessPlaybook /><LiveEditor job={job} cand={cand} resume={s.resume_text ?? ""} /></div>;
   return (
     <div className="space-y-6">
       <Link to="/candidate" className="text-sm text-muted-foreground">← New check</Link>
@@ -39,7 +39,7 @@ function ScanResult() {
       <BusinessPlaybook />
       <ReportTabs tabs={[
         { id: "fix", label: "Fix & rescore", content: <>
-          <ResumeFixer job={job} cand={cand} resume={s.resume_text ?? ""} />
+          <LiveEditor job={job} cand={cand} resume={s.resume_text ?? ""} />
           <Card>
             <h2 className="mb-1 font-display text-lg">How to improve your resume</h2>
             <p className="mb-4 text-xs text-muted-foreground">Ordered by impact.</p>

@@ -1,5 +1,5 @@
 import { JobDiagnostics } from "@/components/JobDiagnostics";
-import { ResumeFixer } from "@/components/ResumeFixer";
+import { LiveEditor } from "@/components/LiveEditor";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -74,7 +74,7 @@ function CheckPage() {
         <button onClick={() => { clearGuestScan(); setResult(null); setResume(""); }} className="text-sm text-muted-foreground">← Check again</button>
         <FtiReport c={cand} />
         <BusinessPlaybook />
-        <ResumeFixer job={job} cand={cand} resume={result.resume} />
+        <LiveEditor job={job} cand={cand} resume={result.resume} />
         <Card className="flex flex-wrap items-center justify-between gap-4 border-primary">
           <div><p className="font-display text-lg">Now test your fit for a specific role</p><p className="text-sm text-muted-foreground">Paste a job description to see must-haves and ATS scores.</p></div>
           <button onClick={() => { setResult(null); setMode("role"); }} className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">Check against a job</button>
@@ -100,7 +100,7 @@ function CheckPage() {
         <BusinessPlaybook />
         <ReportTabs tabs={[
           { id: "fix", label: "Fix & rescore", content: <>
-            <ResumeFixer job={job} cand={cand} resume={result.resume} />
+            <LiveEditor job={job} cand={cand} resume={result.resume} />
             <Card>
               <h2 className="mb-1 font-display text-lg">What to improve</h2>
               <p className="mb-4 text-xs text-muted-foreground">Ordered by impact.</p>

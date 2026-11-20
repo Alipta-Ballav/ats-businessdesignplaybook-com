@@ -38,3 +38,4 @@ use the editor.
 - Retired marketplace URLs redirect to the ATS checker; existing database records are preserved — removes public discovery without destructive schema changes.
 - AI rescoring in ResumeFixer re-reads the edited draft via readResumeGuest; scores stay deterministic and the stored resume is never overwritten — candidate exports the revision.
 - Razorpay payments: server creates orders from PLANS and only confirmPaymentRow (razorpay.server.ts) marks payments completed by re-reading the order; webhook never trusts its body — the key secret stays in the gateway, so this read is the proof of payment.
+- AI bullet rewrites (rewrite.functions.ts, Pro-only, server-verified) must pass newFacts() in editor.ts before applying — AI may rephrase but never add facts.
