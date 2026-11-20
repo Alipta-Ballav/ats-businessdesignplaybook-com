@@ -22,6 +22,48 @@ const pillars = [
   { icon: Wand2, t: "Fix and rescore, line by line", d: "Turn vague bullets into proven impact with your own true details, then watch the score move." },
 ];
 
+const compare = [
+  ["Audience", "Every job under the sun", "Built only for UX, product & design leaders"],
+  ["Scoring", "Black-box AI score", "Every point tied to a verbatim quote from your resume"],
+  ["ATS engines", "One generic checklist", "Workday, Greenhouse & Ashby simulated separately"],
+  ["Fixes", "\"Add more metrics\"", "Rewrite a bullet with your real numbers, rescore live"],
+  ["Export", "Broken layouts", "ATS-safe single-column Word file"],
+  ["Price", "$29–49 / month", "1 free scan, then ₹49 once — for life"],
+];
+
+const examples = [
+  { before: "Designed seamless wireframes and conducted user testing for the checkout flow.", after: "Redesigned checkout from 5 steps to 2 after testing with 24 users, lifting conversion 18% (₹2.1Cr annualised).", from: 54, to: 79, tag: "Business impact" },
+  { before: "Responsible for the design system and helped teams stay consistent.", after: "Led design system adoption across 4 product squads, cutting UI defects 32% and shipping features 2 weeks faster.", from: 61, to: 84, tag: "Systems thinking" },
+  { before: "Collaborated with stakeholders to deliver great user experiences.", after: "Partnered with PM and Eng leads to reprioritise the roadmap on research insights, reducing support tickets 40%.", from: 49, to: 76, tag: "Influence" },
+];
+
+function BeforeAfter() {
+  const [i, setI] = useState(0);
+  const [fixed, setFixed] = useState(false);
+  const ex = examples[i]!;
+  return (
+    <section className="mx-auto max-w-6xl px-6">
+      <p className="text-sm font-medium text-primary">See the difference</p>
+      <h2 className="mt-2 max-w-2xl text-3xl">From craft-speak to commercial impact</h2>
+      <div className="mt-6 inline-flex flex-wrap gap-1 rounded-lg border bg-secondary p-1">{examples.map((e, k) =>
+        <button key={k} onClick={() => { setI(k); setFixed(false); }} className={`rounded-md px-3 py-1.5 text-sm transition ${k === i ? "bg-card shadow-sheet" : "text-muted-foreground hover:text-foreground"}`}>{e.tag}</button>)}</div>
+      <div className="mt-5 grid gap-5 md:grid-cols-2">
+        <div className="rounded-xl border bg-card p-6 shadow-sheet">
+          <div className="flex items-center justify-between"><span className="text-xs font-medium uppercase tracking-wide text-destructive">Before · vanity bullet</span><span className="font-mono text-sm text-muted-foreground">{ex.from}</span></div>
+          <p className="mt-4 text-muted-foreground line-through decoration-destructive/40">{ex.before}</p>
+          <p className="mt-4 text-xs text-muted-foreground">Flagged: describes activity, not outcome. A recruiter reads this as junior.</p>
+        </div>
+        <div className={`rounded-xl border p-6 shadow-sheet transition ${fixed ? "border-primary/50 bg-card" : "bg-secondary"}`}>
+          <div className="flex items-center justify-between"><span className="text-xs font-medium uppercase tracking-wide text-success">After · evidence bullet</span><span className="font-mono text-sm">{fixed ? <span className="text-success">{ex.to} (+{ex.to - ex.from})</span> : "—"}</span></div>
+          {fixed ? <p className="mt-4">{ex.after}</p> : <p className="mt-4 text-sm text-muted-foreground">Add your real numbers, we rewrite the line and rescore it instantly.</p>}
+          <Button size="sm" className="mt-5" variant={fixed ? "outline" : "default"} onClick={() => setFixed(!fixed)}>{fixed ? "Show original" : <>Apply & rescore <Wand2 /></>}</Button>
+        </div>
+      </div>
+      <p className="mt-3 text-xs text-muted-foreground">Illustrative example. In the tool, rewrites only use facts you supply.</p>
+    </section>
+  );
+}
+
 function Landing() {
   const [lvl, setLvl] = useState(0);
   const levels = Object.entries(DESIGN_LEVELS).map(([label, v]) => ({ label, ...v }));
@@ -35,13 +77,13 @@ function Landing() {
               <span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" /><span className="relative inline-flex h-2 w-2 rounded-full bg-primary" /></span>
               The ATS checker built only for the UX design community
             </span>
-            <h1 className="text-5xl leading-[1.05] md:text-6xl">The ATS checker for <span className="text-gradient">UX & product designers.</span></h1>
-            <p className="max-w-xl text-lg text-muted-foreground">Made for UX, product and design leadership roles — from Senior to Director. Not a generic keyword scanner: an 8-dimension Future Talent Index, ATS engine calibration and quote-verified scoring — for job seekers and the people hiring them.</p>
+            <h1 className="text-5xl leading-[1.05] md:text-6xl">Stop being graded like a sales rep. <span className="text-gradient">Get read like a Design Director would.</span></h1>
+            <p className="max-w-xl text-lg text-muted-foreground">8 years of solid UX, still auto-rejected before a human sees your portfolio? Generic scanners count "Figma" mentions. We score systems thinking, cross-functional influence and business impact. Made for UX, product and design leadership roles — from Senior to Director. Not a generic keyword scanner: an 8-dimension Future Talent Index, ATS engine calibration and quote-verified scoring — for job seekers and the people hiring them.</p>
             <div className="flex flex-wrap items-center gap-3">
               <Button asChild size="lg" className="bg-gradient-primary shadow-glow"><Link to="/check" search={{ job: undefined }}>Run free resume audit <ArrowRight /></Link></Button>
               <Button asChild size="lg" variant="outline"><Link to="/check" search={{ job: undefined }}>Score against a job</Link></Button>
             </div>
-            <p className="flex items-center gap-2 text-xs text-muted-foreground"><CheckCircle2 className="h-4 w-4 text-success" />No signup required · Results in about a minute</p>
+            <p className="flex items-center gap-2 text-xs text-muted-foreground"><CheckCircle2 className="h-4 w-4 text-success" />1 free scan, no signup · then ₹49 once unlocks everything</p>
           </div>
           <div className="rounded-2xl border bg-card p-6 shadow-glow">
             <div className="flex items-center justify-between"><p className="text-sm font-medium">Future Talent Index</p><span className="rounded-full bg-success/15 px-2 py-0.5 text-xs text-success">Strong alignment</span></div>
@@ -66,6 +108,20 @@ function Landing() {
           <div key={t} className="rounded-xl border bg-card p-6 shadow-sheet transition hover:-translate-y-0.5 hover:border-primary/40">
             <div className="grid h-10 w-10 place-items-center rounded-lg bg-accent text-accent-foreground"><I className="h-5 w-5" /></div>
             <h3 className="mt-4 text-lg">{t}</h3><p className="mt-2 text-sm text-muted-foreground">{d}</p></div>)}</div>
+      </section>
+
+
+      <BeforeAfter />
+
+      <section className="mx-auto max-w-6xl px-6">
+        <p className="text-sm font-medium text-primary">How we compare</p>
+        <h2 className="mt-2 text-3xl">Generic scanners vs. FutureTalent</h2>
+        <div className="mt-8 overflow-x-auto rounded-xl border bg-card shadow-sheet">
+          <table className="w-full text-sm">
+            <thead className="bg-secondary text-left"><tr><th className="p-4 font-medium"></th><th className="p-4 font-medium text-muted-foreground">Generic tools</th><th className="p-4 font-medium text-primary">FutureTalent</th></tr></thead>
+            <tbody>{compare.map(([k, a, b]) => <tr key={k} className="border-t"><td className="p-4 font-medium">{k}</td><td className="p-4 text-muted-foreground">{a}</td><td className="p-4"><CheckCircle2 className="mr-2 inline h-4 w-4 text-success" />{b}</td></tr>)}</tbody>
+          </table>
+        </div>
       </section>
 
       <section className="mx-auto max-w-6xl px-6">
