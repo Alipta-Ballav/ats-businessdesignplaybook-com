@@ -1,3 +1,4 @@
+import { JobDiagnostics } from "@/components/JobDiagnostics";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -12,7 +13,7 @@ import { ResumeInput } from "@/components/ResumeInput";
 import { Card, StatusBadge } from "@/components/ui-bits";
 
 export const Route = createFileRoute("/_authenticated/recruiter/jobs/$jobId")({
-  head: () => ({ meta: [{ title: "Applicant comparison — FutureTalent AI" }, { name: "description", content: "Compare applicants on job readiness, future readiness and human potential." }, { property: "og:title", content: "Applicant comparison — FutureTalent AI" }, { property: "og:description", content: "Rank and compare applicants with explainable evidence." }] }),
+  head: () => ({ meta: [{ title: "Applicant comparison — FutureTalent AI" }, { name: "description", content: "Compare applicants on job readiness, future readiness and human potential." }, { property: "og:title", content: "Applicant comparison — FutureTalent AI" }, { property: "og:description", content: "Rank and compare applicants with explainable evidence." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: JobPage,
 });
 type Rank = "composite" | "JR" | "FR";
@@ -59,7 +60,7 @@ function JobPage() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div><Link to="/recruiter" className="text-sm text-muted-foreground">← Your roles</Link>
           <h1 className="font-display text-3xl">{job.title}</h1>
-          <p className="text-sm text-muted-foreground">{job.func} · {job.seniority} · public link: <Link to="/roles/$jobId" params={{ jobId }} className="underline">candidate page</Link></p></div>
+          <p className="text-sm text-muted-foreground">{job.func} · {job.seniority}</p></div>
         <button onClick={() => setAdding(!adding)} className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">+ Add applicant</button>
       </div>
       {adding && (
@@ -69,6 +70,7 @@ function JobPage() {
           <p className="text-xs text-muted-foreground">AI only finds evidence quotes in the resume. All scores are calculated by fixed, transparent rules.</p>
         </Card>
       )}
+      <JobDiagnostics title={job.title} description={job.description} />
       <div className="grid gap-6 lg:grid-cols-[1fr_2fr]">
         <Card>
           <h2 className="mb-4 font-display text-lg">Evaluation policy</h2>
@@ -85,7 +87,7 @@ function JobPage() {
             <div className="flex gap-1 text-xs">{([["composite", "Best overall"], ["JR", "Best current fit"], ["FR", "Best future-ready"]] as [Rank, string][]).map(([k, l]) => (
               <button key={k} onClick={() => setRank(k)} className={`rounded px-2 py-1 ${rank === k ? "bg-primary text-primary-foreground" : "border"}`}>{l}</button>))}</div>
           </div>
-          {rows.length === 0 ? <p className="text-sm text-muted-foreground">No applicants yet. Add a resume, or share the candidate page so people can apply.</p> : (
+          {rows.length === 0 ? <p className="text-sm text-muted-foreground">No candidates evaluated yet. Add a resume to start screening.</p> : (
             <table className="w-full text-sm">
               <thead><tr className="text-left text-xs text-muted-foreground"><th className="pb-2">Applicant</th><th>Job</th><th>Future</th><th>Potential</th><th>AI</th><th>Learning</th><th>Coverage</th><th>Must-haves</th><th>Overall</th></tr></thead>
               <tbody>{rows.map(({ c, ev }) => (

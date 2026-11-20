@@ -3,9 +3,12 @@
 - [x] Accounts with candidate / recruiter personas (email, Google, Lovable)
 - [x] Database: roles, applicants, candidate checks, applications
 - [x] AI reading of job descriptions and pasted resumes
-- [x] Candidate: resume score + fix-it tips + apply to posted roles
-- [ ] PDF / Word resume upload (paste text for now)
-- [ ] Opt-in talent passport (recruiters discover high-scoring candidates)
-- [ ] Practical assessments (Build 7)
+- [x] Candidate: resume score + fix-it tips
+- [x] PDF / Word resume upload
+- [x] Phase 1: remove marketplace UI and application actions
+- [x] Phase 1: evidence-linked job-description maturity and scope diagnostics
+- [x] Phase 1: factual bullet improvement workspace for candidates and recruiters
+- [x] Phase 1: test diagnostic rules and verify candidate/recruiter flows
+- Deferred: Phase 2 simulated reviewer deliberation; Phase 3 interview rehearsal and portfolio evidence
 - [x] Design-only focus: design skills, design levels, reviewer simulator
-- [ ] Pro checkout for custom ATS tuning (locked preview for now, per user)
+- Deferred: Pro checkout for custom ATS tuning (locked preview for now, per user)

@@ -33,3 +33,6 @@ use the editor.
 - AI (src/lib/ai/extract.server.ts) only extracts evidence; src/lib/evidence.ts drops any quote not found verbatim in the resume — keeps scores grounded and reproducible.
 - Personas live in public.user_roles (candidate | recruiter), set at signup via metadata trigger or once via choose_role RPC — roles never stored on profiles.
 - App data is read/written from the browser client under RLS (src/lib/db.ts); only resume reading runs server-side — keeps the AI key off the client.
+- Job diagnostics and bullet checks use transparent client-safe heuristics in diagnostics.ts, quote their inputs, and never detect AI authorship or assert employer facts — avoids unsupported diagnostic claims.
+- Bullet revisions compose only original text and user-supplied facts, and never mutate stored resumes automatically — preserves factual ownership and original evidence.
+- Retired marketplace URLs redirect to the ATS checker; existing database records are preserved — removes public discovery without destructive schema changes.

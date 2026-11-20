@@ -6,7 +6,7 @@ import { q, type Role } from "@/lib/db";
 import { Card } from "@/components/ui-bits";
 
 export const Route = createFileRoute("/_authenticated/welcome")({
-  head: () => ({ meta: [{ title: "Welcome — FutureTalent AI" }, { name: "description", content: "Choose how you'll use FutureTalent AI." }, { property: "og:title", content: "Welcome — FutureTalent AI" }, { property: "og:description", content: "Choose how you'll use FutureTalent AI." }] }),
+  head: () => ({ meta: [{ title: "Welcome — FutureTalent AI" }, { name: "description", content: "Choose how you'll use FutureTalent AI." }, { property: "og:title", content: "Welcome — FutureTalent AI" }, { property: "og:description", content: "Choose how you'll use FutureTalent AI." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: Welcome,
 });
 
@@ -33,7 +33,7 @@ function Welcome() {
       <h1 className="font-display text-3xl">How will you use FutureTalent?</h1>
       <div className="grid gap-4 sm:grid-cols-2">
         <button disabled={busy} onClick={() => choose("candidate")} className="text-left"><Card className="h-full hover:border-primary"><h2 className="font-display text-xl">I'm looking for a job</h2><p className="mt-1 text-sm text-muted-foreground">Check your resume against any role, see exactly what's missing and how to fix it.</p></Card></button>
-        <button disabled={busy} onClick={() => choose("recruiter")} className="text-left"><Card className="h-full hover:border-primary"><h2 className="font-display text-xl">I'm hiring</h2><p className="mt-1 text-sm text-muted-foreground">Post roles, evaluate applicants with evidence, and find transferable talent.</p></Card></button>
+        <button disabled={busy} onClick={() => choose("recruiter")} className="text-left"><Card className="h-full hover:border-primary"><h2 className="font-display text-xl">I'm hiring</h2><p className="mt-1 text-sm text-muted-foreground">Set screening criteria, compare resumes with evidence, and assess transferable skills.</p></Card></button>
       </div>
     </div>
   );

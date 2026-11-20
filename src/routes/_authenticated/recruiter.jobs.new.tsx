@@ -1,3 +1,5 @@
+import { JobDiagnostics } from "@/components/JobDiagnostics";
+import { JobUrlImport } from "@/components/JobUrlImport";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -9,7 +11,7 @@ import { EvalConfig } from "@/components/EvalConfig";
 import { Card } from "@/components/ui-bits";
 
 export const Route = createFileRoute("/_authenticated/recruiter/jobs/new")({
-  head: () => ({ meta: [{ title: "New hiring requirement — FutureTalent AI" }, { name: "description", content: "Define a role, its requirements and how strictly candidates should be evaluated." }, { property: "og:title", content: "New hiring requirement — FutureTalent AI" }, { property: "og:description", content: "Configure adaptive strict-to-flexible talent matching." }] }),
+  head: () => ({ meta: [{ title: "New screening evaluation — FutureTalent AI" }, { name: "description", content: "Define a role, its requirements and how strictly candidates should be evaluated." }, { property: "og:title", content: "New screening evaluation — FutureTalent AI" }, { property: "og:description", content: "Configure adaptive strict-to-flexible talent matching." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: NewJob,
 });
 const input = "w-full rounded-md border bg-background px-3 py-2 text-sm";
@@ -28,15 +30,17 @@ function NewJob() {
         flexibility: job.flexibility, preset: job.preset, mandatory: job.mandatory, weights: job.weights,
         preferred: pref.split(",").map((s) => s.trim()).filter(Boolean),
       }).select("id").single());
-      nav({ to: "/recruiter/jobs/$jobId", params: { jobId: r!.id } });
+      if (!r) throw new Error("The report could not be saved. Please try again.");
+      nav({ to: "/recruiter/jobs/$jobId", params: { jobId: r.id } });
     } catch (e) { toast.error((e as Error).message); setBusy(false); }
   };
   return (
     <div className="space-y-6">
-      <h1 className="font-display text-3xl">New hiring requirement</h1>
+      <h1 className="font-display text-3xl">New screening evaluation</h1>
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="space-y-4">
           <h2 className="font-display text-lg">The role</h2>
+          <JobUrlImport onImport={(title, description) => setJob({ ...job, title, description })} />
           <label className="block text-sm">Job title<input className={input} value={job.title} onChange={(e) => setJob({ ...job, title: e.target.value })} placeholder="Senior AI Product Designer" /></label>
           <label className="block text-sm">Job description<textarea rows={6} className={input} value={job.description} onChange={(e) => setJob({ ...job, description: e.target.value })} placeholder="Paste the job description…" /></label>
           <div className="text-sm">
@@ -54,7 +58,8 @@ function NewJob() {
         </Card>
         <Card><h2 className="mb-4 font-display text-lg">How to evaluate</h2><EvalConfig job={job} onChange={setJob} /></Card>
       </div>
-      <button disabled={!job.title || total !== 100 || busy} onClick={save} className="rounded-md bg-primary px-5 py-2 text-sm font-medium text-primary-foreground disabled:opacity-40">{busy ? "Saving…" : "Save and publish role"}</button>
+      <JobDiagnostics title={job.title} description={job.description} />
+      <button disabled={!job.title || total !== 100 || busy} onClick={save} className="rounded-md bg-primary px-5 py-2 text-sm font-medium text-primary-foreground disabled:opacity-40">{busy ? "Saving…" : "Save evaluation"}</button>
     </div>
   );
 }

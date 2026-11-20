@@ -5,7 +5,7 @@ import { matchMode } from "@/lib/scoring";
 import { Card } from "@/components/ui-bits";
 
 export const Route = createFileRoute("/_authenticated/recruiter/")({
-  head: () => ({ meta: [{ title: "Recruiter dashboard — FutureTalent AI" }, { name: "description", content: "Your open roles and applicant evaluations." }, { property: "og:title", content: "Recruiter dashboard — FutureTalent AI" }, { property: "og:description", content: "Your open roles and applicant evaluations." }] }),
+  head: () => ({ meta: [{ title: "Recruiter dashboard — FutureTalent AI" }, { name: "description", content: "Your screening evaluations and candidate comparisons." }, { property: "og:title", content: "Recruiter dashboard — FutureTalent AI" }, { property: "og:description", content: "Your screening evaluations and candidate comparisons." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: Dashboard,
 });
 
@@ -16,16 +16,16 @@ function Dashboard() {
   return (
     <div className="space-y-8">
       <section className="flex flex-wrap items-end justify-between gap-4">
-        <div><p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Hire for today. Discover the talent for tomorrow.</p>
-          <h1 className="mt-2 font-display text-4xl">Your roles</h1></div>
-        <Link to="/recruiter/jobs/new" className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">+ New hiring requirement</Link>
+        <div><p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Design talent screening</p>
+          <h1 className="mt-2 font-display text-4xl">Your evaluations</h1></div>
+        <Link to="/recruiter/jobs/new" className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">+ New evaluation</Link>
       </section>
       <div className="grid gap-4 md:grid-cols-3">
         <Card><p className="text-sm text-muted-foreground">Roles</p><p className="font-mono text-3xl">{jobs.length}</p></Card>
         <Card><p className="text-sm text-muted-foreground">Applicants evaluated</p><p className="font-mono text-3xl">{apps.length}</p></Card>
         <Card><p className="text-sm text-muted-foreground">Decisions recorded</p><p className="font-mono text-3xl">{apps.filter((a) => a.override_status).length}</p></Card>
       </div>
-      {jobs.length === 0 ? <Card><p className="text-sm text-muted-foreground">No roles yet. Create your first hiring requirement to start evaluating applicants.</p></Card> : (
+      {jobs.length === 0 ? <Card><p className="text-sm text-muted-foreground">No evaluations yet. Create a screening requirement to compare candidate resumes.</p></Card> : (
         <div className="space-y-3">{jobs.map((j) => {
           const n = apps.filter((a) => a.job_id === j.id).length;
           return (

@@ -1,3 +1,5 @@
+import { JobDiagnostics } from "@/components/JobDiagnostics";
+import { ResumeWorkshop } from "@/components/ResumeWorkshop";
 import { JobUrlImport } from "@/components/JobUrlImport";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -63,6 +65,7 @@ function CheckPage() {
       <div className="space-y-6">
         <button onClick={() => setResult(null)} className="text-sm text-muted-foreground">← Check again</button>
         <FtiReport c={cand} />
+        <ResumeWorkshop resume={result.resume} />
         <Card className="flex flex-wrap items-center justify-between gap-4 border-primary">
           <div><p className="font-display text-lg">Now test your fit for a specific role</p><p className="text-sm text-muted-foreground">Paste a job link or description to see must-haves and ATS scores.</p></div>
           <button onClick={() => { setResult(null); setMode("role"); }} className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">Check against a job</button>
@@ -79,7 +82,7 @@ function CheckPage() {
         </Card>
         <Card className="flex flex-wrap items-center justify-between gap-4 border-primary">
           <div><p className="font-display text-lg">Save this report and start fixing your resume</p>
-            <p className="text-sm text-muted-foreground">Create a free account to keep this result, re-check after edits{result.jobId ? " and apply with your evidence report" : ""}.</p></div>
+            <p className="text-sm text-muted-foreground">Create a free account to keep this result, re-check after edits.</p></div>
           <div className="flex gap-2">
             <Link to="/auth" search={signup} className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">Sign up free</Link>
             <Link to="/auth" search={{ ...signup, mode: "signin" }} className="rounded-md border px-4 py-2 text-sm">Sign in</Link>
@@ -92,6 +95,8 @@ function CheckPage() {
             <ul className="space-y-3">{tips.slice(0, 10).map((t, i) => (
               <li key={i} className="rounded border p-3 text-sm"><span className="font-medium">{t.title}</span><p className="mt-1 text-muted-foreground">{t.detail}</p></li>))}</ul>)}
         </Card>
+        <JobDiagnostics title={result.jobTitle} description={result.jobDescription} />
+        <ResumeWorkshop resume={result.resume} />
         <FtiReport c={cand} />
         <AtsTarget job={job} c={cand} resume={result.resume ?? ""} />
         <AtsSimulator job={job} c={cand} />
@@ -110,10 +115,11 @@ function CheckPage() {
       </div>
       <div className={mode === "role" ? "grid gap-6 lg:grid-cols-2" : "max-w-2xl"}>
         {mode === "role" && <Card className="space-y-3">
-          <div className="flex items-center justify-between"><h2 className="font-display text-lg">The role</h2><Link to="/roles" className="text-xs underline">Pick from open roles</Link></div>
+          <h2 className="font-display text-lg">The target role</h2>
           <JobUrlImport onImport={(t, d) => { setTitle(t); setJd(d); }} />
           <label className="block text-sm">Job title<input className={input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Product Designer" /></label>
           <label className="block text-sm">Job description<textarea rows={10} className={input} value={jd} onChange={(e) => setJd(e.target.value)} placeholder="Paste the job posting you're targeting…" /></label>
+          <JobDiagnostics title={title} description={jd} />
         </Card>}
         <Card><ResumeInput value={resume} onChange={setResume} /></Card>
       </div>

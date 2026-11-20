@@ -158,12 +158,12 @@ function Header() {
   const active = { className: "text-foreground font-medium" };
   return (
     <header className="border-b bg-card">
-      <div className="mx-auto flex max-w-6xl items-center gap-6 px-6 py-4">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-6 py-4">
         <Link to="/" className="font-display text-xl font-semibold">FutureTalent<span className="ml-1 rounded bg-accent px-1.5 text-sm text-accent-foreground">AI</span></Link>
         <nav className="flex flex-1 gap-4 text-sm text-muted-foreground">
-          {me?.role === "recruiter" && <><Link to="/recruiter" activeOptions={{ exact: true }} activeProps={active}>Dashboard</Link><Link to="/recruiter/jobs/new" activeProps={active}>New role</Link></>}
+          {me?.role === "recruiter" && <><Link to="/recruiter" activeOptions={{ exact: true }} activeProps={active}>Dashboard</Link><Link to="/recruiter/jobs/new" activeProps={active}>New evaluation</Link></>}
           {me?.role === "candidate" && <Link to="/candidate" activeProps={active}>Check my resume</Link>}
-          <Link to="/roles" activeProps={active}>Open roles</Link>
+          {!me && <Link to="/check" activeProps={active}>Resume check</Link>}
         </nav>
         {me ? (
           <div className="flex items-center gap-3 text-sm"><span className="hidden text-muted-foreground sm:inline">{me.name || me.email}{me.role && ` · ${me.role}`}</span>

@@ -1,3 +1,5 @@
+import { ResumeWorkshop } from "@/components/ResumeWorkshop";
+import { JobDiagnostics } from "@/components/JobDiagnostics";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -9,7 +11,7 @@ import { ScoreDetails, ScoreHeader } from "@/components/ScoreReport";
 import { Card, StatusBadge } from "@/components/ui-bits";
 
 export const Route = createFileRoute("/_authenticated/recruiter/applicants/$appId")({
-  head: () => ({ meta: [{ title: "Applicant report — FutureTalent AI" }, { name: "description", content: "Evidence-based evaluation of an applicant." }, { property: "og:title", content: "Applicant report — FutureTalent AI" }, { property: "og:description", content: "Every score linked to its evidence." }] }),
+  head: () => ({ meta: [{ title: "Applicant report — FutureTalent AI" }, { name: "description", content: "Evidence-based evaluation of an applicant." }, { property: "og:title", content: "Applicant report — FutureTalent AI" }, { property: "og:description", content: "Every score linked to its evidence." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: Report,
 });
 const STATUSES = ["Strong alignment", "Promising transferable fit", "Requires further assessment", "Significant gaps identified"];
@@ -38,6 +40,8 @@ function Report() {
           <div className="mt-2"><StatusBadge status={ev.status} />{c.override && <span className="ml-2 text-xs text-muted-foreground">your decision</span>}</div></div>
         <ScoreHeader job={job} c={c} />
       </Card>
+      <JobDiagnostics title={job.title} description={job.description} />
+      <ResumeWorkshop resume={app.resume} />
       <ScoreDetails job={job} c={c} audience="recruiter" />
       <div className="grid gap-6 lg:grid-cols-2">
         <Card><h2 className="mb-2 font-display text-lg">Evidence gaps</h2><p className="text-sm text-muted-foreground">{gaps.length ? gaps.map((g) => g.name).join(", ") : "None"}</p>

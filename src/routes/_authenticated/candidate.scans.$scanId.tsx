@@ -1,8 +1,8 @@
+import { JobDiagnostics } from "@/components/JobDiagnostics";
+import { ResumeWorkshop } from "@/components/ResumeWorkshop";
+import { FtiReport } from "@/components/FtiReport";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 import { q, scanToPair } from "@/lib/db";
 import { evaluate } from "@/lib/scoring";
 import { resumeTips } from "@/lib/tips";
@@ -12,38 +12,25 @@ import { AtsSimulator } from "@/components/AtsSimulator";
 import { AtsTarget } from "@/components/AtsTarget";
 
 export const Route = createFileRoute("/_authenticated/candidate/scans/$scanId")({
-  head: () => ({ meta: [{ title: "Your resume score — FutureTalent AI" }, { name: "description", content: "Your scores, the evidence behind them, and how to improve." }, { property: "og:title", content: "Your resume score — FutureTalent AI" }, { property: "og:description", content: "Your scores, the evidence behind them, and how to improve." }] }),
+  head: () => ({ meta: [{ title: "Your resume score — FutureTalent AI" }, { name: "description", content: "Your scores, the evidence behind them, and how to improve." }, { property: "og:title", content: "Your resume score — FutureTalent AI" }, { property: "og:description", content: "Your scores, the evidence behind them, and how to improve." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: ScanResult,
 });
 
 function ScanResult() {
   const { scanId } = Route.useParams();
-  const qc = useQueryClient();
-  const { data: me } = useQuery(q.me());
   const { data: s, isLoading } = useQuery(q.scan(scanId));
-  const { data: mine = [] } = useQuery({ ...q.myApplications(me?.id ?? ""), enabled: !!me });
-  const [busy, setBusy] = useState(false);
   if (isLoading) return <p className="text-sm text-muted-foreground">Loading…</p>;
   if (!s) return <p>Result not found. <Link to="/candidate" className="underline">Back</Link></p>;
   const { job, cand } = scanToPair(s);
   const ev = evaluate(job, cand);
   const tips = resumeTips(job, cand);
-  const applied = s.job_id && mine.some((a) => a.job_id === s.job_id);
-  const apply = async () => {
-    if (!me || !s.job_id) return; setBusy(true);
-    const { error } = await supabase.from("applications").insert({ job_id: s.job_id, candidate_user_id: me.id, name: me.name || cand.name, job_role: cand.role, years: cand.years, domain: cand.domain, resume_text: s.resume_text, evidence: { mandatory: cand.mandatory, competencies: cand.competencies } });
-    setBusy(false);
-    if (error) { toast.error(error.message); return; }
-    qc.invalidateQueries({ queryKey: ["apps"] }); toast.success("Application sent with your evidence report");
-  };
+  if (!s.job_description.trim()) return <div className="space-y-6"><Link to="/candidate" className="text-sm text-muted-foreground">← New check</Link><FtiReport c={cand} /><ResumeWorkshop resume={s.resume_text ?? ""} /></div>;
   return (
     <div className="space-y-6">
       <Link to="/candidate" className="text-sm text-muted-foreground">← New check</Link>
       <Card className="flex flex-wrap items-center justify-between gap-6">
         <div><p className="text-sm text-muted-foreground">Your fit for</p><h1 className="font-display text-3xl">{s.job_title}</h1>
           <div className="mt-2"><StatusBadge status={ev.status} /></div>
-          {s.job_id && (applied ? <p className="mt-3 text-sm text-success">✓ You've applied to this role</p>
-            : <button disabled={busy} onClick={apply} className="mt-3 rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-50">Apply with this report</button>)}
         </div>
         <ScoreHeader job={job} c={cand} />
       </Card>
@@ -57,6 +44,9 @@ function ScanResult() {
               <span className="font-medium">{t.title}</span><p className="mt-1 text-muted-foreground">{t.detail}</p>
             </li>))}</ul>)}
       </Card>
+      <JobDiagnostics title={s.job_title} description={s.job_description} />
+      <ResumeWorkshop resume={s.resume_text ?? ""} />
+      <FtiReport c={cand} />
       <AtsTarget job={job} c={cand} resume={s.resume_text ?? ""} />
         <AtsSimulator job={job} c={cand} />
       <ScoreDetails job={job} c={cand} audience="candidate" />

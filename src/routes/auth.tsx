@@ -19,7 +19,7 @@ export const Route = createFileRoute("/auth")({
     { name: "description", content: "Join as a candidate to check your resume score, or as a recruiter to evaluate applicants." },
     { property: "og:title", content: "Join FutureTalent AI" },
     { property: "og:description", content: "Candidates check their fit. Recruiters evaluate with evidence." },
-  ] }),
+  , { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: AuthPage,
 });
 
