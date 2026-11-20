@@ -17,6 +17,7 @@ import { Card, StatusBadge } from "@/components/ui-bits";
 import { AtsSimulator } from "@/components/AtsSimulator";
 import { AtsTarget } from "@/components/AtsTarget";
 import { FtiReport } from "@/components/FtiReport";
+import { ReportTabs } from "@/components/ReportTabs";
 
 export const Route = createFileRoute("/check")({
   validateSearch: (s: Record<string, unknown>): { job?: string | undefined } => ({ job: typeof s["job"] === "string" ? s["job"] : undefined }),
@@ -88,19 +89,21 @@ function CheckPage() {
             <Link to="/auth" search={{ ...signup, mode: "signin" }} className="rounded-md border px-4 py-2 text-sm">Sign in</Link>
           </div>
         </Card>
-        <Card>
-          <h2 className="mb-1 font-display text-lg">What to improve</h2>
-          <p className="mb-4 text-xs text-muted-foreground">Ordered by impact.</p>
-          {tips.length === 0 ? <p className="text-sm">Your resume shows strong evidence across the board.</p> : (
-            <ul className="space-y-3">{tips.slice(0, 10).map((t, i) => (
-              <li key={i} className="rounded border p-3 text-sm"><span className="font-medium">{t.title}</span><p className="mt-1 text-muted-foreground">{t.detail}</p></li>))}</ul>)}
-        </Card>
-        <JobDiagnostics title={result.jobTitle} description={result.jobDescription} />
-        <ResumeFixer job={job} cand={cand} resume={result.resume} />
-        <FtiReport c={cand} />
-        <AtsTarget job={job} c={cand} resume={result.resume ?? ""} />
-        <AtsSimulator job={job} c={cand} />
-        <ScoreDetails job={job} c={cand} audience="candidate" />
+        <ReportTabs tabs={[
+          { id: "fix", label: "Fix & rescore", content: <>
+            <ResumeFixer job={job} cand={cand} resume={result.resume} />
+            <Card>
+              <h2 className="mb-1 font-display text-lg">What to improve</h2>
+              <p className="mb-4 text-xs text-muted-foreground">Ordered by impact.</p>
+              {tips.length === 0 ? <p className="text-sm">Your resume shows strong evidence across the board.</p> : (
+                <ol className="divide-y">{tips.slice(0, 6).map((t, i) => (
+                  <li key={i} className="flex gap-4 py-3 text-sm"><span className="font-mono text-xs text-muted-foreground">{String(i + 1).padStart(2, "0")}</span><div><p className="font-medium">{t.title}</p><p className="mt-0.5 text-muted-foreground">{t.detail}</p></div></li>))}</ol>)}
+            </Card></> },
+          { id: "profile", label: "Talent profile", content: <FtiReport c={cand} /> },
+          { id: "ats", label: "ATS systems", content: <><AtsTarget job={job} c={cand} resume={result.resume ?? ""} /><AtsSimulator job={job} c={cand} /></> },
+          { id: "role", label: "The role", content: <JobDiagnostics title={result.jobTitle} description={result.jobDescription} /> },
+          { id: "evidence", label: "Evidence", content: <ScoreDetails job={job} c={cand} audience="candidate" /> },
+        ]} />
       </div>
     );
   }

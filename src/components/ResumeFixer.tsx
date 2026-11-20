@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Copy, Download, RotateCcw, Sparkles } from "lucide-react";
+import { Copy, Download, FileText, RotateCcw, Sparkles } from "lucide-react";
+import { downloadResumeDocx } from "@/lib/export-docx";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui-bits";
@@ -45,6 +46,7 @@ export function ResumeFixer({ job, cand, resume }: { job: Job; cand: Candidate; 
   const undo = () => { if (history.length > 1) { setHistory(history.slice(0, -1)); setDone(done.slice(0, -1)); window.__lovableEvents?.track?.("project.suggestion_undone"); } };
   const copy = async () => { try { await navigator.clipboard.writeText(cur.resume); window.__lovableEvents?.track?.("project.resume_exported", { format: "copy" }); toast.success("Revised resume copied"); } catch { toast.error("Could not copy."); } };
   const download = () => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([cur.resume], { type: "text/plain" })); a.download = "resume-revised.txt"; a.click(); window.__lovableEvents?.track?.("project.resume_exported", { format: "txt" }); };
+  const word = async () => { try { await downloadResumeDocx(cur.resume); window.__lovableEvents?.track?.("project.resume_exported", { format: "docx" }); } catch { toast.error("Could not create the Word file."); } };
   const delta = cur.score - history[0]!.score;
 
   return <Card className="space-y-5 border-primary">
@@ -74,7 +76,8 @@ export function ResumeFixer({ job, cand, resume }: { job: Job; cand: Candidate; 
     <div className="flex flex-wrap gap-2">
       <Button variant="outline" size="sm" onClick={undo} disabled={busy || history.length < 2}><RotateCcw />Undo last</Button>
       <Button variant="outline" size="sm" onClick={copy}><Copy />Copy resume</Button>
-      <Button variant="outline" size="sm" onClick={download}><Download />Download .txt</Button>
+      <Button size="sm" onClick={word}><FileText />Download Word (.docx)</Button>
+      <Button variant="ghost" size="sm" onClick={download}><Download />Plain text</Button>
     </div>
     {history.length > 1 && <details className="text-sm"><summary className="cursor-pointer">View revised resume</summary><pre className="mt-2 max-h-96 overflow-auto whitespace-pre-wrap rounded-md border bg-muted p-3 text-xs">{cur.resume}</pre></details>}
   </Card>;
