@@ -18,7 +18,7 @@ export function AtsTarget({ job, c, resume }: { job: Job; c: Candidate; resume: 
       <p className="mb-4 text-xs text-muted-foreground">Workday parses rigidly; Greenhouse and Ashby read context. Your score and fixes change with it.</p>
       <div className="grid gap-2 sm:grid-cols-3">
         {Object.entries(ATS_SYSTEMS).map(([name, x]) => (
-          <button key={name} type="button" onClick={() => setSys(name)} className={`rounded-md border p-3 text-left text-sm ${sys === name ? "border-primary bg-accent" : "bg-background"}`}>
+          <button key={name} type="button" onClick={() => { setSys(name); window.__lovableEvents?.track?.("project.ats_system_selected", { system: name }); }} className={`rounded-md border p-3 text-left text-sm ${sys === name ? "border-primary bg-accent" : "bg-background"}`}>
             <div className="flex justify-between"><span className="font-medium">{name}</span><span className="font-mono">{score(name).n ?? "—"}</span></div>
             <p className="mt-1 text-xs text-muted-foreground">{x.how}</p>
           </button>))}

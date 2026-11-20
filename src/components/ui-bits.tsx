@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 export function Card({ className, children }: { className?: string; children: ReactNode }) {
-  return <div className={cn("rounded-md border bg-card p-5", className)}>{children}</div>;
+  return <div className={cn("rounded-sm border bg-card p-6 shadow-sheet", className)}>{children}</div>;
 }
 export function ScoreRing({ value, label, tone }: { value: number | null; label: string; tone: "jr" | "fr" | "hp" | "ink" }) {
   const color = { jr: "var(--jr)", fr: "var(--fr)", hp: "var(--hp)", ink: "var(--primary)" }[tone];

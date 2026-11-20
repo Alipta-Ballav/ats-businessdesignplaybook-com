@@ -11,7 +11,7 @@ export function JobUrlImport({ onImport }: { onImport: (title: string, descripti
     try {
       const r = await run({ data: { url } });
       if ("error" in r) toast.error(r.error);
-      else { onImport(r.company ? `${r.title} · ${r.company}` : r.title, r.description); toast.success("Job details filled in"); setUrl(""); }
+      else { onImport(r.company ? `${r.title} · ${r.company}` : r.title, r.description); window.__lovableEvents?.track?.("project.job_imported", { has_company: !!r.company }); toast.success("Job details filled in"); setUrl(""); }
     } catch (e) { const m = (e as Error)?.message ?? ""; toast.error(/URL|link/i.test(m) ? "That doesn't look like a valid link." : "Import failed. Try again, or paste the description."); }
     setBusy(false);
   };

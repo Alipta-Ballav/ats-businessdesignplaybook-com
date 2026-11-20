@@ -47,6 +47,7 @@ function AuthPage() {
       if (mode === "signup") {
         const { data, error } = await supabase.auth.signUp({ email, password: pw, options: { emailRedirectTo: window.location.origin + "/welcome", data: { full_name: name, role } } });
         if (error) throw error;
+        window.__lovableEvents?.track?.("project.account_created", { persona: role });
         if (data.session) nav({ to: "/welcome" }); else setSent(true);
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password: pw });

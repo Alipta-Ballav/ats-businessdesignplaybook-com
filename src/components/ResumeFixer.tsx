@@ -37,13 +37,14 @@ export function ResumeFixer({ job, cand, resume }: { job: Job; cand: Candidate; 
       setHistory([...history, { resume: next, cand: c, score, label: s.title }]);
       setDone([...done, s.id]); reset();
       const d = score - cur.score;
+      window.__lovableEvents?.track?.("project.suggestion_applied", { score_delta: d, new_score: score });
       toast.success(`Score updated: ${cur.score} → ${score} (${d >= 0 ? "+" : ""}${d})`);
     } catch (e) { toast.error((e as Error).message); }
     setBusy(false);
   };
-  const undo = () => { if (history.length > 1) { setHistory(history.slice(0, -1)); setDone(done.slice(0, -1)); } };
-  const copy = async () => { try { await navigator.clipboard.writeText(cur.resume); toast.success("Revised resume copied"); } catch { toast.error("Could not copy."); } };
-  const download = () => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([cur.resume], { type: "text/plain" })); a.download = "resume-revised.txt"; a.click(); };
+  const undo = () => { if (history.length > 1) { setHistory(history.slice(0, -1)); setDone(done.slice(0, -1)); window.__lovableEvents?.track?.("project.suggestion_undone"); } };
+  const copy = async () => { try { await navigator.clipboard.writeText(cur.resume); window.__lovableEvents?.track?.("project.resume_exported", { format: "copy" }); toast.success("Revised resume copied"); } catch { toast.error("Could not copy."); } };
+  const download = () => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([cur.resume], { type: "text/plain" })); a.download = "resume-revised.txt"; a.click(); window.__lovableEvents?.track?.("project.resume_exported", { format: "txt" }); };
   const delta = cur.score - history[0]!.score;
 
   return <Card className="space-y-5 border-primary">
@@ -66,7 +67,7 @@ export function ResumeFixer({ job, cand, resume }: { job: Job; cand: Candidate; 
       {revised.trim() && <div className="border-l-2 border-accent pl-3"><p className="text-xs text-muted-foreground">Will be {s.kind === "rewrite" ? "replaced with" : "added"}</p><p className="text-sm">{revised}</p></div>}
       <div className="flex flex-wrap gap-2">
         <Button onClick={apply} disabled={busy}><Sparkles />{busy ? "Rescoring… (about 30s)" : "Apply & rescore"}</Button>
-        <Button variant="outline" onClick={() => { setSkipped([...skipped, s.id]); reset(); }} disabled={busy}>Skip</Button>
+        <Button variant="outline" onClick={() => { window.__lovableEvents?.track?.("project.suggestion_skipped"); setSkipped([...skipped, s.id]); reset(); }} disabled={busy}>Skip</Button>
       </div>
     </div> : <p className="text-sm text-muted-foreground">No more suggestions. Copy or download your revised resume below.</p>}
 

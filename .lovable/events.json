@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "events": {
+    "project.account_created": {
+      "event_schema_version": 1,
+      "description": "A new account was registered with email.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "persona"
+        ],
+        "properties": {
+          "persona": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "project.ats_system_selected": {
+      "event_schema_version": 1,
+      "description": "The candidate picked which ATS the employer uses.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "system"
+        ],
+        "properties": {
+          "system": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "project.job_imported": {
+      "event_schema_version": 1,
+      "description": "A job description was imported from a pasted link.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "has_company"
+        ],
+        "properties": {
+          "has_company": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "project.report_opened": {
+      "event_schema_version": 1,
+      "description": "A resume evaluation report was produced and shown.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "mode",
+          "audience"
+        ],
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "generic",
+              "job_target"
+            ]
+          },
+          "audience": {
+            "type": "string"
+          },
+          "competencies": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "project.resume_exported": {
+      "event_schema_version": 1,
+      "description": "The revised resume was copied or downloaded.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "format"
+        ],
+        "properties": {
+          "format": {
+            "type": "string",
+            "enum": [
+              "copy",
+              "txt"
+            ]
+          }
+        }
+      }
+    },
+    "project.suggestion_applied": {
+      "event_schema_version": 1,
+      "description": "A resume suggestion was applied and the resume rescored.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "score_delta",
+          "new_score"
+        ],
+        "properties": {
+          "score_delta": {
+            "type": "number"
+          },
+          "new_score": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "project.suggestion_skipped": {
+      "event_schema_version": 1,
+      "description": "A resume suggestion was skipped.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {}
+      }
+    },
+    "project.suggestion_undone": {
+      "event_schema_version": 1,
+      "description": "The last applied resume change was undone.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {}
+      }
+    }
+  }
+}
