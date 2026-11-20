@@ -1,15 +1,16 @@
 import type { Candidate } from "./scoring";
 
 /** Numbers and capitalised names in a draft that do not appear in the allowed source text. */
+const COMMON = new Set(["ux","ui","ios","android","web","saas","b2b","b2c","api","ai","ml","llm","figma","sketch","miro","jira","mvp","kpi","okr","roi","nps","qa","cx","dx","hci","design","product"]);
 export function newFacts(draft: string, sources: string[]): string[] {
   const src = sources.join(" ").toLowerCase();
   const srcNums = new Set((src.match(/\d+(?:[.,]\d+)?/g) ?? []).map((n) => n.replace(",", ".")));
   const out = new Set<string>();
-  for (const n of draft.match(/\d+(?:[.,]\d+)?/g) ?? []) if (!srcNums.has(n.replace(",", "."))) out.add(n);
+  for (const n of draft.replace(/\bQ[1-4]\b/g, "").match(/\d+(?:[.,]\d+)?/g) ?? []) if (!srcNums.has(n.replace(",", "."))) out.add(n);
   const words = draft.split(/\s+/).map((w) => w.replace(/^[^\p{L}\d]+|[^\p{L}\d]+$/gu, ""));
   words.forEach((w, i) => {
     if (i === 0 || !w || !/^\p{Lu}/u.test(w) || w.length < 2) return;
-    if (!src.includes(w.toLowerCase())) out.add(w);
+    const lw = w.toLowerCase(); if (COMMON.has(lw) || src.includes(lw) || /^Q[1-4]$/.test(w)) return; out.add(w);
   });
   return [...out];
 }

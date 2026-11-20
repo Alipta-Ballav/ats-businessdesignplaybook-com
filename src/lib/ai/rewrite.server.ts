@@ -15,7 +15,7 @@ export async function rewriteBullet(input: { original: string; facts: string }):
   const result = streamText({
     model: provider.responses("openai/gpt-6-astra"),
     instructions: INSTRUCTIONS,
-    messages: [{ role: "user", content: `ORIGINAL: ${input.original || "(new bullet)"}\nUSER FACTS: ${input.facts}` }],
+    messages: [{ role: "user", content: `ORIGINAL: ${input.original || "(new bullet)"}\nUSER FACTS: ${input.facts || "(none — only sharpen the original wording)"}` }],
     onError: ({ error }) => { streamError = error; },
     providerOptions: { openai: { forceReasoning: true, reasoningEffort: "low", reasoningSummary: "auto", store: false, include: ["reasoning.encrypted_content"] } },
   });

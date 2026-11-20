@@ -23,3 +23,8 @@ describe("free fixes", () => {
     expect(canApplyFix(fixesUsed([{ source: "manual" }, { source: "ai" }]), false)).toBe(false);
   });
 });
+describe("newFacts design terms", () => {
+  it("does not flag UX, iOS or Q3", () => {
+    expect(newFacts("Led UX redesign for iOS in Q3", ["Led redesign"])).toEqual([]);
+  });
+});

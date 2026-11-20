@@ -119,6 +119,11 @@ export const ATS_SYSTEMS: Record<string, { flexibility: number; weights: Record<
   Workday: { flexibility: 10, weights: { JR: 65, FR: 20, HP: 15 }, style: "legacy", how: "Rigid parsing and strict keyword matching" },
   Greenhouse: { flexibility: 45, weights: { JR: 45, FR: 30, HP: 25 }, style: "semantic", how: "Structured scorecards, reads context" },
   Ashby: { flexibility: 55, weights: { JR: 40, FR: 35, HP: 25 }, style: "semantic", how: "Modern semantic matching, credits transferable skills" },
+  Taleo: { flexibility: 5, weights: { JR: 70, FR: 18, HP: 12 }, style: "legacy", how: "Oracle Taleo: strictest parser, exact keyword knock-outs" },
+  iCIMS: { flexibility: 15, weights: { JR: 60, FR: 22, HP: 18 }, style: "legacy", how: "Enterprise knock-out questions and keyword filters" },
+  SuccessFactors: { flexibility: 15, weights: { JR: 60, FR: 22, HP: 18 }, style: "legacy", how: "SAP SuccessFactors: structured fields, literal matching" },
+  Lever: { flexibility: 40, weights: { JR: 45, FR: 30, HP: 25 }, style: "semantic", how: "Tag and stage based, recruiter reads context" },
+  BambooHR: { flexibility: 50, weights: { JR: 40, FR: 35, HP: 25 }, style: "semantic", how: "Light filtering, human review for agencies and mid-size teams" },
 };
 
 /** Deterministic formatting checks; legacy parsers are hurt by all of them, semantic ones only by "high". */

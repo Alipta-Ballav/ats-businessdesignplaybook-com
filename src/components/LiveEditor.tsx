@@ -52,7 +52,7 @@ export function LiveEditor({ job, cand, resume }: { job: Job; cand: Candidate; r
 
   const askAi = async () => {
     if (!pro) { window.__lovableEvents?.track?.("project.paywall_shown", { trigger: "ai_rewrite" }); setWall("AI suggestions are part of the ₹49 unlock."); return; }
-    if (!facts.trim()) { toast.error("Add your true details first — AI only rephrases what you give it."); return; }
+    if (!facts.trim() && !active?.original) { toast.error("Type your true example first — AI only rephrases what you give it."); return; }
     setBusy("ai");
     try {
       const { text } = await ai({ data: { original: active?.original ?? "", facts } });
@@ -131,7 +131,8 @@ export function LiveEditor({ job, cand, resume }: { job: Job; cand: Candidate; r
                       </>
                     ) : (
                       <>
-                        <Button size="sm" variant="outline" onClick={askAi} disabled={busy === "ai"}><Wand2 />{busy === "ai" ? "Drafting…" : "Draft with AI from my facts"}</Button>
+                        <Button size="sm" variant="outline" onClick={askAi} disabled={busy === "ai"}><Wand2 />{busy === "ai" ? "Drafting…" : "Draft with AI"}</Button>
+                        <p className="text-xs text-muted-foreground">Optional: fill the boxes above with true numbers for a stronger draft.</p>
                         {aiDraft && (
                           <div className="space-y-2">
                             <textarea rows={2} className="w-full rounded-md border bg-background p-2 text-sm" value={aiDraft.text} onChange={(e) => setAiDraft({ text: e.target.value, flags: newFacts(e.target.value, [s.original ?? "", facts]) })} />
