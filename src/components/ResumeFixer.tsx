@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Copy, Download, FileText, RotateCcw, Sparkles } from "lucide-react";
+import { Lock, Copy, Download, FileText, RotateCcw, Sparkles } from "lucide-react";
 import { downloadResumeDocx } from "@/lib/export-docx";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,9 @@ import { readResumeGuest } from "@/lib/evaluate.functions";
 import { buildEvidenceBullet } from "@/lib/diagnostics";
 import { applySuggestion, buildQueue, headlineScore } from "@/lib/fixer";
 import type { Candidate, Job } from "@/lib/scoring";
+import { usePro } from "@/lib/pro";
+import { FREE_FIXES, canApplyFix, canDownloadWord } from "@/lib/plans";
+import { PaywallModal } from "@/components/PaywallModal";
 
 type Step = { resume: string; cand: Candidate; score: number; label: string };
 
@@ -19,6 +22,8 @@ export function ResumeFixer({ job, cand, resume }: { job: Job; cand: Candidate; 
   const [done, setDone] = useState<string[]>([]);
   const [fields, setFields] = useState({ action: "", constraint: "", outcome: "", text: "" });
   const [busy, setBusy] = useState(false);
+  const pro = usePro();
+  const [wall, setWall] = useState<string | null>(null);
   const cur = history[history.length - 1]!;
   const queue = useMemo(() => buildQueue(job, cur.cand, cur.resume).filter((s) => !skipped.includes(s.id) && !done.includes(s.id)), [job, cur, skipped, done]);
   const s = queue[0];
@@ -28,6 +33,7 @@ export function ResumeFixer({ job, cand, resume }: { job: Job; cand: Candidate; 
 
   const apply = async () => {
     if (!s) return;
+    if (!canApplyFix(done.length, pro)) { window.__lovableEvents?.track?.("project.paywall_shown", { trigger: "fix" }); setWall(`You've used your ${FREE_FIXES} free fixes. Unlock every suggestion and the ATS-ready Word resume.`); return; }
     const next = applySuggestion(cur.resume, s, revised);
     if (next === cur.resume) { toast.error("Add your own true details first."); return; }
     setBusy(true);
@@ -46,7 +52,7 @@ export function ResumeFixer({ job, cand, resume }: { job: Job; cand: Candidate; 
   const undo = () => { if (history.length > 1) { setHistory(history.slice(0, -1)); setDone(done.slice(0, -1)); window.__lovableEvents?.track?.("project.suggestion_undone"); } };
   const copy = async () => { try { await navigator.clipboard.writeText(cur.resume); window.__lovableEvents?.track?.("project.resume_exported", { format: "copy" }); toast.success("Revised resume copied"); } catch { toast.error("Could not copy."); } };
   const download = () => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([cur.resume], { type: "text/plain" })); a.download = "resume-revised.txt"; a.click(); window.__lovableEvents?.track?.("project.resume_exported", { format: "txt" }); };
-  const word = async () => { try { await downloadResumeDocx(cur.resume); window.__lovableEvents?.track?.("project.resume_exported", { format: "docx" }); } catch { toast.error("Could not create the Word file."); } };
+  const word = async () => { if (!canDownloadWord(pro)) { window.__lovableEvents?.track?.("project.paywall_shown", { trigger: "docx" }); setWall("Download your improved resume as an ATS-ready Word file."); return; } try { await downloadResumeDocx(cur.resume); window.__lovableEvents?.track?.("project.resume_exported", { format: "docx" }); } catch { toast.error("Could not create the Word file."); } };
   const delta = cur.score - history[0]!.score;
 
   return <Card className="space-y-5 border-primary">
@@ -59,6 +65,7 @@ export function ResumeFixer({ job, cand, resume }: { job: Job; cand: Candidate; 
     </div>
 
     {s ? <div className="space-y-3 rounded-md border p-4">
+      {!pro && <p className="text-xs text-primary">{Math.max(0, FREE_FIXES - done.length)} of {FREE_FIXES} free fixes left</p>}
       <p className="text-xs text-muted-foreground">Suggestion {done.length + skipped.length + 1} of {done.length + skipped.length + queue.length}</p>
       <p className="font-medium">{s.title}</p><p className="text-sm text-muted-foreground">{s.detail}</p>
       {s.kind === "rewrite" ? <>
@@ -68,7 +75,7 @@ export function ResumeFixer({ job, cand, resume }: { job: Job; cand: Candidate; 
       </> : <label className="block text-xs font-medium">New bullet (your own true example)<textarea rows={2} className="mt-1 w-full rounded-md border bg-background p-2 text-sm font-normal" placeholder="e.g. Ran 12 usability sessions that cut checkout drop-off 18%" value={fields.text} onChange={(e) => setFields({ ...fields, text: e.target.value })} /></label>}
       {revised.trim() && <div className="border-l-2 border-accent pl-3"><p className="text-xs text-muted-foreground">Will be {s.kind === "rewrite" ? "replaced with" : "added"}</p><p className="text-sm">{revised}</p></div>}
       <div className="flex flex-wrap gap-2">
-        <Button onClick={apply} disabled={busy}><Sparkles />{busy ? "Rescoring… (about 30s)" : "Apply & rescore"}</Button>
+        <Button onClick={apply} disabled={busy}>{canApplyFix(done.length, pro) ? <Sparkles /> : <Lock />}{busy ? "Rescoring… (about 30s)" : "Apply & rescore"}</Button>
         <Button variant="outline" onClick={() => { window.__lovableEvents?.track?.("project.suggestion_skipped"); setSkipped([...skipped, s.id]); reset(); }} disabled={busy}>Skip</Button>
       </div>
     </div> : <p className="text-sm text-muted-foreground">No more suggestions. Copy or download your revised resume below.</p>}
@@ -76,9 +83,10 @@ export function ResumeFixer({ job, cand, resume }: { job: Job; cand: Candidate; 
     <div className="flex flex-wrap gap-2">
       <Button variant="outline" size="sm" onClick={undo} disabled={busy || history.length < 2}><RotateCcw />Undo last</Button>
       <Button variant="outline" size="sm" onClick={copy}><Copy />Copy resume</Button>
-      <Button size="sm" onClick={word}><FileText />Download Word (.docx)</Button>
+      <Button size="sm" onClick={word}>{pro ? <FileText /> : <Lock />}Download Word (.docx)</Button>
       <Button variant="ghost" size="sm" onClick={download}><Download />Plain text</Button>
     </div>
     {history.length > 1 && <details className="text-sm"><summary className="cursor-pointer">View revised resume</summary><pre className="mt-2 max-h-96 overflow-auto whitespace-pre-wrap rounded-md border bg-muted p-3 text-xs">{cur.resume}</pre></details>}
+    <PaywallModal open={!!wall} onOpenChange={(o) => !o && setWall(null)} reason={wall ?? ""} />
   </Card>;
 }

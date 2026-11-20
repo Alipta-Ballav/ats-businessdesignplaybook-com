@@ -4,7 +4,7 @@ import { ArrowRight, CheckCircle2, Gauge, Quote, ShieldCheck, Sparkles, Wand2 } 
 import { Button } from "@/components/ui/button";
 import { FTI_DIMENSIONS, DESIGN_LEVELS } from "@/lib/scoring";
 
-const TITLE = "FutureTalent AI — Evidence-grounded ATS audits for UX & design leaders";
+const TITLE = "UX Design ATS Checker — FutureTalent AI";
 const DESC = "Get a free, explainable ATS score for your design resume. Every point is tied to a verbatim quote, calibrated for Workday, Greenhouse and Ashby.";
 
 export const Route = createFileRoute("/")({
@@ -33,10 +33,10 @@ function Landing() {
           <div className="space-y-6">
             <span className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs text-muted-foreground">
               <span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" /><span className="relative inline-flex h-2 w-2 rounded-full bg-primary" /></span>
-              Next-gen ATS intelligence · Built for UX & design leaders
+              The ATS checker built only for the UX design community
             </span>
-            <h1 className="text-5xl leading-[1.05] md:text-6xl">Stop getting filtered out by keyword robots. <span className="text-gradient">Get an evidence-grounded audit.</span></h1>
-            <p className="max-w-xl text-lg text-muted-foreground">No black-box rejections. An 8-dimension Future Talent Index, ATS engine calibration and quote-verified scoring — for job seekers and the people hiring them.</p>
+            <h1 className="text-5xl leading-[1.05] md:text-6xl">The ATS checker for <span className="text-gradient">UX & product designers.</span></h1>
+            <p className="max-w-xl text-lg text-muted-foreground">Made for UX, product and design leadership roles — from Senior to Director. Not a generic keyword scanner: an 8-dimension Future Talent Index, ATS engine calibration and quote-verified scoring — for job seekers and the people hiring them.</p>
             <div className="flex flex-wrap items-center gap-3">
               <Button asChild size="lg" className="bg-gradient-primary shadow-glow"><Link to="/check" search={{ job: undefined }}>Run free resume audit <ArrowRight /></Link></Button>
               <Button asChild size="lg" variant="outline"><Link to="/check" search={{ job: undefined }}>Import a LinkedIn role</Link></Button>
