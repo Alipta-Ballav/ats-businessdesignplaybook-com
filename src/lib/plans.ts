@@ -1,7 +1,7 @@
-/** Micro-paywall plan catalog. Checkout is not wired yet; `checkoutReady` flips on when a gateway is added. */
+/** Micro-paywall plan catalog. Prices here are the source of truth; the server builds Razorpay orders from them. */
 export const FREE_FIXES = 2;
 export const FREE_SCANS = 3;
-export const checkoutReady = false;
+export const checkoutReady = true;
 export type PlanId = "single";
 export const PLANS: { id: PlanId; name: string; inr: number; usd: number; blurb: string; perks: string[]; best?: boolean }[] = [
   { id: "single", name: "Unlock this scan", inr: 49, usd: 0.99, blurb: "One-time, after your 3 free scans", best: true, perks: ["1 more resume scan", "All fix suggestions & rescoring", "ATS-ready Word download", "Custom ATS tuning"] },

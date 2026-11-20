@@ -1,29 +1,52 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-/** Test-mode payment: until a real gateway is wired, a simulated payment unlocks Pro in this browser only. */
-const SIM_KEY = "ft-test-paid";
-export const simulatePayment = () => { localStorage.setItem(SIM_KEY, "1"); window.dispatchEvent(new Event(SIM_KEY)); };
-export const resetSimulatedPayment = () => { localStorage.removeItem(SIM_KEY); window.dispatchEvent(new Event(SIM_KEY)); };
+/** A paid scan unlocks every Pro feature for the report it produced (this browser tab). */
+const UNLOCK_KEY = "ft-report-unlocked";
+export const PRO_EVENT = "ft-pro-changed";
+export const setReportUnlocked = (on: boolean) => {
+  if (on) sessionStorage.setItem(UNLOCK_KEY, "1"); else sessionStorage.removeItem(UNLOCK_KEY);
+  window.dispatchEvent(new Event(PRO_EVENT));
+};
+export const notifyProChanged = () => window.dispatchEvent(new Event(PRO_EVENT));
 
-/** Pro entitlement. Admin accounts (role in user_roles, checked under RLS) or a simulated test payment get Pro. */
+/** Paid scan credits left for the signed-in user (read under RLS). */
+export async function creditsLeft(): Promise<number> {
+  const { data: s } = await supabase.auth.getSession();
+  const uid = s.session?.user.id;
+  if (!uid) return 0;
+  const { data } = await supabase.from("scan_credits").select("credits").eq("user_id", uid).maybeSingle();
+  return data?.credits ?? 0;
+}
+
+/** Pro entitlement: admin role, unspent paid credits, or a report unlocked by a paid scan. */
 export function usePro(): boolean {
   const [pro, setPro] = useState(false);
   useEffect(() => {
     let live = true;
     const check = async () => {
-      if (localStorage.getItem(SIM_KEY) === "1") { if (live) setPro(true); return; }
+      if (sessionStorage.getItem(UNLOCK_KEY) === "1") { if (live) setPro(true); return; }
       const { data: s } = await supabase.auth.getSession();
       const uid = s.session?.user.id;
       if (!uid) { if (live) setPro(false); return; }
       const { data } = await supabase.from("user_roles").select("role").eq("user_id", uid).eq("role", "admin").maybeSingle();
-      if (live) setPro(!!data);
+      if (data) { if (live) setPro(true); return; }
+      const c = await creditsLeft();
+      if (live) setPro(c > 0);
     };
     void check();
-    const onSim = () => { void check(); };
-    window.addEventListener(SIM_KEY, onSim);
+    const on = () => { void check(); };
+    window.addEventListener(PRO_EVENT, on);
     const { data: sub } = supabase.auth.onAuthStateChange(() => { void check(); });
-    return () => { live = false; window.removeEventListener(SIM_KEY, onSim); sub.subscription.unsubscribe(); };
+    return () => { live = false; window.removeEventListener(PRO_EVENT, on); sub.subscription.unsubscribe(); };
   }, []);
   return pro;
+}
+
+export async function isAdmin(): Promise<boolean> {
+  const { data: s } = await supabase.auth.getSession();
+  const uid = s.session?.user.id;
+  if (!uid) return false;
+  const { data } = await supabase.from("user_roles").select("role").eq("user_id", uid).eq("role", "admin").maybeSingle();
+  return !!data;
 }

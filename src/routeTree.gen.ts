@@ -18,6 +18,7 @@ import { Route as RolesIndexRouteImport } from './routes/roles.index'
 import { Route as RolesJobIdRouteImport } from './routes/roles.$jobId'
 import { Route as AuthenticatedCandidateIndexRouteImport } from './routes/_authenticated/candidate.index'
 import { Route as AuthenticatedRecruiterIndexRouteImport } from './routes/_authenticated/recruiter.index'
+import { Route as ApiPublicRazorpayWebhookRouteImport } from './routes/api/public/razorpay-webhook'
 import { Route as AuthenticatedCandidateScansScanIdRouteImport } from './routes/_authenticated/candidate.scans.$scanId'
 import { Route as AuthenticatedRecruiterApplicantsAppIdRouteImport } from './routes/_authenticated/recruiter.applicants.$appId'
 import { Route as AuthenticatedRecruiterJobsJobIdRouteImport } from './routes/_authenticated/recruiter.jobs.$jobId'
@@ -69,6 +70,12 @@ const AuthenticatedRecruiterIndexRoute =
     path: '/recruiter/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicRazorpayWebhookRoute =
+  ApiPublicRazorpayWebhookRouteImport.update({
+    id: '/api/public/razorpay-webhook',
+    path: '/api/public/razorpay-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedCandidateScansScanIdRoute =
   AuthenticatedCandidateScansScanIdRouteImport.update({
     id: '/candidate/scans/$scanId',
@@ -101,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/roles/$jobId': typeof RolesJobIdRoute
   '/roles/': typeof RolesIndexRoute
+  '/api/public/razorpay-webhook': typeof ApiPublicRazorpayWebhookRoute
   '/candidate/': typeof AuthenticatedCandidateIndexRoute
   '/recruiter/': typeof AuthenticatedRecruiterIndexRoute
   '/candidate/scans/$scanId': typeof AuthenticatedCandidateScansScanIdRoute
@@ -115,6 +123,7 @@ export interface FileRoutesByTo {
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/roles/$jobId': typeof RolesJobIdRoute
   '/roles': typeof RolesIndexRoute
+  '/api/public/razorpay-webhook': typeof ApiPublicRazorpayWebhookRoute
   '/candidate': typeof AuthenticatedCandidateIndexRoute
   '/recruiter': typeof AuthenticatedRecruiterIndexRoute
   '/candidate/scans/$scanId': typeof AuthenticatedCandidateScansScanIdRoute
@@ -131,6 +140,7 @@ export interface FileRoutesById {
   '/_authenticated/welcome': typeof AuthenticatedWelcomeRoute
   '/roles/$jobId': typeof RolesJobIdRoute
   '/roles/': typeof RolesIndexRoute
+  '/api/public/razorpay-webhook': typeof ApiPublicRazorpayWebhookRoute
   '/_authenticated/candidate/': typeof AuthenticatedCandidateIndexRoute
   '/_authenticated/recruiter/': typeof AuthenticatedRecruiterIndexRoute
   '/_authenticated/candidate/scans/$scanId': typeof AuthenticatedCandidateScansScanIdRoute
@@ -147,6 +157,7 @@ export interface FileRouteTypes {
     | '/welcome'
     | '/roles/$jobId'
     | '/roles/'
+    | '/api/public/razorpay-webhook'
     | '/candidate/'
     | '/recruiter/'
     | '/candidate/scans/$scanId'
@@ -161,6 +172,7 @@ export interface FileRouteTypes {
     | '/welcome'
     | '/roles/$jobId'
     | '/roles'
+    | '/api/public/razorpay-webhook'
     | '/candidate'
     | '/recruiter'
     | '/candidate/scans/$scanId'
@@ -176,6 +188,7 @@ export interface FileRouteTypes {
     | '/_authenticated/welcome'
     | '/roles/$jobId'
     | '/roles/'
+    | '/api/public/razorpay-webhook'
     | '/_authenticated/candidate/'
     | '/_authenticated/recruiter/'
     | '/_authenticated/candidate/scans/$scanId'
@@ -191,6 +204,7 @@ export interface RootRouteChildren {
   CheckRoute: typeof CheckRoute
   RolesJobIdRoute: typeof RolesJobIdRoute
   RolesIndexRoute: typeof RolesIndexRoute
+  ApiPublicRazorpayWebhookRoute: typeof ApiPublicRazorpayWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -258,6 +272,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRecruiterIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/razorpay-webhook': {
+      id: '/api/public/razorpay-webhook'
+      path: '/api/public/razorpay-webhook'
+      fullPath: '/api/public/razorpay-webhook'
+      preLoaderRoute: typeof ApiPublicRazorpayWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/candidate/scans/$scanId': {
       id: '/_authenticated/candidate/scans/$scanId'
       path: '/candidate/scans/$scanId'
@@ -321,6 +342,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckRoute: CheckRoute,
   RolesJobIdRoute: RolesJobIdRoute,
   RolesIndexRoute: RolesIndexRoute,
+  ApiPublicRazorpayWebhookRoute: ApiPublicRazorpayWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

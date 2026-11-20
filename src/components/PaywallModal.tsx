@@ -1,11 +1,60 @@
+import { useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { Check, Lock } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { PLANS, checkoutReady } from "@/lib/plans";
-import { simulatePayment } from "@/lib/pro";
+import { PLANS, type PlanId } from "@/lib/plans";
+import { notifyProChanged } from "@/lib/pro";
+import { supabase } from "@/integrations/supabase/client";
+import { createCheckout, confirmCheckout } from "@/lib/payments.functions";
 import { toast } from "sonner";
 
+declare global { interface Window { Razorpay?: any } }
+
+function loadCheckoutJs(): Promise<void> {
+  if (window.Razorpay) return Promise.resolve();
+  return new Promise((res, rej) => {
+    const s = document.createElement("script");
+    s.src = "https://checkout.razorpay.com/v1/checkout.js";
+    s.onload = () => res(); s.onerror = () => rej(new Error("Couldn't load the payment window. Check your connection."));
+    document.body.appendChild(s);
+  });
+}
+
 export function PaywallModal({ open, onOpenChange, reason }: { open: boolean; onOpenChange: (o: boolean) => void; reason: string }) {
+  const [signedIn, setSignedIn] = useState<boolean | null>(null);
+  const [busy, setBusy] = useState(false);
+  const create = useServerFn(createCheckout); const confirm = useServerFn(confirmCheckout);
+  useEffect(() => { if (open) void supabase.auth.getSession().then(({ data }) => setSignedIn(!!data.session)); }, [open]);
+
+  const pay = async (plan: PlanId) => {
+    window.__lovableEvents?.track?.("project.checkout_clicked", { plan });
+    setBusy(true);
+    try {
+      await loadCheckoutJs();
+      const o = await create({ data: { plan } });
+      const { data: s } = await supabase.auth.getSession();
+      let settled = false;
+      const finish = async () => {
+        if (settled) return;
+        try {
+          const r = await confirm({ data: { paymentId: o.paymentId } });
+          if (r.status === "completed") { settled = true; notifyProChanged(); toast.success("Payment received. Your next scan is unlocked."); onOpenChange(false); }
+        } catch (e) { toast.error((e as Error).message); }
+        setBusy(false);
+      };
+      const rzp = new window.Razorpay({
+        key: o.keyId, order_id: o.rzpOrderId, amount: o.amount, currency: o.currency,
+        name: "UX Design ATS Checker", description: "One more resume scan",
+        prefill: { email: s.session?.user.email ?? "" },
+        handler: () => void finish(), modal: { ondismiss: () => void finish() },
+      });
+      rzp.on("payment.failed", (r: any) => toast.error(r?.error?.description ?? "Payment failed"));
+      rzp.open();
+    } catch (e) { toast.error((e as Error).message); setBusy(false); }
+  };
+
   return <Dialog open={open} onOpenChange={onOpenChange}>
     <DialogContent className="max-w-md">
       <DialogHeader>
@@ -14,18 +63,15 @@ export function PaywallModal({ open, onOpenChange, reason }: { open: boolean; on
       </DialogHeader>
       <div className="grid gap-4">
         {PLANS.map((p) => <div key={p.id} className={`relative space-y-3 rounded-xl border p-5 ${p.best ? "border-primary shadow-glow" : ""}`}>
-          {p.best && <span className="absolute -top-2.5 right-4 rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">Best value</span>}
           <div><p className="font-medium">{p.name}</p><p className="text-xs text-muted-foreground">{p.blurb}</p></div>
-          <p><span className="text-3xl font-semibold">₹{p.inr}</span> <span className="text-xs text-muted-foreground">/ ${p.usd}</span></p>
+          <p><span className="text-3xl font-semibold">₹{p.inr}</span></p>
           <ul className="space-y-1 text-sm">{p.perks.map((x) => <li key={x} className="flex gap-2"><Check className="h-4 w-4 text-success" />{x}</li>)}</ul>
-          <Button className="w-full" variant={p.best ? "default" : "outline"} disabled={!checkoutReady}
-            onClick={() => window.__lovableEvents?.track?.("project.checkout_clicked", { plan: p.id })}>
-            {checkoutReady ? `Pay ₹${p.inr}` : "Payments coming soon"}</Button>
-          {!checkoutReady && <Button className="w-full" variant="secondary" onClick={() => { simulatePayment(); window.__lovableEvents?.track?.("project.checkout_clicked", { plan: p.id }); toast.success("Test payment done. Pro is unlocked in this browser."); onOpenChange(false); }}>
-            Simulate payment ₹{p.inr} (test mode)</Button>}
+          {signedIn === false
+            ? <Button asChild className="w-full"><Link to="/auth" search={{ mode: "signup", as: "candidate", redirect: "/check" }}>Sign in to pay ₹{p.inr}</Link></Button>
+            : <Button className="w-full" disabled={busy || signedIn === null} onClick={() => void pay(p.id)}>{busy ? "Waiting for payment…" : `Pay ₹${p.inr} · UPI, card, netbanking`}</Button>}
         </div>)}
       </div>
-      <p className="text-center text-xs text-muted-foreground">One-time payment · no subscription · built for the UX design community</p>
+      <p className="text-center text-xs text-muted-foreground">Secure payment by Razorpay · one-time · no subscription</p>
     </DialogContent>
   </Dialog>;
 }
