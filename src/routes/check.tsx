@@ -51,6 +51,7 @@ function CheckPage() {
     try {
       const prof = mode === "profile";
       const jt = prof ? "Future Talent Index" : title, jdesc = prof ? "" : jd;
+      window.__lovableEvents?.track?.("project.scan_started", { mode: prof ? "generic" : "job_target" });
       const ev = await read({ data: { resume, jobTitle: jt, jobDescription: jdesc, requirements: prof ? [] : picked?.job.mandatory ?? [] } });
       const g: GuestScan = { jobId: prof ? null : picked?.job.id ?? null, jobTitle: jt, jobDescription: jdesc, resume, evidence: ev, createdAt: new Date().toISOString() };
       saveGuestScan(g); setResult(g); window.__lovableEvents?.track?.("project.report_opened", { mode: prof ? "generic" : "job_target", audience: "candidate", competencies: Object.keys(ev.competencies).length }); window.scrollTo({ top: 0, behavior: "smooth" });

@@ -19,7 +19,7 @@ export function AtsSimulator({ job, c }: { job: Job; c: Candidate }) {
         {Object.entries(SCREEN_LENSES).map(([name, x]) => {
           const e = evaluate({ ...job, flexibility: x.flexibility, weights: x.weights }, c);
           return (
-            <button key={name} type="button" onClick={() => setLens(name)} className={`rounded-md border p-3 text-left text-sm ${lens === name ? "border-primary bg-accent" : "bg-background"}`}>
+            <button key={name} type="button" onClick={() => { setLens(name); window.__lovableEvents?.track?.("project.lens_selected", { lens: name }); }} className={`rounded-md border p-3 text-left text-sm ${lens === name ? "border-primary bg-accent" : "bg-background"}`}>
               <div className="flex justify-between"><span className="font-medium">{name}</span><span className="font-mono">{e.composite ?? "—"}</span></div>
               <p className="mt-1 text-xs text-muted-foreground">{x.who}</p>
             </button>);

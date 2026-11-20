@@ -41,6 +41,30 @@
         }
       }
     },
+    "project.checkout_clicked": {
+      "event_schema_version": 1,
+      "description": "A pricing plan button was clicked in the pricing window.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "plan"
+        ],
+        "properties": {
+          "plan": {
+            "type": "string",
+            "enum": [
+              "single",
+              "sprint"
+            ]
+          }
+        }
+      }
+    },
     "project.job_imported": {
       "event_schema_version": 1,
       "description": "A job description was imported from a pasted link.",
@@ -57,6 +81,50 @@
         "properties": {
           "has_company": {
             "type": "boolean"
+          }
+        }
+      }
+    },
+    "project.lens_selected": {
+      "event_schema_version": 1,
+      "description": "The candidate switched which reviewer reads their resume.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "lens"
+        ],
+        "properties": {
+          "lens": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "project.paywall_shown": {
+      "event_schema_version": 1,
+      "description": "The pricing window opened because a free limit was reached.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "trigger"
+        ],
+        "properties": {
+          "trigger": {
+            "type": "string",
+            "enum": [
+              "fix",
+              "docx"
+            ]
           }
         }
       }
@@ -93,7 +161,7 @@
       }
     },
     "project.resume_exported": {
-      "event_schema_version": 1,
+      "event_schema_version": 2,
       "description": "The revised resume was copied or downloaded.",
       "privacy": {
         "contains_pii": false,
@@ -110,7 +178,32 @@
             "type": "string",
             "enum": [
               "copy",
-              "txt"
+              "txt",
+              "docx"
+            ]
+          }
+        }
+      }
+    },
+    "project.scan_started": {
+      "event_schema_version": 1,
+      "description": "A resume check was started on the check page.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "mode"
+        ],
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "generic",
+              "job_target"
             ]
           }
         }
