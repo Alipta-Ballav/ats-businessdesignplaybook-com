@@ -73,7 +73,7 @@ function CheckPage() {
       <div className="space-y-6">
         <button onClick={() => { clearGuestScan(); setResult(null); setResume(""); }} className="text-sm text-muted-foreground">← Check again</button>
         <FtiReport c={cand} />
-        <BusinessPlaybook resume={result.resume} />
+        <BusinessPlaybook />
         <ResumeFixer job={job} cand={cand} resume={result.resume} />
         <Card className="flex flex-wrap items-center justify-between gap-4 border-primary">
           <div><p className="font-display text-lg">Now test your fit for a specific role</p><p className="text-sm text-muted-foreground">Paste a job description to see must-haves and ATS scores.</p></div>
@@ -97,6 +97,7 @@ function CheckPage() {
             <Link to="/auth" search={{ ...signup, mode: "signin" }} className="rounded-md border px-4 py-2 text-sm">Sign in</Link>
           </div>
         </Card>
+        <BusinessPlaybook />
         <ReportTabs tabs={[
           { id: "fix", label: "Fix & rescore", content: <>
             <ResumeFixer job={job} cand={cand} resume={result.resume} />
@@ -108,7 +109,6 @@ function CheckPage() {
                   <li key={i} className="flex gap-4 py-3 text-sm"><span className="font-mono text-xs text-muted-foreground">{String(i + 1).padStart(2, "0")}</span><div><p className="font-medium">{t.title}</p><p className="mt-0.5 text-muted-foreground">{t.detail}</p></div></li>))}</ol>)}
             </Card></> },
           { id: "profile", label: "Talent profile", content: <FtiReport c={cand} /> },
-          { id: "playbook", label: "Business impact", content: <BusinessPlaybook resume={result.resume} /> },
           { id: "ats", label: "ATS systems", content: <><AtsTarget job={job} c={cand} resume={result.resume ?? ""} /><AtsSimulator job={job} c={cand} /></> },
           { id: "role", label: "The role", content: <JobDiagnostics title={result.jobTitle} description={result.jobDescription} /> },
           { id: "evidence", label: "Evidence", content: <ScoreDetails job={job} c={cand} audience="candidate" /> },

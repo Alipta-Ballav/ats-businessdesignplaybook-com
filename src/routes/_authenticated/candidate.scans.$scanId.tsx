@@ -10,6 +10,7 @@ import { ScoreDetails, ScoreHeader } from "@/components/ScoreReport";
 import { Card, StatusBadge } from "@/components/ui-bits";
 import { AtsSimulator } from "@/components/AtsSimulator";
 import { AtsTarget } from "@/components/AtsTarget";
+import { BusinessPlaybook } from "@/components/BusinessPlaybook";
 import { ReportTabs } from "@/components/ReportTabs";
 
 export const Route = createFileRoute("/_authenticated/candidate/scans/$scanId")({
@@ -25,7 +26,7 @@ function ScanResult() {
   const { job, cand } = scanToPair(s);
   const ev = evaluate(job, cand);
   const tips = resumeTips(job, cand);
-  if (!s.job_description.trim()) return <div className="space-y-6"><Link to="/candidate" className="text-sm text-muted-foreground">← New check</Link><FtiReport c={cand} /><ResumeFixer job={job} cand={cand} resume={s.resume_text ?? ""} /></div>;
+  if (!s.job_description.trim()) return <div className="space-y-6"><Link to="/candidate" className="text-sm text-muted-foreground">← New check</Link><FtiReport c={cand} /><BusinessPlaybook /><ResumeFixer job={job} cand={cand} resume={s.resume_text ?? ""} /></div>;
   return (
     <div className="space-y-6">
       <Link to="/candidate" className="text-sm text-muted-foreground">← New check</Link>
@@ -35,6 +36,7 @@ function ScanResult() {
         </div>
         <ScoreHeader job={job} c={cand} />
       </Card>
+      <BusinessPlaybook />
       <ReportTabs tabs={[
         { id: "fix", label: "Fix & rescore", content: <>
           <ResumeFixer job={job} cand={cand} resume={s.resume_text ?? ""} />
