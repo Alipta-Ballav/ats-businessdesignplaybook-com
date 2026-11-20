@@ -1,5 +1,4 @@
 import { JobDiagnostics } from "@/components/JobDiagnostics";
-import { JobUrlImport } from "@/components/JobUrlImport";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -40,7 +39,6 @@ function NewJob() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="space-y-4">
           <h2 className="font-display text-lg">The role</h2>
-          <JobUrlImport onImport={(title, description) => setJob({ ...job, title, description })} />
           <label className="block text-sm">Job title<input className={input} value={job.title} onChange={(e) => setJob({ ...job, title: e.target.value })} placeholder="Senior AI Product Designer" /></label>
           <label className="block text-sm">Job description<textarea rows={6} className={input} value={job.description} onChange={(e) => setJob({ ...job, description: e.target.value })} placeholder="Paste the job description…" /></label>
           <div className="text-sm">

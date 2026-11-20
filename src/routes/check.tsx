@@ -1,6 +1,5 @@
 import { JobDiagnostics } from "@/components/JobDiagnostics";
 import { ResumeFixer } from "@/components/ResumeFixer";
-import { JobUrlImport } from "@/components/JobUrlImport";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -119,7 +118,6 @@ function CheckPage() {
       <div className={mode === "role" ? "grid gap-6 lg:grid-cols-2" : "max-w-2xl"}>
         {mode === "role" && <Card className="space-y-3">
           <h2 className="font-display text-lg">The target role</h2>
-          <JobUrlImport onImport={(t, d) => { setTitle(t); setJd(d); }} />
           <label className="block text-sm">Job title<input className={input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Product Designer" /></label>
           <label className="block text-sm">Job description<textarea rows={10} className={input} value={jd} onChange={(e) => setJd(e.target.value)} placeholder="Paste the job posting you're targeting…" /></label>
           <JobDiagnostics title={title} description={jd} />

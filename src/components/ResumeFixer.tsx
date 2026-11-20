@@ -68,6 +68,7 @@ export function ResumeFixer({ job, cand, resume }: { job: Job; cand: Candidate; 
       {!pro && <p className="text-xs text-primary">{Math.max(0, FREE_FIXES - done.length)} of {FREE_FIXES} free fixes left</p>}
       <p className="text-xs text-muted-foreground">Suggestion {done.length + skipped.length + 1} of {done.length + skipped.length + queue.length}</p>
       <p className="font-medium">{s.title}</p><p className="text-sm text-muted-foreground">{s.detail}</p>
+      {s.playbook && <div className="mt-2 rounded-md border bg-muted p-3 text-xs"><p className="font-medium">Business Design Playbook · frame it with your real numbers</p><ul className="mt-1 list-disc space-y-1 pl-4 text-muted-foreground">{s.playbook.map((f) => <li key={f}>{f}</li>)}</ul></div>}
       {s.kind === "rewrite" ? <>
         <p className="border-l-2 pl-3 text-sm italic">“{s.original}”</p>
         <div className="grid gap-3 md:grid-cols-3">{([["action", "What you actually did"], ["constraint", "Real constraint or trade-off"], ["outcome", "Verified outcome"]] as const).map(([k, l]) =>

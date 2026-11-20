@@ -2,14 +2,27 @@ import { COMPETENCIES, evaluate, futureTalentIndex, type Candidate, type Job } f
 import { inspectBullets } from "./diagnostics";
 import { resumeTips } from "./tips";
 
-export type Suggestion = { id: string; kind: "rewrite" | "add"; title: string; detail: string; original?: string };
+export type Suggestion = { id: string; kind: "rewrite" | "add"; title: string; detail: string; original?: string; playbook?: string[] };
+
+/** Business Design Playbook framing formulas: structure prompts only, the candidate supplies every fact. */
+export const BUSINESS_PLAYBOOK = [
+  "Growth: friction you removed → behaviour that changed → commercial metric (conversion, expansion revenue, acquisition cost)",
+  "Cost-to-serve: system or self-service flow → efficiency lever → engineering time or support tickets reduced",
+  "Enterprise: workflow redesign → readiness or compliance unlocked → win rate or contract value",
+];
+const VANITY = /\b(delight|engagement|user satisfaction|better experience|improved (the )?ux)\b/i;
+const BIZ_NAMES = COMPETENCIES.filter((x) => x.id === "strategic" || x.id === "outcomes").map((x) => x.name.toLowerCase());
+const withPlaybook = (s: Suggestion): Suggestion => {
+  const t = `${s.title} ${s.original ?? ""}`.toLowerCase();
+  return BIZ_NAMES.some((n) => t.includes(n)) || VANITY.test(s.original ?? "") ? { ...s, playbook: BUSINESS_PLAYBOOK } : s;
+};
 export const ADDED_HEADING = "Additional evidence";
 
 /** Ordered queue: vague bullets to rewrite first, then missing/weak evidence to add. */
 export function buildQueue(job: Job, c: Candidate, resume: string): Suggestion[] {
   const rewrites: Suggestion[] = inspectBullets(resume).map((f) => ({ id: `r:${f.original}`, kind: "rewrite", title: "Make this bullet concrete", detail: f.issues.join(" · "), original: f.original }));
   const adds: Suggestion[] = resumeTips(job, c).map((t) => ({ id: `a:${t.title}`, kind: "add", title: t.title, detail: t.detail }));
-  return [...rewrites, ...adds];
+  return [...rewrites, ...adds].map(withPlaybook);
 }
 
 /** Replace the original line with the revision, or append a new bullet under an "Additional evidence" section. Never invents text. */

@@ -14,3 +14,7 @@ describe("applySuggestion", () => {
     expect(applySuggestion("Resume", { kind: "add" }, "  ")).toBe("Resume");
   });
 });
+
+import { describe as d2, it as i2, expect as e2 } from "vitest";
+import { BUSINESS_PLAYBOOK } from "./fixer";
+d2("business playbook", () => { i2("has 3 formulas", () => { e2(BUSINESS_PLAYBOOK).toHaveLength(3); }); });
