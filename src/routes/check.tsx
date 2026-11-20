@@ -116,26 +116,39 @@ function CheckPage() {
       </div>
     );
   }
+  const ready = resume.trim().length >= 80 && (mode === "profile" || (title.trim() && jd.trim().length >= 40));
   return (
-    <div className="space-y-8">
-      <div><p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Free · no sign-up needed</p>
-        <h1 className="mt-2 font-display text-4xl">Check your resume against a role</h1></div>
-      <div className="flex flex-wrap gap-2">
-        {([["profile", "Generic resume score", "Resume only · how strong is it overall"], ["role", "Score against a job", "Resume + job description · ATS match"]] as const).map(([m, t, d]) => (
-          <button key={m} onClick={() => setMode(m)} className={`rounded-md border px-4 py-3 text-left ${mode === m ? "border-primary bg-accent text-accent-foreground" : ""}`}>
-            <span className="block text-sm font-medium">{t}</span><span className="block text-xs text-muted-foreground">{d}</span></button>))}
+    <div className="mx-auto max-w-5xl space-y-10 py-6">
+      <header className="space-y-3 text-center">
+        <span className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs text-muted-foreground"><span className="h-1.5 w-1.5 rounded-full bg-primary" />Built for UX, product & design leaders</span>
+        <h1 className="text-4xl md:text-5xl">Score your design resume</h1>
+        <p className="mx-auto max-w-xl text-muted-foreground">Every point is backed by a quote from your own resume. Choose how you want to be scored.</p>
+      </header>
+
+      <div className="mx-auto grid max-w-3xl gap-3 sm:grid-cols-2">
+        {([["profile", "01", "Generic resume score", "Resume only — how strong is it overall?"], ["role", "02", "Score against a job", "Resume + job post — will you pass the ATS?"]] as const).map(([m, n, t, d]) => (
+          <button key={m} onClick={() => setMode(m)} className={`rounded-xl border p-5 text-left transition ${mode === m ? "border-primary bg-card shadow-glow" : "bg-card/50 hover:border-primary/40"}`}>
+            <span className={`font-mono text-xs ${mode === m ? "text-primary" : "text-muted-foreground"}`}>{n}</span>
+            <span className="mt-2 block font-medium">{t}</span><span className="mt-1 block text-sm text-muted-foreground">{d}</span></button>))}
       </div>
-      <div className={mode === "role" ? "grid gap-6 lg:grid-cols-2" : "max-w-2xl"}>
-        {mode === "role" && <Card className="space-y-3">
-          <h2 className="font-display text-lg">The target role</h2>
-          <label className="block text-sm">Job title<input className={input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Product Designer" /></label>
-          <label className="block text-sm">Job description<textarea rows={10} className={input} value={jd} onChange={(e) => setJd(e.target.value)} placeholder="Paste the job posting you're targeting…" /></label>
+
+      <div className={mode === "role" ? "grid gap-6 lg:grid-cols-2" : "mx-auto max-w-3xl"}>
+        {mode === "role" && <div className="space-y-4 rounded-xl border bg-card p-6 shadow-sheet">
+          <div><p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Step 1</p><h2 className="mt-1 text-lg">The target role</h2></div>
+          <label className="block space-y-1.5 text-sm font-medium">Job title<input className={input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Senior Product Designer" /></label>
+          <label className="block space-y-1.5 text-sm font-medium">Job description<textarea rows={10} className={input} value={jd} onChange={(e) => setJd(e.target.value)} placeholder="Paste the job posting you're targeting…" /></label>
           <JobDiagnostics title={title} description={jd} />
-        </Card>}
-        <Card><ResumeInput value={resume} onChange={setResume} /></Card>
+        </div>}
+        <div className="space-y-4 rounded-xl border bg-card p-6 shadow-sheet">
+          <div><p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">{mode === "role" ? "Step 2" : "Your resume"}</p><h2 className="mt-1 text-lg">Upload or paste your resume</h2></div>
+          <ResumeInput value={resume} onChange={setResume} />
+        </div>
       </div>
-      <button disabled={busy || resume.trim().length < 80 || (mode === "role" && (!title.trim() || jd.trim().length < 40))} onClick={run} className="rounded-md bg-primary px-5 py-2 text-sm font-medium text-primary-foreground disabled:opacity-40">{busy ? "Reading your resume… (about 30s)" : "Get my score"}</button>
-      {!pro && <p className="text-xs text-muted-foreground">{Math.max(0, FREE_SCANS - used)} of {FREE_SCANS} free scan left · then ₹49 once unlocks everything</p>}
+
+      <div className="flex flex-col items-center gap-3">
+        <button disabled={busy || !ready} onClick={run} className="w-full max-w-sm rounded-lg bg-gradient-primary px-6 py-3 text-sm font-medium text-primary-foreground shadow-glow transition disabled:opacity-40 disabled:shadow-none">{busy ? "Reading your resume… (about 30s)" : "Get my score →"}</button>
+        {!pro && <p className="text-xs text-muted-foreground">{Math.max(0, FREE_SCANS - used)} of {FREE_SCANS} free scan left · then ₹49 once unlocks everything</p>}
+      </div>
       <PaywallModal open={wall} onOpenChange={setWall} reason={"You have used your free scan. Pay ₹49 once to unlock unlimited scans, all fixes and the Word download."} />
     </div>
   );
