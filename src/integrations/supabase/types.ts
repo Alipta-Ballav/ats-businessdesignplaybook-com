@@ -118,6 +118,51 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          gateway: string
+          gateway_order_id: string | null
+          gateway_payment_id: string | null
+          id: string
+          paid_at: string | null
+          plan: string
+          scans_granted: number
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          gateway?: string
+          gateway_order_id?: string | null
+          gateway_payment_id?: string | null
+          id?: string
+          paid_at?: string | null
+          plan?: string
+          scans_granted?: number
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          gateway?: string
+          gateway_order_id?: string | null
+          gateway_payment_id?: string | null
+          id?: string
+          paid_at?: string | null
+          plan?: string
+          scans_granted?: number
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -136,6 +181,24 @@ export type Database = {
           full_name?: string | null
           headline?: string | null
           id?: string
+        }
+        Relationships: []
+      }
+      scan_credits: {
+        Row: {
+          credits: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          credits?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          credits?: number
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
