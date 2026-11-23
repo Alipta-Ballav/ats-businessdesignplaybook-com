@@ -24,7 +24,7 @@ const PILLARS = [
   { icon: Lock, fear: "“Is my NDA work safe?”", title: "Designer Privacy Pledge", body: "Your resume is never sold, shared or used to train AI models. Delete your saved data any time." },
   { icon: GraduationCap, fear: "“Who wrote this rubric?”", title: "Built by design educators", body: "Created by The Finishing School, makers of the Business Design Playbook, from real Lead, Staff and Director hiring criteria." },
   { icon: Quote, fear: "“Is the score made up?”", title: "Verbatim Truth Standard", body: "Every point quotes your exact words. If we can't find it in your resume, it doesn't count. Same resume, same score." },
-  { icon: Cpu, fear: "“Which AI reads my resume?”", title: "OpenAI GPT-6 reasoning model", body: "A top-tier reasoning model only finds quotes in your resume. Your final score comes from a fixed, published formula, not AI guesswork. Nothing is stored by the model." },
+  { icon: Cpu, fear: "“Which AI reads my resume?”", title: "OpenAI GPT-6 reasoning model", body: "A top-tier reasoning model only finds quotes in your resume. Processed ephemerally via enterprise API with zero data retention. Your text is never stored by OpenAI, never shared, and never used to train AI models. Your score comes from a fixed, published formula." },
   { icon: BadgeCheck, fear: "“Is this a subscription trap?”", title: "Zero-trap payment", body: "First scan free. ₹99 once for 30 days. No card saved, no auto-renewal, clear refunds." },
 ];
 
