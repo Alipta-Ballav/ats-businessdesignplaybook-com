@@ -4,7 +4,7 @@ export const FREE_SCANS = 1;
 export const checkoutReady = true;
 export type PlanId = "single";
 export const PLANS: { id: PlanId; name: string; inr: number; usd: number; blurb: string; perks: string[]; best?: boolean }[] = [
-  { id: "single", name: "Unlock everything", inr: 49, usd: 0.99, blurb: "One-time payment after your free scan", best: true, perks: ["Unlimited resume scans", "All fix suggestions & rescoring", "ATS-ready Word download", "Custom ATS tuning"] },
+  { id: "single", name: "Unlock everything", inr: 49, usd: 0.99, blurb: "One-time payment after your free scan", best: true, perks: ["Unlimited resume scans", "Official AI rescore after edits", "AI line drafting", "ATS-ready Word download", "Custom ATS tuning"] },
 ];
 /** Free users get FREE_FIXES applied suggestions; Pro is unlimited. */
 export function canApplyFix(applied: number, pro: boolean) { return pro || applied < FREE_FIXES; }

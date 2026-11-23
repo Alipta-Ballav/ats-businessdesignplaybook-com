@@ -79,6 +79,7 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
   };
 
   const rescore = async () => {
+    if (!pro) { window.__lovableEvents?.track?.("project.paywall_shown", { trigger: "rescore" }); setWall("Your estimated score is free. Pay ₹49 once to get your official AI-verified rescore, AI drafting and the Word download."); return; }
     setBusy("score");
     try {
       const ev = await read({ data: { resume: draft, jobTitle: job.title, jobDescription: job.description, requirements: job.mandatory } });
@@ -108,9 +109,9 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
       <Card className="flex items-center justify-between gap-4 p-4">
         <div className="flex items-baseline gap-3">
           <p className="font-display text-3xl font-semibold tabular-nums">{official.score}</p>
-          <p className="text-xs text-muted-foreground">from {base} · <span className={delta >= 0 ? "text-success" : "text-destructive"}>{delta >= 0 ? "+" : ""}{delta}</span>{stale && <> · est. {estimate}</>}</p>
+          <p className="text-xs text-muted-foreground">from {base} · <span className={delta >= 0 ? "text-success" : "text-destructive"}>{delta >= 0 ? "+" : ""}{delta}</span>{stale && <> · <b className="text-foreground">Estimated: ~{estimate}</b></>}</p>
         </div>
-        <Button size="sm" onClick={rescore} disabled={!!busy || !stale}><Sparkles />{busy === "score" ? "Rescoring…" : "Rescore"}</Button>
+        <Button size="sm" onClick={rescore} disabled={!!busy || !stale}><Sparkles />{!pro && <Lock />}{busy === "score" ? "Rescoring…" : pro ? "Rescore" : "Verify score · ₹49"}</Button>
       </Card>
 
       <Card className="overflow-hidden p-0">
