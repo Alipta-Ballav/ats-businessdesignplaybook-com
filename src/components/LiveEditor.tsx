@@ -93,10 +93,10 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
   };
   const undo = () => {
     const prev = history[history.length - 1]; if (prev === undefined) return;
-    setHistory(history.slice(0, -1)); setDraft(prev); setTyping(false);
+    setHistory(history.slice(0, -1)); setDraft(prev); setTyping(false); setJustDone(null); toast.success("Last change undone");
     setFixes(fixes.filter((f) => prev.includes(f.removed ? f.added : `- ${f.added}`)));
   };
-  const undoFix = (f: Fix) => { commit(revertFix(draft, f)); setFixes(fixes.filter((x) => x !== f)); toast.success("Change undone"); };
+  const undoFix = (f: Fix) => { setJustDone(null); commit(revertFix(draft, f)); setFixes(fixes.filter((x) => x !== f)); toast.success("Change undone"); };
   const resetAll = () => { if (!window.confirm("Reset to your original CV? All changes will be removed.")) return; commit(resume); setFixes([]); setSkipped([]); };
   const total = fixes.length + open.length + skipped.length;
   const copy = async () => { try { await navigator.clipboard.writeText(draft); toast.success("Resume copied"); } catch { toast.error("Could not copy."); } };
@@ -167,7 +167,7 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
                         <p className="text-muted-foreground">Then press “Try again” — AI will use only these facts.</p>
                       </div>
                     </details>
-                    <button className="text-xs text-muted-foreground hover:underline" onClick={() => { setSkipped([...skipped, s.id]); reset(); }}>Skip this recommendation</button>
+                    <button className="text-xs text-muted-foreground hover:underline" onClick={() => { setSkipped([...skipped, s.id]); reset(); setJustDone(null); toast("Skipped — you can restore it under Steps"); }}>Skip this recommendation</button>
                   </div>
                 )}
               </li>
