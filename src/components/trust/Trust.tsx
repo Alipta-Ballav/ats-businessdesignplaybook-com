@@ -53,15 +53,11 @@ export function TrustPillars() {
 export function Footer() {
   return (
     <footer className="mt-16 border-t">
-      <div className="mx-auto grid max-w-6xl gap-6 px-6 py-10 text-sm text-muted-foreground sm:grid-cols-4">
+      <div className="mx-auto grid max-w-6xl gap-6 px-6 py-10 text-sm text-muted-foreground sm:grid-cols-[2fr_1fr]">
         <div><p className="font-display text-base font-semibold text-foreground">FutureTalent AI</p><p className="text-xs font-medium text-primary">An initiative by Design shots</p>
           <p className="mt-2">The ATS check built only for Product & UX designers. By The Finishing School, creators of the <a href="https://businessdesignplaybook.com/" target="_blank" rel="noreferrer" className="underline">Business Design Playbook</a>.</p></div>
         <div className="flex flex-col gap-1.5"><p className="font-medium text-foreground">Trust</p>
           <Link to="/privacy">Privacy policy</Link><Link to="/terms">Terms of service</Link><Link to="/refund">Refund policy</Link></div>
-        <div className="flex flex-col gap-1.5"><p className="font-medium text-foreground">Free career resources</p>
-          <Link to="/swipe-file">Bullet swipe file</Link><Link to="/promotion">Next-level audit</Link><Link to="/teardowns">Weekly role teardowns</Link></div>
-        <div className="flex flex-col gap-1.5"><p className="font-medium text-foreground">Promise</p>
-          <span>No AI training on your resume</span><span>Every score quotes your words</span><span>No subscriptions, no auto-debit</span></div>
       </div>
       <p className="pb-6 text-center text-xs text-muted-foreground">© {new Date().getFullYear()} The Finishing School. Payments secured by Razorpay.</p>
     </footer>

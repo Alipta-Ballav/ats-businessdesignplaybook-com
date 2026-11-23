@@ -180,11 +180,11 @@ function Landing() {
           </div>
         </div>
         <div className="mt-10 overflow-hidden rounded-2xl border bg-card">
-          <div className="border-b bg-muted/40 px-6 py-4"><h3 className="text-lg font-semibold">Exactly what you get</h3><p className="text-sm text-muted-foreground">No hidden limits. Pass lasts 30 days from payment.</p></div>
+          <div className="border-b bg-muted/40 px-6 py-4"><h3 className="text-lg font-semibold">Free vs ₹99 pass, side by side</h3><p className="text-sm text-muted-foreground">Start free. Pay ₹99 once only if you want more. The pass ends after 30 days and never charges you again.</p></div>
           <table className="w-full text-sm">
-            <thead><tr className="border-b text-left text-xs text-muted-foreground"><th className="px-6 py-2 font-medium">Benefit</th><th className="px-4 py-2 font-medium">Free</th><th className="px-4 py-2 font-medium text-primary">₹99 pass</th></tr></thead>
-            <tbody>{[["Full resume scans", "1", "5 in 30 days"], ["Rescores after your edits", "—", "Unlimited (don't use scans)"], ["AI bullet rewrites", "Unlimited", "Unlimited"], ["Live estimated score", "Yes", "Yes"], ["ATS-clean Word download", "—", "Unlimited"], ["Auto-renewal", "Never", "Never"]].map(([b, f, p]) =>
-              <tr key={b} className="border-b last:border-0"><td className="px-6 py-3">{b}</td><td className="px-4 py-3 font-mono text-muted-foreground">{f}</td><td className="px-4 py-3 font-mono font-medium">{p}</td></tr>)}</tbody>
+            <thead><tr className="border-b text-left text-xs text-muted-foreground"><th className="px-6 py-2 font-medium">What you can do</th><th className="px-4 py-2 font-medium">Free</th><th className="px-4 py-2 font-medium text-primary">With ₹99 pass</th></tr></thead>
+            <tbody>{[["Scan a new resume", "1 time", "5 times"], ["See your new score after editing", "No", "Yes, any number of times"], ["AI help to rewrite lines", "Yes", "Yes"], ["Download your resume as Word", "No", "Yes"], ["Charged again automatically", "Never", "Never"]].map(([b, f, p]) =>
+              <tr key={b} className="border-b last:border-0"><td className="px-6 py-3">{b}</td><td className="px-4 py-3 text-muted-foreground">{f}</td><td className="px-4 py-3 font-medium">{p}</td></tr>)}</tbody>
           </table>
           <div className="grid gap-4 border-t bg-primary/5 px-6 py-5 sm:grid-cols-3">{[["≈ ₹20", "per full scan (₹99 ÷ 5)"], ["₹3.30", "per day of your job hunt"], ["1 interview", "is all it takes to pay back many times over"]].map(([v, l]) =>
             <div key={l}><p className="font-mono text-2xl font-semibold text-primary">{v}</p><p className="text-xs text-muted-foreground">{l}</p></div>)}</div>
