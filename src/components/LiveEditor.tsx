@@ -48,22 +48,6 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
   const [wall, setWall] = useState<string | null>(null);
   const [justDone, setJustDone] = useState<string | null>(null);
 
-  const saveKey = useMemo(() => { let h = 0; for (let i = 0; i < resume.length; i++) h = (h * 31 + resume.charCodeAt(i)) | 0; return `ft-editor:${h}`; }, [resume]);
-  const [restored, setRestored] = useState(false);
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(saveKey); if (!raw) { setRestored(true); return; }
-      const s = JSON.parse(raw) as { draft: string; fixes: Fix[]; skipped: string[]; at: number };
-      if (s.draft && s.draft !== (initialDraft ?? resume)) toast("Pick up where you left off?", { description: `Unsaved edits from ${new Date(s.at).toLocaleString()}`, duration: 15000, action: { label: "Restore", onClick: () => { setHistory((h) => [...h, draft]); setDraft(s.draft); setFixes(s.fixes ?? []); setSkipped(s.skipped ?? []); toast.success("Your edits are back"); } } });
-    } catch { /* ignore */ }
-    setRestored(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [saveKey]);
-  useEffect(() => {
-    if (!restored) return;
-    try { if (draft === resume && !fixes.length) localStorage.removeItem(saveKey); else localStorage.setItem(saveKey, JSON.stringify({ draft, fixes, skipped, at: Date.now() })); } catch { /* storage full */ }
-  }, [draft, fixes, skipped, restored, saveKey, resume]);
-
   const queue = useMemo(() => buildQueue(job, official.cand, official.text), [job, official]);
   const doneIds = fixes.map((f) => f.id);
   const open = queue.filter((s) => !doneIds.includes(s.id) && !skipped.includes(s.id));
