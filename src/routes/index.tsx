@@ -127,7 +127,7 @@ function Landing() {
             </span>
             <h1 className="text-5xl leading-[1.05] md:text-6xl">The resume score you can <span className="text-gradient">actually trust.</span></h1>
             <p className="max-w-xl text-lg text-muted-foreground">Built for Product & UX designers. Every point is tied to an exact line from your resume, your work is never used to train AI, and you pay once with no auto-debit.</p>
-            <ul className="flex flex-wrap gap-2">{[["100%", "Quote-verified scores"], ["0", "Resumes used for AI training"], ["₹0", "Auto-debit, ever"]].map(([n, t]) =>
+            <ul className="flex flex-wrap gap-2">{[["100%", "Scores backed by your own words"], ["0", "Resumes used for AI training"], ["₹0", "Auto-debit, ever"]].map(([n, t]) =>
               <li key={t} className="flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm shadow-sheet"><span className="font-mono font-semibold text-primary">{n}</span><span className="text-muted-foreground">{t}</span></li>)}</ul>
             <div className="flex flex-wrap items-center gap-3">
               <Button asChild size="lg" className="bg-gradient-primary shadow-glow"><Link to="/check" search={{ job: undefined }}>Run free resume audit <ArrowRight /></Link></Button>

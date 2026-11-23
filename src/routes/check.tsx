@@ -128,7 +128,7 @@ function CheckPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-3 sm:space-y-5">
       <header className="space-y-2">
-        <div className="flex flex-wrap items-center justify-between gap-2"><h1 className="text-2xl sm:text-3xl">Score your design resume</h1><span className="flex items-center gap-1.5 text-xs text-success"><CheckCircle2 className="h-3.5 w-3.5" />Quote-verified scores</span></div>
+        <div className="flex flex-wrap items-center justify-between gap-2"><h1 className="text-2xl sm:text-3xl">Score your design resume</h1><span className="flex items-center gap-1.5 text-xs text-success"><CheckCircle2 className="h-3.5 w-3.5" />Every score backed by your own words</span></div>
         <p className="text-sm text-muted-foreground">Your craft, research and impact — evaluated across 8 design dimensions.</p>
       </header>
 
