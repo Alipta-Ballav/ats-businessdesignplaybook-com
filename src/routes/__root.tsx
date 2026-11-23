@@ -163,7 +163,6 @@ function Header() {
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-6 py-4">
         <Link to="/" className="font-display text-xl font-semibold">FutureTalent<span className="ml-1 rounded-md bg-gradient-primary px-1.5 text-sm text-primary-foreground">AI</span></Link>
         <nav className="flex flex-1 gap-4 text-sm text-muted-foreground">
-          <Link to="/swipe-file" activeProps={active}>Design workspace</Link>
           {me?.role === "candidate" && <Link to="/candidate" activeProps={active}>Check my resume</Link>}
           {!me && <Link to="/check" activeProps={active}>Resume check</Link>}
         </nav>
