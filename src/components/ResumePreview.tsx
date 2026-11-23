@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { BULLET, isHeading, isRoleLine } from "@/lib/export-docx";
+import { BULLET, inlineRuns, isHeading, isRoleLine } from "@/lib/export-docx";
+
+const Rich = ({ t }: { t: string }) => <>{inlineRuns(t).map((r, k) => r.bold ? <b key={k}>{r.text}</b> : r.italic ? <i key={k}>{r.text}</i> : <span key={k}>{r.text}</span>)}</>;
+const plain = (t: string) => inlineRuns(t).map((r) => r.text).join("");
 import { diffLines } from "@/lib/editor";
 
 const PAGE_H = 1123; // A4 at 96dpi
@@ -50,11 +53,11 @@ export function ResumePreview({ original, draft }: { original: string; draft: st
           const t = l.text.trim();
           if (!t) return <div key={i} className="h-2" />;
           const mark = l.changed ? "bg-primary/15 border-l-4 border-primary rounded-r-sm pl-2 -ml-3 transition-colors" : "";
-          if (i === first) return <h3 key={i} data-line={i} className={`mb-1 text-2xl font-bold ${mark}`}>{t}</h3>;
-          if (isHeading(t)) return <h4 key={i} data-line={i} className={`mb-1.5 mt-4 border-b border-foreground/70 pb-0.5 text-[11px] font-semibold uppercase tracking-[0.15em] ${mark}`}>{t}</h4>;
-          if (isRoleLine(t)) return <p key={i} data-line={i} className={`mt-2 font-bold ${mark}`}>{t}</p>;
-          if (BULLET.test(t)) return <p key={i} data-line={i} className={`relative pl-4 ${mark}`}><span className="absolute left-0">•</span>{t.replace(BULLET, "")}</p>;
-          return <p key={i} data-line={i} className={mark}>{t}</p>;
+          if (i === first) return <h3 key={i} data-line={i} className={`mb-1 text-2xl font-bold ${mark}`}><Rich t={t} /></h3>;
+          if (isHeading(plain(t))) return <h4 key={i} data-line={i} className={`mb-1.5 mt-4 border-b border-foreground/70 pb-0.5 text-[11px] font-semibold uppercase tracking-[0.15em] ${mark}`}>{plain(t)}</h4>;
+          if (isRoleLine(plain(t))) return <p key={i} data-line={i} className={`mt-2 font-bold ${mark}`}><Rich t={t} /></p>;
+          if (BULLET.test(t)) return <p key={i} data-line={i} className={`relative pl-4 ${mark}`}><span className="absolute left-0">•</span><Rich t={t.replace(BULLET, "")} /></p>;
+          return <p key={i} data-line={i} className={mark}><Rich t={t} /></p>;
         })}
       </div>
       </div>

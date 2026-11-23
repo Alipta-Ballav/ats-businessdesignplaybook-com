@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Check, CheckCircle2, Copy, FileText, Lock, RotateCcw, Sparkles, Undo2, Wand2 } from "lucide-react";
 import { toast } from "sonner";
@@ -46,6 +46,22 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
   const [wall, setWall] = useState<string | null>(null);
   const [justDone, setJustDone] = useState<string | null>(null);
 
+  const saveKey = useMemo(() => { let h = 0; for (let i = 0; i < resume.length; i++) h = (h * 31 + resume.charCodeAt(i)) | 0; return `ft-editor:${h}`; }, [resume]);
+  const [restored, setRestored] = useState(false);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(saveKey); if (!raw) { setRestored(true); return; }
+      const s = JSON.parse(raw) as { draft: string; fixes: Fix[]; skipped: string[]; at: number };
+      if (s.draft && s.draft !== (initialDraft ?? resume)) toast("Pick up where you left off?", { description: `Unsaved edits from ${new Date(s.at).toLocaleString()}`, duration: 15000, action: { label: "Restore", onClick: () => { setHistory((h) => [...h, draft]); setDraft(s.draft); setFixes(s.fixes ?? []); setSkipped(s.skipped ?? []); toast.success("Your edits are back"); } } });
+    } catch { /* ignore */ }
+    setRestored(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [saveKey]);
+  useEffect(() => {
+    if (!restored) return;
+    try { if (draft === resume && !fixes.length) localStorage.removeItem(saveKey); else localStorage.setItem(saveKey, JSON.stringify({ draft, fixes, skipped, at: Date.now() })); } catch { /* storage full */ }
+  }, [draft, fixes, skipped, restored, saveKey, resume]);
+
   const queue = useMemo(() => buildQueue(job, official.cand, official.text), [job, official]);
   const doneIds = fixes.map((f) => f.id);
   const open = queue.filter((s) => !doneIds.includes(s.id) && !skipped.includes(s.id));
@@ -74,7 +90,7 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
     if (!canApplyFix(fixesUsed(fixes), pro)) { window.__lovableEvents?.track?.("project.paywall_shown", { trigger: "fix" }); setWall(`You've used your ${FREE_FIXES} free fixes. Unlock every suggestion and the Word download.`); return; }
     const next = applySuggestion(draft, active, text);
     if (next === draft) { toast.error("Write or draft the improved line first."); return; }
-    commit(next); setFixes([...fixes, { id: active.id, source, title: active.title, added: cleanLine(text), removed: active.kind === "rewrite" && active.original && draft.includes(active.original) ? active.original : "" }]); reset(); setOpenId(null); setJustDone(active.title);
+    commit(next); setFixes([...fixes, { id: active.id, source, title: active.title, added: cleanLine(text), removed: active.kind === "rewrite" && active.original && draft.includes(active.original) ? active.original : "" }]); reset(); setOpenId(null); setJustDone(active.id);
     toast.success(`Step done: ${active.title}`, { description: "Highlighted in the preview. You can undo it any time." });
     window.__lovableEvents?.track?.("project.suggestion_applied", { source });
   };
@@ -121,22 +137,15 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
           <span className="text-xs text-muted-foreground">{fixes.length}/{total} done</span>
         </div>
         {total > 0 && <div className="h-1 bg-muted"><div className="h-full bg-success transition-all" style={{ width: `${(fixes.length / total) * 100}%` }} /></div>}
-        {justDone && (
-          <div className="flex items-center gap-3 border-b bg-success/10 px-4 py-3 text-sm">
-            <CheckCircle2 className="h-5 w-5 shrink-0 text-success" />
-            <div className="min-w-0 flex-1"><p className="font-medium">Done: {justDone}</p><p className="text-xs text-muted-foreground">{open.length ? <>Next up: <b className="text-foreground">{open[0]?.title}</b></> : "All recommendations applied — rescore at the bottom."}</p></div>
-            <Button size="sm" variant="ghost" onClick={() => { const f = fixes[fixes.length - 1]; if (f) undoFix(f); setJustDone(null); }}><Undo2 />Undo</Button>
-          </div>
-        )}
         {open.length === 0 && <p className="p-4 text-sm text-muted-foreground">All done. Rescore below to find more.</p>}
         <ul className="divide-y">
           {queue.filter((q) => !skipped.includes(q.id) && (doneIds.includes(q.id) || open.slice(0, 8).includes(q))).map((s) => {
             const n = queue.indexOf(s);
             const f = fixes.find((x) => x.id === s.id);
             if (f) return (
-              <li key={s.id} className={`flex items-center gap-3 border-l-4 border-success bg-success/10 px-4 py-3 transition-all ${justDone === f.title ? "ring-2 ring-inset ring-success/50" : ""}`}>
+              <li key={s.id} className={`flex items-center gap-3 border-l-4 border-success bg-success/10 px-4 py-3 transition-all ${justDone === f.id ? "ring-2 ring-inset ring-success/50" : ""}`}>
                 <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-success text-background"><Check className="h-3.5 w-3.5" /></span>
-                <div className="min-w-0 flex-1"><p className="truncate text-sm font-medium"><span className="mr-1 text-muted-foreground">{n + 1}.</span>{s.title}</p><p className="text-xs text-success">Applied · {f.source === "ai" ? "AI" : "Manual"} · highlighted in preview</p></div>
+                <div className="min-w-0 flex-1"><p className="truncate text-sm font-medium"><span className="mr-1 text-muted-foreground">{n + 1}.</span>{s.title}</p><p className="text-xs text-success">{justDone === f.id ? "Just applied ✓ · " : "Applied · "}{f.source === "ai" ? "AI" : "Manual"} · highlighted in preview</p></div>
                 <Button size="sm" variant="ghost" onClick={() => undoFix(f)}><Undo2 />Undo</Button>
               </li>
             );

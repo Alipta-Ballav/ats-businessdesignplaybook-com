@@ -7,6 +7,17 @@ export const isHeading = (l: string) => {
   return t === t.toUpperCase() && /[A-Z]/.test(t) || /^(summary|profile|experience|work experience|education|skills|projects|certifications|awards|additional evidence|publications|leadership|tools)$/i.test(t);
 };
 
+/** Splits **bold** and *italic* markers into styled segments (shared by preview and Word export). */
+export function inlineRuns(t: string): { text: string; bold?: boolean; italic?: boolean }[] {
+  const out: { text: string; bold?: boolean; italic?: boolean }[] = [];
+  const re = /\*\*([^*]+)\*\*|\*([^*\s][^*]*)\*/g; let last = 0; let m: RegExpExecArray | null;
+  while ((m = re.exec(t))) { if (m.index > last) out.push({ text: t.slice(last, m.index) }); out.push(m[1] ? { text: m[1], bold: true } : { text: m[2] ?? "", italic: true }); last = re.lastIndex; }
+  if (last < t.length) out.push({ text: t.slice(last) });
+  return out;
+}
+const runs = (t: string, o: { bold?: boolean; size?: number; color?: string } = {}) => inlineRuns(t).map((r) => new TextRun({ text: r.text, bold: o.bold || r.bold, italics: r.italic, size: o.size, color: o.color }));
+const plain = (t: string) => inlineRuns(t).map((r) => r.text).join("");
+
 /** A job-title / company / dates line, e.g. "Lead Designer | Acme | 2021 – Present". */
 export const isRoleLine = (l: string) => { const t = l.trim(); return !BULLET.test(t) && t.length <= 120 && !/[.;]$/.test(t) && /((19|20)\d{2}|present|current)/i.test(t) && /[|–—·,-]/.test(t); };
 
@@ -18,11 +29,11 @@ export function resumeToDocx(text: string): Document {
   lines.forEach((raw, i) => {
     const l = raw.trim();
     if (!l) return;
-    if (i === first) { kids.push(new Paragraph({ alignment: AlignmentType.LEFT, spacing: { after: 60 }, children: [new TextRun({ text: l, bold: true, size: 36 })] })); return; }
-    if (isHeading(l)) { kids.push(new Paragraph({ spacing: { before: 240, after: 80 }, border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: "1F2A44", space: 2 } }, children: [new TextRun({ text: l.toUpperCase(), bold: true, size: 22, color: "1F2A44" })] })); return; }
-    if (isRoleLine(l)) { kids.push(new Paragraph({ spacing: { before: 120, after: 40 }, children: [new TextRun({ text: l, bold: true })] })); return; }
-    if (BULLET.test(l)) { kids.push(new Paragraph({ numbering: { reference: "b", level: 0 }, spacing: { after: 40 }, children: [new TextRun(l.replace(BULLET, ""))] })); return; }
-    kids.push(new Paragraph({ spacing: { after: 60 }, children: [new TextRun(l)] }));
+    if (i === first) { kids.push(new Paragraph({ alignment: AlignmentType.LEFT, spacing: { after: 60 }, children: runs(l, { bold: true, size: 36 }) })); return; }
+    if (isHeading(plain(l))) { kids.push(new Paragraph({ keepNext: true, spacing: { before: 240, after: 80 }, border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: "1F2A44", space: 2 } }, children: [new TextRun({ text: plain(l).toUpperCase(), bold: true, size: 22, color: "1F2A44" })] })); return; }
+    if (isRoleLine(plain(l))) { kids.push(new Paragraph({ keepNext: true, spacing: { before: 120, after: 40 }, children: runs(l, { bold: true }) })); return; }
+    if (BULLET.test(l)) { kids.push(new Paragraph({ numbering: { reference: "b", level: 0 }, spacing: { after: 40 }, children: runs(l.replace(BULLET, "")) })); return; }
+    kids.push(new Paragraph({ spacing: { after: 60 }, children: runs(l) }));
   });
   return new Document({
     styles: { default: { document: { run: { font: "Calibri", size: 21 } } } },
