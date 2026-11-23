@@ -130,27 +130,34 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
                   <div className="min-w-0"><p className="text-sm font-medium">{s.title}</p>{!isActive && <p className="truncate text-xs text-muted-foreground">{s.detail}</p>}</div>
                 </button>
                 {isActive && (
-                  <div className="space-y-3 px-4 pb-4 pl-12">
+                  <div className="space-y-4 px-4 pb-5 pl-12">
                     <p className="text-xs text-muted-foreground">{s.detail}</p>
-                    {s.original && <div className="rounded-md bg-muted/60 p-2.5 text-xs"><span className="font-mono text-[10px] uppercase text-muted-foreground">Current line</span><p className="mt-0.5">{s.original}</p></div>}
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Button size="sm" onClick={askAi} disabled={busy === "ai"}>{pro ? <Wand2 /> : <Lock />}{busy === "ai" ? "Drafting…" : aiDraft ? "Redraft with AI" : "1. Draft with AI"}</Button>
-                      <button className="text-xs text-muted-foreground underline-offset-2 hover:underline" onClick={() => setShowFacts(!showFacts)}>{showFacts ? "Hide" : "Add"} true facts (optional)</button>
-                    </div>
-                    {showFacts && (
-                      <div className="grid gap-2">
-                        {([["action", "What did you do?"], ["constraint", "What made it hard?"], ["outcome", "What changed?"]] as const).map(([k, l]) => <label key={k} className="text-xs text-muted-foreground">{l}<input className="mt-1 w-full rounded-md border bg-background px-2 py-1.5 text-sm text-foreground placeholder:text-muted-foreground/60" placeholder={EXAMPLES[k]} value={fields[k]} onChange={(e) => setFields({ ...fields, [k]: e.target.value })} /></label>)}
+                    {s.original && <div className="rounded-md border bg-muted/40 p-3"><p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Your line now</p><p className="mt-1 text-sm">{s.original}</p></div>}
+                    {!proposal.trim() ? (
+                      <div className="space-y-2">
+                        <Button className="w-full" onClick={askAi} disabled={busy === "ai"}>{pro ? <Wand2 /> : <Lock />}{busy === "ai" ? "Writing a better line…" : "Improve this line with AI"}</Button>
+                        <button className="w-full text-center text-xs text-muted-foreground hover:text-foreground hover:underline" onClick={() => setProposal(s.original ?? " ")}>or write it myself</button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <p className="font-mono text-[10px] uppercase tracking-wider text-primary">New line · edit freely · preview updates on the right</p>
+                        <textarea autoFocus rows={3} className="w-full rounded-md border-2 border-primary/40 bg-background p-3 text-sm focus:border-primary focus:outline-none" value={proposal} onChange={(e) => setProposal(e.target.value)} />
+                        {flags.length > 0 && <p className="text-xs text-destructive">“{flags.join("”, “")}” isn't in your resume. Remove it, or add it below as a true fact.</p>}
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Button disabled={!proposal.trim() || flags.length > 0} onClick={() => apply(proposal, aiDraft ? "ai" : "manual")}><Check />Apply to resume</Button>
+                          <Button variant="outline" onClick={askAi} disabled={busy === "ai"}>{pro ? <Wand2 /> : <Lock />}{busy === "ai" ? "Writing…" : "Try again"}</Button>
+                          <Button variant="ghost" onClick={() => { setProposal(""); setAiDraft(null); }}>Cancel</Button>
+                        </div>
                       </div>
                     )}
-                    <label className="block text-xs font-medium">2. Review & edit
-                      <textarea rows={3} className="mt-1 w-full rounded-md border bg-background p-2.5 text-sm font-normal focus:border-primary focus:outline-none" placeholder={s.kind === "rewrite" ? "Draft with AI, or write the improved line yourself…" : "e.g. Ran 12 usability sessions that cut checkout drop-off 18%"} value={proposal} onChange={(e) => setProposal(e.target.value)} />
-                    </label>
-                    {flags.length > 0 && <p className="text-xs text-destructive">Please confirm: “{flags.join("”, “")}” isn't in your resume or facts. Edit it out or add it as a fact.</p>}
-                    {proposal.trim() && <p className="text-[11px] text-primary">Previewing on the right ↗</p>}
-                    <div className="flex gap-2">
-                      <Button size="sm" disabled={!proposal.trim() || flags.length > 0} onClick={() => apply(proposal, aiDraft ? "ai" : "manual")}><Check />3. Apply to resume</Button>
-                      <Button size="sm" variant="ghost" onClick={() => { setSkipped([...skipped, s.id]); reset(); }}>Skip</Button>
-                    </div>
+                    <details open={showFacts} onToggle={(e) => setShowFacts((e.target as HTMLDetailsElement).open)} className="rounded-md border border-dashed px-3 py-2 text-xs">
+                      <summary className="cursor-pointer text-muted-foreground">Want a stronger line? Add a real number or result (optional)</summary>
+                      <div className="mt-2 grid gap-2">
+                        {([["action", "What did you do?"], ["constraint", "What made it hard?"], ["outcome", "What changed?"]] as const).map(([k, l]) => <label key={k} className="text-muted-foreground">{l}<input className="mt-1 w-full rounded-md border bg-background px-2 py-1.5 text-sm text-foreground placeholder:text-muted-foreground/60" placeholder={EXAMPLES[k]} value={fields[k]} onChange={(e) => setFields({ ...fields, [k]: e.target.value })} /></label>)}
+                        <p className="text-muted-foreground">Then press “Try again” — AI will use only these facts.</p>
+                      </div>
+                    </details>
+                    <button className="text-xs text-muted-foreground hover:underline" onClick={() => { setSkipped([...skipped, s.id]); reset(); }}>Skip this recommendation</button>
                   </div>
                 )}
               </li>
