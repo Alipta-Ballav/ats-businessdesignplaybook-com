@@ -20,7 +20,7 @@ describe("diffLines", () => {
 });
 describe("free fixes", () => {
   it("counts AI fixes toward the 2 free fixes", () => {
-    expect(canApplyFix(fixesUsed([{ source: "manual" }, { source: "ai" }]), false)).toBe(false);
+    expect(canApplyFix(fixesUsed([{ source: "manual" }, { source: "ai" }]), false)).toBe(true);
   });
 });
 describe("newFacts design terms", () => {

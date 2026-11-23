@@ -14,7 +14,7 @@ import { applySuggestion, buildQueue, cleanLine, headlineScore } from "@/lib/fix
 import { estimateCandidate, fixesUsed, newFacts, revertFix, type FixEntry } from "@/lib/editor";
 import { downloadResumeDocx } from "@/lib/export-docx";
 import { usePro } from "@/lib/pro";
-import { FREE_FIXES, canApplyFix, canDownloadWord } from "@/lib/plans";
+import { FREE_FIXES, canApplyFix, canDownloadWord, canRescore } from "@/lib/plans";
 import { inferLevel, type Candidate, type Job, type Level } from "@/lib/scoring";
 
 type Fix = FixEntry & { title: string };
@@ -59,13 +59,12 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
   const facts = [fields.action, fields.constraint, fields.outcome, fields.text].filter(Boolean).join("; ");
 
   const askAi = async () => {
-    if (!pro) { window.__lovableEvents?.track?.("project.paywall_shown", { trigger: "ai_rewrite" }); setWall("AI suggestions are included in the ₹99, 30-day Job Hunt Pass."); return; }
     if (!facts.trim() && !active?.original) { setShowFacts(true); toast.error("Fill in at least one question below — AI writes the new bullet only from your facts."); return; }
     setBusy("ai");
     try {
       const { text } = await ai({ data: { original: active?.original ?? "", facts } });
       setAiDraft({ text, flags: [] }); setProposal(text);
-    } catch (e) { const m = (e as Error).message || ""; toast.error(/unauthori|401|auth/i.test(m) ? "Please sign in to use AI suggestions." : m || "AI suggestion failed. Try again."); }
+    } catch (e) { const m = (e as Error).message || ""; toast.error(m || "AI suggestion failed. Try again."); }
     setBusy("");
   };
 
@@ -79,7 +78,7 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
   };
 
   const rescore = async () => {
-    if (!pro) { window.__lovableEvents?.track?.("project.paywall_shown", { trigger: "rescore" }); setWall("Your estimated score is free. The ₹99 Job Hunt Pass unlocks official AI rescoring, AI drafting and Word downloads for 30 days."); return; }
+    if (!canRescore(pro)) { window.__lovableEvents?.track?.("project.paywall_shown", { trigger: "rescore" }); setWall("Your estimated score is free. The ₹99 Job Hunt Pass unlocks your official AI-verified rescore and Word downloads for 30 days."); return; }
     setBusy("score");
     try {
       const ev = await read({ data: { resume: draft, jobTitle: job.title, jobDescription: job.description, requirements: job.mandatory } });
@@ -117,7 +116,7 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
       <Card className="overflow-hidden p-0">
         <div className="flex items-center justify-between border-b px-4 py-3">
           <h3 className="text-sm font-semibold">Recommendations</h3>
-          <span className="text-xs text-muted-foreground">{fixes.length}/{total} done{!pro && ` · ${Math.max(0, FREE_FIXES - fixesUsed(fixes))} free left`}</span>
+          <span className="text-xs text-muted-foreground">{fixes.length}/{total} done</span>
         </div>
         {total > 0 && <div className="h-1 bg-muted"><div className="h-full bg-success transition-all" style={{ width: `${(fixes.length / total) * 100}%` }} /></div>}
         {open.length === 0 && <p className="p-4 text-sm text-muted-foreground">All done. Rescore below to find more.</p>}
@@ -136,7 +135,7 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
                     {s.original && <div className="rounded-md border bg-muted/40 p-3"><p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Your line now</p><p className="mt-1 text-sm">{s.original}</p></div>}
                     {!proposal.trim() ? (
                       <div className="space-y-2">
-                        <Button className="w-full" onClick={askAi} disabled={busy === "ai"}>{pro ? <Wand2 /> : <Lock />}{busy === "ai" ? "Writing…" : s.original ? "Improve this line with AI" : "Write a new bullet with AI"}</Button>
+                        <Button className="w-full" onClick={askAi} disabled={busy === "ai"}><Wand2 />{busy === "ai" ? "Writing…" : s.original ? "Improve this line with AI" : "Write a new bullet with AI"}</Button>
                         <button className="w-full text-center text-xs text-muted-foreground hover:text-foreground hover:underline" onClick={() => setProposal(s.original ?? " ")}>or write it myself</button>
                       </div>
                     ) : (
@@ -146,7 +145,7 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
                         {flags.length > 0 && <p className="text-xs text-destructive">“{flags.join("”, “")}” isn't in your resume. Remove it, or add it below as a true fact.</p>}
                         <div className="flex flex-wrap items-center gap-2">
                           <Button disabled={!proposal.trim() || flags.length > 0} onClick={() => apply(proposal, aiDraft ? "ai" : "manual")}><Check />Apply to resume</Button>
-                          <Button variant="outline" onClick={askAi} disabled={busy === "ai"}>{pro ? <Wand2 /> : <Lock />}{busy === "ai" ? "Writing…" : "Try again"}</Button>
+                          <Button variant="outline" onClick={askAi} disabled={busy === "ai"}><Wand2 />{busy === "ai" ? "Writing…" : "Try again"}</Button>
                           <Button variant="ghost" onClick={() => { setProposal(""); setAiDraft(null); }}>Cancel</Button>
                         </div>
                       </div>

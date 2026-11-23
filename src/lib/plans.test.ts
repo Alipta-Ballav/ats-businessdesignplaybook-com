@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { canScan, canApplyFix, canDownloadWord, hasPaidAccess, PASS_DAYS, PLANS } from "./plans";
+import { canScan, canRescore, canApplyFix, canDownloadWord, hasPaidAccess, PASS_DAYS, PLANS } from "./plans";
 describe("micro-paywall", () => {
-  it("free users get 2 fixes", () => { expect(canApplyFix(1, false)).toBe(true); expect(canApplyFix(2, false)).toBe(false); });
+  it("free users can apply any number of fixes", () => expect(canApplyFix(20, false)).toBe(true));
+  it("official rescore needs the pass", () => { expect(canRescore(false)).toBe(false); expect(canRescore(true)).toBe(true); });
   it("pro is unlimited", () => expect(canApplyFix(50, true)).toBe(true));
   it("word download is paid", () => { expect(canDownloadWord(false)).toBe(false); expect(canDownloadWord(true)).toBe(true); });
   it("first scan free, then paid", () => { expect(canScan(0, false)).toBe(true); expect(canScan(1, false)).toBe(false); });
