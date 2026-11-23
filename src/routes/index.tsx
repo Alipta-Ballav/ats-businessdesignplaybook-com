@@ -175,7 +175,7 @@ function Landing() {
           <div className="rounded-2xl border-2 border-primary bg-card p-6 shadow-glow">
             <div className="flex items-center justify-between"><p className="text-sm text-muted-foreground">30-Day Job Hunt Pass</p><span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">Pay only when ready</span></div>
             <p className="mt-1 font-mono text-4xl">₹99 <span className="text-sm text-muted-foreground">one-time</span></p>
-            <ul className="mt-5 space-y-2 text-sm">{["Official verified rescore after your edits", "Download ATS-clean Word (.docx)", "5 full resume scans in 30 days", "UPI or card · no auto-renewal, ever"].map((t) => <li key={t} className="flex gap-2"><CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />{t}</li>)}</ul>
+            <ul className="mt-5 space-y-2 text-sm">{["5 verified scores in 30 days (new resumes or after edits)", "Download ATS-clean Word (.docx)", "Free live estimated score while you edit", "UPI or card · no auto-renewal, ever"].map((t) => <li key={t} className="flex gap-2"><CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />{t}</li>)}</ul>
             <p className="mt-5 text-xs text-muted-foreground">You'll only be asked to pay when you rescore, download Word or run a 2nd scan.</p>
           </div>
         </div>
@@ -183,7 +183,7 @@ function Landing() {
           <div className="border-b bg-muted/40 px-6 py-4"><h3 className="text-lg font-semibold">Free vs ₹99 pass, side by side</h3><p className="text-sm text-muted-foreground">Start free. Pay ₹99 once only if you want more. The pass ends after 30 days and never charges you again.</p></div>
           <table className="w-full text-sm">
             <thead><tr className="border-b text-left text-xs text-muted-foreground"><th className="px-6 py-2 font-medium">What you can do</th><th className="px-4 py-2 font-medium">Free</th><th className="px-4 py-2 font-medium text-primary">With ₹99 pass</th></tr></thead>
-            <tbody>{[["Scan a new resume", "1 time", "5 times"], ["See your new score after editing", "No", "Yes, any number of times"], ["AI help to rewrite lines", "Yes", "Yes"], ["Download your resume as Word", "No", "Yes"], ["Charged again automatically", "Never", "Never"]].map(([b, f, p]) =>
+            <tbody>{[["First resume score", "1 free", "Included"], ["Verified scores (new resume or after edits)", "No", "5 in 30 days"], ["Live estimated score while editing", "Yes", "Yes"], ["AI help to rewrite lines", "Yes", "Yes"], ["Download your resume as Word", "No", "Yes"], ["Charged again automatically", "Never", "Never"]].map(([b, f, p]) =>
               <tr key={b} className="border-b last:border-0"><td className="px-6 py-3">{b}</td><td className="px-4 py-3 text-muted-foreground">{f}</td><td className="px-4 py-3 font-medium">{p}</td></tr>)}</tbody>
           </table>
           <div className="grid gap-4 border-t bg-primary/5 px-6 py-5 sm:grid-cols-3">{[["≈ ₹20", "per full scan (₹99 ÷ 5)"], ["₹3.30", "per day of your job hunt"], ["1 interview", "is all it takes to pay back many times over"]].map(([v, l]) =>

@@ -13,7 +13,7 @@ import { suggestRewrite } from "@/lib/rewrite.functions";
 import { applySuggestion, buildQueue, cleanLine, headlineScore } from "@/lib/fixer";
 import { estimateCandidate, fixesUsed, newFacts, revertFix, type FixEntry } from "@/lib/editor";
 import { downloadResumeDocx } from "@/lib/export-docx";
-import { usePro } from "@/lib/pro";
+import { usePro, passAllowance, recordPassScan } from "@/lib/pro";
 import { FREE_FIXES, canApplyFix, canDownloadWord, canRescore } from "@/lib/plans";
 import { inferLevel, type Candidate, type Job, type Level } from "@/lib/scoring";
 
@@ -29,6 +29,8 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
   const read = useServerFn(readResumeGuest);
   const ai = useServerFn(suggestRewrite);
   const pro = usePro();
+  const [passLeft, setPassLeft] = useState<number | null>(null);
+  useEffect(() => { if (pro) passAllowance().then(setPassLeft); }, [pro]);
   const level = scoringLevel ?? inferLevel(cand.years, cand.role);
   const base = headlineScore(job, cand, level);
   const [draft, setDraft] = useState(initialDraft ?? resume);
@@ -97,6 +99,8 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
 
   const rescore = async () => {
     if (!canRescore(pro)) { window.__lovableEvents?.track?.("project.paywall_shown", { trigger: "rescore" }); setWall("Your estimated score is free. The ₹99 Job Hunt Pass unlocks your official AI-verified rescore and Word downloads for 30 days."); return; }
+    const allowed = await passAllowance(); setPassLeft(allowed);
+    if (allowed === 0) { toast.error("You've used all 5 verified scores in your pass."); return; }
     setBusy("score");
     try {
       const ev = await read({ data: { resume: draft, jobTitle: job.title, jobDescription: job.description, requirements: job.mandatory } });
@@ -104,6 +108,7 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
       const score = headlineScore(job, c, level);
       toast.success(`Score updated: ${official.score} → ${score}`);
       setOfficial({ cand: c, score, text: draft });
+      if (allowed !== null) { await recordPassScan(); setPassLeft(allowed - 1); }
     } catch (e) { toast.error((e as Error).message); }
     setBusy("");
   };
@@ -233,7 +238,7 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
           <h3 className="text-base font-semibold">{stale ? "Finished editing? Lock in your new score." : "Your score is up to date"}</h3>
           <p className="mt-1 text-xs text-muted-foreground">{stale ? <>{fixes.length} change{fixes.length === 1 ? "" : "s"} applied · Estimated score <b className="text-foreground">~{estimate}</b> ({estimate - base >= 0 ? "+" : ""}{estimate - base} from {base})</> : "Apply recommendations above, then rescore here."}</p>
         </div>
-        <Button size="lg" className="w-full" onClick={rescore} disabled={!!busy || !stale}><Sparkles />{!pro && <Lock />}{busy === "score" ? "Rescoring…" : pro ? "Rescore my resume · unlimited rescores left" : "Verify final score · 0 rescores left · ₹99 pass"}</Button>
+        <Button size="lg" className="w-full" onClick={rescore} disabled={!!busy || !stale}><Sparkles />{!pro && <Lock />}{busy === "score" ? "Rescoring…" : pro ? (passLeft === null ? "Verify final score" : passLeft === 0 ? "No verified scores left in your pass" : `Verify final score · uses 1 of ${passLeft} left`) : "Verify final score · ₹99 pass"}</Button>
       </Card>
     </div>
   );

@@ -7,7 +7,7 @@ export const PASS_SCANS = 5;
 export const PASS_DURATION_MS = PASS_DAYS * 24 * 60 * 60 * 1000;
 export type PlanId = "job_hunt_30";
 export const PLANS: { id: PlanId; name: string; inr: number; usd: number; blurb: string; perks: string[]; best?: boolean }[] = [
-  { id: "job_hunt_30", name: "30-Day Job Hunt Pass", inr: 99, usd: 1.19, blurb: "5 scans + all features for 30 days from payment. No auto-renewal.", best: true, perks: ["5 full resume scans in 30 days", "Official AI rescore after edits", "ATS-ready Word downloads", "Custom ATS tuning"] },
+  { id: "job_hunt_30", name: "30-Day Job Hunt Pass", inr: 99, usd: 1.19, blurb: "5 scans + all features for 30 days from payment. No auto-renewal.", best: true, perks: ["5 verified scores in 30 days (new resumes or rescores)", "ATS-ready Word downloads", "Custom ATS tuning"] },
 ];
 /** Applying recommendations (AI or manual) is free for everyone; the paywall sits on the official rescore and Word download. */
 export function canApplyFix(_applied: number, _pro: boolean) { return true; }

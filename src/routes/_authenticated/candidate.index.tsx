@@ -100,7 +100,7 @@ function CandidateHome() {
       </div>
       <div className="flex flex-col-reverse justify-between gap-3 sm:flex-row sm:items-center">
         <div className="space-y-1">
-          <p className="text-xs font-medium">{pro ? left === null ? "Your access includes unlimited scans" : `${left} of 5 pass scans left` : used < FREE_SCANS ? "1 free scan · No credit card required" : "₹99 Job Hunt Pass · All features for 30 days"}</p>
+          <p className="text-xs font-medium">{pro ? left === null ? "No score limit on this account" : `${left} of 5 verified scores left` : used < FREE_SCANS ? "1 free scan · No credit card required" : "₹99 Job Hunt Pass · All features for 30 days"}</p>
           <p className="text-xs text-muted-foreground">{pro ? "AI rewrites, verified rescoring and Word exports included" : "Then ₹99 for 30 days · No auto-renewal"}</p>
         </div>
         <Button size="lg" disabled={busy || !(resume.trim().length >= 80 && (mode === "profile" || (title.trim() && jd.trim().length >= 40)))} onClick={run} className="w-full shrink-0 sm:w-auto">{busy ? <Loader2 className="animate-spin" /> : <ArrowRight />}{busy ? "Reading your resume…" : pro || used < FREE_SCANS ? "Get my score" : "Get my score · ₹99 pass"}</Button>
