@@ -13,6 +13,9 @@ import { readResume } from "@/lib/evaluate.functions";
 import { evaluate } from "@/lib/scoring";
 import { ResumeInput } from "@/components/ResumeInput";
 import { Card, StatusBadge } from "@/components/ui-bits";
+import { DeleteAccount } from "@/components/DeleteAccount";
+import { useQueryClient } from "@tanstack/react-query";
+import { Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/candidate/")({
   validateSearch: (s: Record<string, unknown>): { job?: string | undefined } => ({ job: typeof s["job"] === "string" ? s["job"] : undefined }),
@@ -30,6 +33,13 @@ function CandidateHome() {
   const [mode, setMode] = useState<"profile" | "role">("profile");
   const [title, setTitle] = useState(""); const [jd, setJd] = useState(""); const [resume, setResume] = useState(""); const [busy, setBusy] = useState(false);
   const read = useServerFn(readResume);
+  const qc = useQueryClient();
+  const removeScan = async (id: string) => {
+    if (!confirm("Delete this check permanently?")) return;
+    const { error } = await supabase.from("scans").delete().eq("id", id);
+    if (error) { toast.error("Couldn't delete this check"); return; }
+    toast.success("Check deleted"); qc.invalidateQueries({ queryKey: ["scans"] });
+  };
   const imported = useRef(false);
   useEffect(() => {
     const g = loadGuestScan();
@@ -74,14 +84,15 @@ function CandidateHome() {
       {scans.length > 0 && (
         <section className="space-y-3"><h2 className="font-display text-xl">Your past checks</h2>
           {scans.map((s) => { const { job, cand } = scanToPair(s); const ev = evaluate(job, cand); return (
-            <Link key={s.id} to="/candidate/scans/$scanId" params={{ scanId: s.id }} className="block">
+            <div key={s.id} className="flex items-center gap-2"><Link to="/candidate/scans/$scanId" params={{ scanId: s.id }} className="block flex-1">
               <Card className="flex flex-wrap items-center justify-between gap-3 hover:border-primary">
                 <div><p className="font-medium">{s.job_title}</p><p className="text-xs text-muted-foreground">{new Date(s.created_at).toLocaleDateString()}</p></div>
                 <div className="flex items-center gap-3"><StatusBadge status={ev.status} /><span className="font-mono text-xl">{ev.composite ?? "—"}</span></div>
               </Card>
-            </Link>); })}
+            </Link><button aria-label={`Delete check ${s.job_title}`} onClick={() => removeScan(s.id)} className="rounded-md border p-2 text-muted-foreground hover:text-destructive"><Trash2 className="h-4 w-4" /></button></div>); })}
         </section>
       )}
+      <DeleteAccount />
     </div>
   );
 }

@@ -22,7 +22,7 @@ function Page() {
     <p>We use Lovable's built-in visitor analytics. It uses no cookies, stores nothing on your device, doesn't keep IP addresses and doesn't identify you. It records pages visited, where visitors came from, country, browser, operating system and device type, time on site, page speed, errors, clicks and in-app actions such as running a scan. Detailed data is kept for 90 days and daily summaries for a year. Lovable collects this data for us. <a className="underline" href="https://lovable.dev/privacy">Lovable's privacy policy</a> explains how it handles it.</p>
     <p>Signing in stores a login session in your browser. Razorpay loads its checkout only when you choose to pay.</p>
     <h2>Deleting your data</h2>
-    <p>You can delete saved resume versions any time from My resumes. To delete your whole account, write to us from your registered email and we'll erase it within 7 days.</p>
+    <p>You can delete saved resume versions any time from My resumes. You can also delete any past check, or your whole account and all its data in one click, from your Check my resume page.</p>
     <h2>Contact</h2>
     <p>Questions: reach us via <a className="underline" href="https://businessdesignplaybook.com/">businessdesignplaybook.com</a>.</p>
   </LegalPage>;
