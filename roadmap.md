@@ -1,4 +1,9 @@
 # Roadmap
+- [ ] Return visits: searchable design bullet swipe file and saved bookmarks
+- [ ] Return visits: evidence-based promotion audit against chosen seniority
+- [ ] Return visits: sourced role teardown library and personal JD analysis
+- [ ] Return visits: named resume versions and comparable score progression
+- [ ] Return visits: quarterly calendar reminders only (confirmed; no email delivery)
 - [x] Deterministic 3-dimension scoring, flexibility slider, presets, reports, overrides
 - [x] Accounts with candidate / recruiter personas (email, Google, Lovable)
 - [x] Database: roles, applicants, candidate checks, applications

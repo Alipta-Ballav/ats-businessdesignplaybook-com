@@ -1,0 +1,15 @@
+CREATE TABLE public.design_bookmarks (user_id uuid NOT NULL, bullet_id text NOT NULL, created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (user_id, bullet_id));
+GRANT SELECT, INSERT, DELETE ON public.design_bookmarks TO authenticated;
+GRANT ALL ON public.design_bookmarks TO service_role;
+ALTER TABLE public.design_bookmarks ENABLE ROW LEVEL SECURITY;
+CREATE POLICY bookmarks_select ON public.design_bookmarks FOR SELECT TO authenticated USING (auth.uid() = user_id);
+CREATE POLICY bookmarks_insert ON public.design_bookmarks FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
+CREATE POLICY bookmarks_delete ON public.design_bookmarks FOR DELETE TO authenticated USING (auth.uid() = user_id);
+CREATE TABLE public.resume_versions (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL, name text NOT NULL CHECK (length(name) BETWEEN 1 AND 120), resume_text text NOT NULL, candidate jsonb NOT NULL, job jsonb NOT NULL, scored_text text NOT NULL, level text NOT NULL CHECK (level IN ('Senior Product Designer','Staff / Principal Designer','Design Manager / Lead','Head / Director of Design')), created_at timestamptz NOT NULL DEFAULT now());
+GRANT SELECT, INSERT, DELETE ON public.resume_versions TO authenticated;
+GRANT ALL ON public.resume_versions TO service_role;
+ALTER TABLE public.resume_versions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY versions_select ON public.resume_versions FOR SELECT TO authenticated USING (auth.uid() = user_id);
+CREATE POLICY versions_insert ON public.resume_versions FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
+CREATE POLICY versions_delete ON public.resume_versions FOR DELETE TO authenticated USING (auth.uid() = user_id);
+CREATE INDEX resume_versions_owner_date ON public.resume_versions (user_id, created_at DESC);

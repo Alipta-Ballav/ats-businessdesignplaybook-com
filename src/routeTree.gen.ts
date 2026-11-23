@@ -13,6 +13,10 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CheckRouteImport } from './routes/check'
+import { Route as PromotionRouteImport } from './routes/promotion'
+import { Route as SwipeFileRouteImport } from './routes/swipe-file'
+import { Route as TeardownsRouteImport } from './routes/teardowns'
+import { Route as AuthenticatedMyResumesRouteImport } from './routes/_authenticated/my-resumes'
 import { Route as AuthenticatedWelcomeRouteImport } from './routes/_authenticated/welcome'
 import { Route as RolesIndexRouteImport } from './routes/roles.index'
 import { Route as RolesJobIdRouteImport } from './routes/roles.$jobId'
@@ -42,6 +46,26 @@ const CheckRoute = CheckRouteImport.update({
   id: '/check',
   path: '/check',
   getParentRoute: () => rootRouteImport,
+} as any)
+const PromotionRoute = PromotionRouteImport.update({
+  id: '/promotion',
+  path: '/promotion',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SwipeFileRoute = SwipeFileRouteImport.update({
+  id: '/swipe-file',
+  path: '/swipe-file',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeardownsRoute = TeardownsRouteImport.update({
+  id: '/teardowns',
+  path: '/teardowns',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedMyResumesRoute = AuthenticatedMyResumesRouteImport.update({
+  id: '/my-resumes',
+  path: '/my-resumes',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedWelcomeRoute = AuthenticatedWelcomeRouteImport.update({
   id: '/welcome',
@@ -105,6 +129,10 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/check': typeof CheckRoute
+  '/promotion': typeof PromotionRoute
+  '/swipe-file': typeof SwipeFileRoute
+  '/teardowns': typeof TeardownsRoute
+  '/my-resumes': typeof AuthenticatedMyResumesRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/roles/$jobId': typeof RolesJobIdRoute
   '/roles/': typeof RolesIndexRoute
@@ -120,6 +148,10 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/check': typeof CheckRoute
+  '/promotion': typeof PromotionRoute
+  '/swipe-file': typeof SwipeFileRoute
+  '/teardowns': typeof TeardownsRoute
+  '/my-resumes': typeof AuthenticatedMyResumesRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/roles/$jobId': typeof RolesJobIdRoute
   '/roles': typeof RolesIndexRoute
@@ -137,6 +169,10 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/check': typeof CheckRoute
+  '/promotion': typeof PromotionRoute
+  '/swipe-file': typeof SwipeFileRoute
+  '/teardowns': typeof TeardownsRoute
+  '/_authenticated/my-resumes': typeof AuthenticatedMyResumesRoute
   '/_authenticated/welcome': typeof AuthenticatedWelcomeRoute
   '/roles/$jobId': typeof RolesJobIdRoute
   '/roles/': typeof RolesIndexRoute
@@ -154,6 +190,10 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/check'
+    | '/promotion'
+    | '/swipe-file'
+    | '/teardowns'
+    | '/my-resumes'
     | '/welcome'
     | '/roles/$jobId'
     | '/roles/'
@@ -169,6 +209,10 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/check'
+    | '/promotion'
+    | '/swipe-file'
+    | '/teardowns'
+    | '/my-resumes'
     | '/welcome'
     | '/roles/$jobId'
     | '/roles'
@@ -185,6 +229,10 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/check'
+    | '/promotion'
+    | '/swipe-file'
+    | '/teardowns'
+    | '/_authenticated/my-resumes'
     | '/_authenticated/welcome'
     | '/roles/$jobId'
     | '/roles/'
@@ -202,6 +250,9 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   CheckRoute: typeof CheckRoute
+  PromotionRoute: typeof PromotionRoute
+  SwipeFileRoute: typeof SwipeFileRoute
+  TeardownsRoute: typeof TeardownsRoute
   RolesJobIdRoute: typeof RolesJobIdRoute
   RolesIndexRoute: typeof RolesIndexRoute
   ApiPublicRazorpayWebhookRoute: typeof ApiPublicRazorpayWebhookRoute
@@ -236,6 +287,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/check'
       preLoaderRoute: typeof CheckRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/promotion': {
+      id: '/promotion'
+      path: '/promotion'
+      fullPath: '/promotion'
+      preLoaderRoute: typeof PromotionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/swipe-file': {
+      id: '/swipe-file'
+      path: '/swipe-file'
+      fullPath: '/swipe-file'
+      preLoaderRoute: typeof SwipeFileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teardowns': {
+      id: '/teardowns'
+      path: '/teardowns'
+      fullPath: '/teardowns'
+      preLoaderRoute: typeof TeardownsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/my-resumes': {
+      id: '/_authenticated/my-resumes'
+      path: '/my-resumes'
+      fullPath: '/my-resumes'
+      preLoaderRoute: typeof AuthenticatedMyResumesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/welcome': {
       id: '/_authenticated/welcome'
@@ -311,6 +390,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedMyResumesRoute: typeof AuthenticatedMyResumesRoute
   AuthenticatedWelcomeRoute: typeof AuthenticatedWelcomeRoute
   AuthenticatedCandidateIndexRoute: typeof AuthenticatedCandidateIndexRoute
   AuthenticatedRecruiterIndexRoute: typeof AuthenticatedRecruiterIndexRoute
@@ -321,6 +401,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedMyResumesRoute: AuthenticatedMyResumesRoute,
   AuthenticatedWelcomeRoute: AuthenticatedWelcomeRoute,
   AuthenticatedCandidateIndexRoute: AuthenticatedCandidateIndexRoute,
   AuthenticatedRecruiterIndexRoute: AuthenticatedRecruiterIndexRoute,
@@ -340,6 +421,9 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   CheckRoute: CheckRoute,
+  PromotionRoute: PromotionRoute,
+  SwipeFileRoute: SwipeFileRoute,
+  TeardownsRoute: TeardownsRoute,
   RolesJobIdRoute: RolesJobIdRoute,
   RolesIndexRoute: RolesIndexRoute,
   ApiPublicRazorpayWebhookRoute: ApiPublicRazorpayWebhookRoute,

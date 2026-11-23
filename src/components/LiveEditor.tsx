@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui-bits";
 import { ResumePreview } from "@/components/ResumePreview";
 import { PaywallModal } from "@/components/PaywallModal";
+import { SaveResumeVersion } from "@/components/SaveResumeVersion";
 import { readResumeGuest } from "@/lib/evaluate.functions";
 import { suggestRewrite } from "@/lib/rewrite.functions";
 import { buildEvidenceBullet } from "@/lib/diagnostics";
@@ -25,12 +26,12 @@ const EXAMPLES = {
 };
 const blank = { action: "", constraint: "", outcome: "", text: "" };
 
-export function LiveEditor({ job, cand, resume }: { job: Job; cand: Candidate; resume: string }) {
+export function LiveEditor({ job, cand, resume, initialDraft }: { job: Job; cand: Candidate; resume: string; initialDraft?: string }) {
   const read = useServerFn(readResumeGuest);
   const ai = useServerFn(suggestRewrite);
   const pro = usePro();
   const base = headlineScore(job, cand);
-  const [draft, setDraft] = useState(resume);
+  const [draft, setDraft] = useState(initialDraft ?? resume);
   const [history, setHistory] = useState<string[]>([]);
   const [typing, setTyping] = useState(false);
   const [official, setOfficial] = useState<{ cand: Candidate; score: number; text: string }>({ cand, score: base, text: resume });
@@ -54,7 +55,7 @@ export function LiveEditor({ job, cand, resume }: { job: Job; cand: Candidate; r
   const commit = (next: string) => { setHistory((h) => [...h, draft]); setDraft(next); setTyping(false); };
   const onType = (v: string) => { if (!typing) { setHistory((h) => [...h, draft]); setTyping(true); } setDraft(v); };
   const reset = () => { setFields(blank); setAiDraft(null); };
-  const manualText = active?.kind === "rewrite" ? buildEvidenceBullet(active.original!, fields) : fields.text;
+  const manualText = active?.kind === "rewrite" && active.original ? buildEvidenceBullet(active.original, fields) : fields.text;
   const facts = [fields.action, fields.constraint, fields.outcome, fields.text].filter(Boolean).join("; ");
 
   const askAi = async () => {
@@ -206,6 +207,7 @@ export function LiveEditor({ job, cand, resume }: { job: Job; cand: Candidate; r
         <Button size="sm" onClick={word}>{pro ? <FileText /> : <Lock />}Download Word (.docx)</Button>
         <Button size="sm" variant="outline" onClick={copy}><Copy />Copy</Button>
       </div>
+      <SaveResumeVersion resume={draft} candidate={official.cand} job={job} scoredText={official.text} />
     </div>
   );
 

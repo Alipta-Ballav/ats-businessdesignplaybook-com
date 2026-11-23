@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowRight, CheckCircle2, Gauge, Quote, ShieldCheck, Sparkles, Wand2 } from "lucide-react";
+import { ArrowRight, Bookmark, CalendarDays, FileStack, TrendingUp, CheckCircle2, Gauge, Quote, ShieldCheck, Sparkles, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ATS_SYSTEMS, FTI_DIMENSIONS, LEVELS, LEVEL_WEIGHTS, LEVEL_EXAMPLES } from "@/lib/scoring";
 
@@ -40,7 +40,8 @@ const examples = [
 function BeforeAfter() {
   const [i, setI] = useState(0);
   const [fixed, setFixed] = useState(false);
-  const ex = examples[i]!;
+  const ex = examples[i] ?? examples[0];
+  if (!ex) return null;
   return (
     <section className="mx-auto max-w-6xl px-6">
       <p className="text-sm font-medium text-primary">See the difference</p>
@@ -112,7 +113,7 @@ function Engines() {
 
 function Landing() {
   const [lvl, setLvl] = useState(0);
-  const cur = LEVELS[lvl]!;
+  const cur = LEVELS[lvl] ?? "Senior Product Designer";
   const top = Object.entries(LEVEL_WEIGHTS[cur]).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([id, w]) => ({ name: FTI_DIMENSIONS.find((d) => d.id === id)?.name ?? id, w }));
   return (
     <div className="-mx-6 -mt-8 space-y-28 pb-16">
@@ -124,7 +125,7 @@ function Landing() {
               The ATS checker built only for the UX design community
             </span>
             <h1 className="text-5xl leading-[1.05] md:text-6xl">Stop being graded like a sales rep. <span className="text-gradient">Get read like a Design Director would.</span></h1>
-            <p className="max-w-xl text-lg text-muted-foreground">Still auto-rejected after years of solid UX work? Generic scanners count "Figma" mentions. We score what design hiring managers actually look for: systems thinking, influence and business impact.</p>
+            <p className="max-w-xl text-lg text-muted-foreground">A resume score built for Product & UX designers. Turn your real work into clear evidence of craft, influence and business impact.</p>
             <ul className="flex flex-wrap gap-2">{[["8", "Product & UX dimensions"], ["8", "ATS engines simulated"], ["100%", "Quote-verified scores"]].map(([n, t]) =>
               <li key={t} className="flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm shadow-sheet"><span className="font-mono font-semibold text-primary">{n}</span><span className="text-muted-foreground">{t}</span></li>)}</ul>
             <div className="flex flex-wrap items-center gap-3">
@@ -161,6 +162,17 @@ function Landing() {
 
 
       <BeforeAfter />
+
+      <section className="mx-auto max-w-6xl px-6">
+        <p className="text-sm font-medium text-primary">Your design career workspace</p>
+        <h2 className="mt-2 max-w-2xl text-3xl">Not just before you apply. Between every next step.</h2>
+        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          {[{ icon: Bookmark, title: "The design swipe file", text: "128 resume formulas across your eight dimensions. Keep the ones that fit your work.", to: "/swipe-file" as const, action: "Explore bullet formulas" },
+            { icon: TrendingUp, title: "Your next-level audit", text: "See what your resume proves at Staff, Lead or Director scope — and where to build evidence next.", to: "/promotion" as const, action: "Audit my next level" },
+            { icon: CalendarDays, title: "This week’s role teardowns", text: "Read real design requirements through eight dimensions, with quotes from the original posting.", to: "/teardowns" as const, action: "Read this week’s roles" },
+            { icon: FileStack, title: "A story that keeps getting stronger", text: "Save resume versions, compare like-for-like scores, and add an optional 90-day calendar check-in.", to: "/my-resumes" as const, action: "Open my resumes" }].map(({ icon: Icon, title, text, to, action }) => <article key={to} className="rounded-lg border bg-card p-6"><Icon className="h-5 w-5 text-primary" /><h3 className="mt-4 text-xl">{title}</h3><p className="mt-2 text-sm text-muted-foreground">{text}</p><Button asChild variant="ghost" className="mt-4"><Link to={to}>{action}<ArrowRight /></Link></Button></article>)}
+        </div>
+      </section>
 
       <Engines />
 

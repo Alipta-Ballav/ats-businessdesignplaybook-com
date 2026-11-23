@@ -1,4 +1,5 @@
 import { JobDiagnostics } from "@/components/JobDiagnostics";
+import { CareerNav } from "@/components/CareerNav";
 import { Button } from "@/components/ui/button";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -53,6 +54,7 @@ function CandidateHome() {
   };
   return (
     <div className="space-y-8">
+      <CareerNav />
       <div><p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Know your score before you apply</p>
         <h1 className="mt-2 font-display text-4xl">Check your resume against a role</h1></div>
       <div className="flex flex-wrap gap-2" role="group" aria-label="Resume check mode">

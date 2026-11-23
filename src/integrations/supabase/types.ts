@@ -70,6 +70,24 @@ export type Database = {
           },
         ]
       }
+      design_bookmarks: {
+        Row: {
+          bullet_id: string
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          bullet_id: string
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          bullet_id?: string
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       jobs: {
         Row: {
           created_at: string
@@ -181,6 +199,42 @@ export type Database = {
           full_name?: string | null
           headline?: string | null
           id?: string
+        }
+        Relationships: []
+      }
+      resume_versions: {
+        Row: {
+          candidate: Json
+          created_at: string
+          id: string
+          job: Json
+          level: string
+          name: string
+          resume_text: string
+          scored_text: string
+          user_id: string
+        }
+        Insert: {
+          candidate: Json
+          created_at?: string
+          id?: string
+          job: Json
+          level: string
+          name: string
+          resume_text: string
+          scored_text: string
+          user_id: string
+        }
+        Update: {
+          candidate?: Json
+          created_at?: string
+          id?: string
+          job?: Json
+          level?: string
+          name?: string
+          resume_text?: string
+          scored_text?: string
+          user_id?: string
         }
         Relationships: []
       }
