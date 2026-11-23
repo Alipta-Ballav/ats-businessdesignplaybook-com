@@ -201,7 +201,7 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
           </div>
           {fixes.map((f, i) => (
             <div key={i} className="flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted/60">
-              <span className="flex min-w-0 items-center gap-2"><CheckCircle2 className="h-4 w-4 shrink-0 text-success" /><span className="truncate">{i + 1}. {f.title}</span><span className="shrink-0 rounded bg-muted px-1 text-[10px] uppercase text-muted-foreground">{f.source === "ai" ? "AI" : "Manual"}</span></span>
+              <span className="flex min-w-0 items-center gap-2"><CheckCircle2 className="h-4 w-4 shrink-0 text-success" /><span className="truncate">{(() => { const q = queue.findIndex((x) => x.id === f.id); return q >= 0 ? `${q + 1}. ` : ""; })()}{f.title}</span><span className="shrink-0 rounded bg-muted px-1 text-[10px] uppercase text-muted-foreground">{f.source === "ai" ? "AI" : "Manual"}</span></span>
               <Button size="sm" variant="ghost" onClick={() => undoFix(f)}><Undo2 />Undo</Button>
             </div>
           ))}
