@@ -59,7 +59,7 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
   const facts = [fields.action, fields.constraint, fields.outcome, fields.text].filter(Boolean).join("; ");
 
   const askAi = async () => {
-    if (!pro) { window.__lovableEvents?.track?.("project.paywall_shown", { trigger: "ai_rewrite" }); setWall("AI suggestions are part of the ₹49 unlock."); return; }
+    if (!pro) { window.__lovableEvents?.track?.("project.paywall_shown", { trigger: "ai_rewrite" }); setWall("AI suggestions are included in the ₹99, 30-day Job Hunt Pass."); return; }
     if (!facts.trim() && !active?.original) { setShowFacts(true); toast.error("Fill in at least one question below — AI writes the new bullet only from your facts."); return; }
     setBusy("ai");
     try {
@@ -79,7 +79,7 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
   };
 
   const rescore = async () => {
-    if (!pro) { window.__lovableEvents?.track?.("project.paywall_shown", { trigger: "rescore" }); setWall("Your estimated score is free. Pay ₹49 once to get your official AI-verified rescore, AI drafting and the Word download."); return; }
+    if (!pro) { window.__lovableEvents?.track?.("project.paywall_shown", { trigger: "rescore" }); setWall("Your estimated score is free. The ₹99 Job Hunt Pass unlocks official AI rescoring, AI drafting and Word downloads for 30 days."); return; }
     setBusy("score");
     try {
       const ev = await read({ data: { resume: draft, jobTitle: job.title, jobDescription: job.description, requirements: job.mandatory } });
@@ -199,7 +199,7 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
           <h3 className="text-base font-semibold">{stale ? "Finished editing? Lock in your new score." : "Your score is up to date"}</h3>
           <p className="mt-1 text-xs text-muted-foreground">{stale ? <>{fixes.length} change{fixes.length === 1 ? "" : "s"} applied · Estimated score <b className="text-foreground">~{estimate}</b> ({estimate - base >= 0 ? "+" : ""}{estimate - base} from {base})</> : "Apply recommendations above, then rescore here."}</p>
         </div>
-        <Button size="lg" className="w-full" onClick={rescore} disabled={!!busy || !stale}><Sparkles />{!pro && <Lock />}{busy === "score" ? "Rescoring…" : pro ? "Rescore my resume" : "Rescore & verify final score · ₹49"}</Button>
+        <Button size="lg" className="w-full" onClick={rescore} disabled={!!busy || !stale}><Sparkles />{!pro && <Lock />}{busy === "score" ? "Rescoring…" : pro ? "Rescore my resume" : "Verify final score · ₹99 pass"}</Button>
       </Card>
     </div>
   );

@@ -28,7 +28,7 @@ const compare = [
   ["ATS engines", "One generic checklist", "8 engines simulated separately — Workday, Greenhouse, Ashby, Taleo, iCIMS, SuccessFactors, Lever, BambooHR"],
   ["Fixes", "\"Add more metrics\"", "Rewrite a bullet with your real numbers, rescore live"],
   ["Export", "Broken layouts", "ATS-safe single-column Word file"],
-  ["Price", "$29–49 / month", "1 free scan, then ₹49 once — for life"],
+  ["Price", "$29–49 / month", "1 free scan, then ₹99 for 30 days · no auto-renewal"],
 ];
 
 const examples = [
@@ -132,7 +132,7 @@ function Landing() {
               <Button asChild size="lg" className="bg-gradient-primary shadow-glow"><Link to="/check" search={{ job: undefined }}>Run free resume audit <ArrowRight /></Link></Button>
               <Button asChild size="lg" variant="outline"><Link to="/check" search={{ job: undefined }}>Score against a job</Link></Button>
             </div>
-            <p className="flex items-center gap-2 text-xs text-muted-foreground"><CheckCircle2 className="h-4 w-4 text-success" />1 free scan, no signup · then ₹49 once unlocks everything</p>
+            <p className="flex items-center gap-2 text-xs text-muted-foreground"><CheckCircle2 className="h-4 w-4 text-success" />1 free scan, no signup · ₹99 unlocks all features for 30 days</p>
           </div>
           <div className="rounded-2xl border bg-card p-6 shadow-glow">
             <div className="flex items-center justify-between"><p className="text-sm font-medium">Future Talent Index</p><span className="rounded-full bg-success/15 px-2 py-0.5 text-xs text-success">Strong alignment</span></div>

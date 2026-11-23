@@ -50,7 +50,7 @@ export async function confirmPaymentRow(paymentId: string): Promise<"completed" 
     .update({ status: "completed", paid_at: new Date().toISOString(), gateway_payment_id: rzpPaymentId })
     .eq("id", p.id).eq("status", "pending").select("id");
   if (error) throw error;
-  if (changed && changed.length) {
+  if (changed && changed.length && p.scans_granted > 0) {
     const { data: c } = await supabaseAdmin.from("scan_credits").select("credits").eq("user_id", p.user_id).maybeSingle();
     const { error: e2 } = await supabaseAdmin.from("scan_credits").upsert({ user_id: p.user_id, credits: (c?.credits ?? 0) + p.scans_granted, updated_at: new Date().toISOString() });
     if (e2) throw e2;

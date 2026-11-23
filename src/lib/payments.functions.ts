@@ -6,19 +6,21 @@ import { PLANS } from "@/lib/plans";
 /** Creates a pending payment + Razorpay order. Price comes from the server-side plan catalog. */
 export const createCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({ plan: z.enum(["single"]) }).parse(d))
+  .inputValidator((d) => z.object({ plan: z.enum(["job_hunt_30"]) }).parse(d))
   .handler(async ({ data, context }) => {
     const { razorpay, razorpayEnv } = await import("./razorpay.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const plan = PLANS.find((p) => p.id === data.plan)!;
+    const plan = PLANS.find((p) => p.id === data.plan);
+    if (!plan) throw new Error("Plan not found.");
     const amount = plan.inr * 100;
     const { data: row, error } = await supabaseAdmin.from("payments")
-      .insert({ user_id: context.userId, plan: plan.id, amount, currency: "INR", scans_granted: 1 }).select("id").single();
+      .insert({ user_id: context.userId, plan: plan.id, amount, currency: "INR", scans_granted: 0 }).select("id").single();
     if (error) throw error;
     const order = await razorpay<{ id: string; amount: number; currency: string }>("orders", {
       method: "POST", body: { amount, currency: "INR", receipt: row.id.slice(0, 36), notes: { paymentId: row.id } },
     });
-    await supabaseAdmin.from("payments").update({ gateway_order_id: order.id }).eq("id", row.id);
+    const { error: saveError } = await supabaseAdmin.from("payments").update({ gateway_order_id: order.id }).eq("id", row.id);
+    if (saveError) throw saveError;
     return { paymentId: row.id, rzpOrderId: order.id, amount: order.amount, currency: order.currency, keyId: razorpayEnv().keyId };
   });
 

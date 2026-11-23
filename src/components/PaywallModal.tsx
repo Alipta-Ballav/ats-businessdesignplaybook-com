@@ -40,13 +40,13 @@ export function PaywallModal({ open, onOpenChange, reason }: { open: boolean; on
         if (settled) return;
         try {
           const r = await confirm({ data: { paymentId: o.paymentId } });
-          if (r.status === "completed") { settled = true; notifyProChanged(); toast.success("Payment received. Everything is unlocked."); onOpenChange(false); }
+          if (r.status === "completed") { settled = true; notifyProChanged(); toast.success("Payment received. Your 30-day Job Hunt Pass is active."); onOpenChange(false); }
         } catch (e) { toast.error((e as Error).message); }
         setBusy(false);
       };
       const rzp = new window.Razorpay({
         key: o.keyId, order_id: o.rzpOrderId, amount: o.amount, currency: o.currency,
-        name: "UX Design ATS Checker", description: "Unlock all features",
+        name: "UX Design ATS Checker", description: "30-Day Job Hunt Pass · no auto-renewal",
         prefill: { email: s.session?.user.email ?? "" },
         handler: () => void finish(), modal: { ondismiss: () => void finish() },
       });
@@ -62,16 +62,16 @@ export function PaywallModal({ open, onOpenChange, reason }: { open: boolean; on
         <DialogDescription>{reason}</DialogDescription>
       </DialogHeader>
       <div className="grid gap-4">
-        {PLANS.map((p) => <div key={p.id} className={`relative space-y-3 rounded-xl border p-5 ${p.best ? "border-primary shadow-glow" : ""}`}>
+        {PLANS.map((p) => <div key={p.id} className={`relative space-y-3 rounded-lg border p-5 ${p.best ? "border-primary shadow-glow" : ""}`}>
           <div><p className="font-medium">{p.name}</p><p className="text-xs text-muted-foreground">{p.blurb}</p></div>
-          <p><span className="text-3xl font-semibold">₹{p.inr}</span></p>
+          <p><span className="text-3xl font-semibold">₹{p.inr}</span><span className="ml-2 text-sm text-muted-foreground">/ 30 days</span></p>
           <ul className="space-y-1 text-sm">{p.perks.map((x) => <li key={x} className="flex gap-2"><Check className="h-4 w-4 text-success" />{x}</li>)}</ul>
           {signedIn === false
             ? <Button asChild className="w-full"><Link to="/auth" search={{ mode: "signup", as: "candidate", redirect: "/check" }}>Sign in to pay ₹{p.inr}</Link></Button>
             : <Button className="w-full" disabled={busy || signedIn === null} onClick={() => void pay(p.id)}>{busy ? "Waiting for payment…" : `Pay ₹${p.inr} · UPI, card, netbanking`}</Button>}
         </div>)}
       </div>
-      <p className="text-center text-xs text-muted-foreground">Secure payment by Razorpay · one-time · no subscription</p>
+      <p className="text-center text-xs text-muted-foreground">Secure payment by Razorpay · no auto-renewal<br />Pay again only when you want another 30-day pass.</p>
     </DialogContent>
   </Dialog>;
 }

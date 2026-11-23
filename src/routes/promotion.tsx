@@ -49,6 +49,6 @@ function Promotion() {
       <section><h2 className="text-xl">Build evidence here next</h2><ol className="mt-4 grid gap-4 md:grid-cols-3">{report.priorities.map((d, i) => <li key={d.id} className="rounded-lg border bg-card p-5"><p className="font-mono text-xs text-primary">0{i + 1} · {d.weight}% of this level’s score</p><h3 className="mt-2 text-base">{d.name}</h3><p className="mt-3 text-sm text-muted-foreground">{d.tip}</p><p className="mt-4 font-mono text-sm">{d.score} / 100</p></li>)}</ol></section>
       <div className="divide-y">{report.dims.map(d => <div key={d.id} className="grid gap-3 py-4 md:grid-cols-[1fr_80px_2fr]"><p className="text-sm font-medium">{d.name}<span className="mt-1 block text-xs font-normal text-muted-foreground">Weight {d.weight}%</span></p><p className="font-mono text-lg">{d.score}</p><p className="text-sm text-muted-foreground">{d.quotes[0] ? `“${d.quotes[0]}”` : 'No evidence found in this resume.'}</p></div>)}</div>
       <SaveResumeVersion resume={pair.text} candidate={pair.candidate} job={{ ...pair.job, description: '', mandatory: [] }} scoredText={pair.text} level={level} />
-    </div>}<PaywallModal open={wall} onOpenChange={setWall} reason="Your free scan is used. Pay ₹49 once for unlimited scans and all services." />
+    </div>}<PaywallModal open={wall} onOpenChange={setWall} reason="Your free scan is used. Get unlimited scans and all features for 30 days with the ₹99 Job Hunt Pass." />
   </div>;
 }

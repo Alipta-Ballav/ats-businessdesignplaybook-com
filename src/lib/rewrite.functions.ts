@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { hasPaidAccess } from "@/lib/plans";
 
 /** AI rewrite (Pro): drafts a bullet from the original line + user facts only. The client re-checks for new facts. */
 export const suggestRewrite = createServerFn({ method: "POST" })
@@ -14,8 +15,8 @@ export const suggestRewrite = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: admin } = await supabase.from("user_roles").select("role").eq("user_id", userId).eq("role", "admin").maybeSingle();
     if (!admin) {
-      const { data: paid } = await supabase.from("payments").select("id").eq("user_id", userId).eq("status", "completed").limit(1);
-      if (!paid?.length) throw new Error("AI suggestions are part of the ₹49 unlock.");
+      const { data: paid } = await supabase.from("payments").select("plan, amount, status, paid_at").eq("user_id", userId).eq("status", "completed");
+      if (!paid?.some((payment) => hasPaidAccess(payment))) throw new Error("AI suggestions require an active ₹99, 30-day Job Hunt Pass.");
     }
     const { rewriteBullet } = await import("./ai/rewrite.server");
     return { text: await rewriteBullet(data) };

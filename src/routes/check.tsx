@@ -21,12 +21,14 @@ import { BusinessPlaybook } from "@/components/BusinessPlaybook";
 import { PaywallModal } from "@/components/PaywallModal";
 import { usePro } from "@/lib/pro";
 import { FREE_SCANS, canScan, countScan, scansUsed } from "@/lib/plans";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, CheckCircle2, Loader2, ScanText, Target } from "lucide-react";
 
 export const Route = createFileRoute("/check")({
   validateSearch: (s: Record<string, unknown>): { job?: string | undefined } => ({ job: typeof s["job"] === "string" ? s["job"] : undefined }),
   head: () => ({ meta: [
     { title: "Free resume score check — FutureTalent AI" },
-    { name: "description", content: "Paste your resume and a job posting to get an evidence-based fit report. No sign-up needed." },
+    { name: "description", content: "Upload a PDF or Word design resume for your free evidence-based ATS score. Continue with a ₹99, 30-day Job Hunt Pass." },
     { property: "og:title", content: "Free resume score check — FutureTalent AI" },
     { property: "og:description", content: "See your fit score and what to fix — no account required." },
     { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" },
@@ -118,38 +120,38 @@ function CheckPage() {
   }
   const ready = resume.trim().length >= 80 && (mode === "profile" || (title.trim() && jd.trim().length >= 40));
   return (
-    <div className="mx-auto max-w-5xl space-y-10 py-6">
-      <header className="space-y-3 text-center">
-        <span className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs text-muted-foreground"><span className="h-1.5 w-1.5 rounded-full bg-primary" />Built for UX, product & design leaders</span>
-        <h1 className="text-4xl md:text-5xl">Score your design resume</h1>
-        <p className="mx-auto max-w-xl text-muted-foreground">Every point is backed by a quote from your own resume. Choose how you want to be scored.</p>
+    <div className="mx-auto max-w-4xl space-y-3 sm:space-y-5">
+      <header className="space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-2"><h1 className="text-2xl sm:text-3xl">Score your design resume</h1><span className="flex items-center gap-1.5 text-xs text-success"><CheckCircle2 className="h-3.5 w-3.5" />Quote-verified scores</span></div>
+        <p className="text-sm text-muted-foreground">Your craft, research and impact — evaluated across 8 design dimensions.</p>
       </header>
 
-      <div className="mx-auto grid max-w-3xl gap-3 sm:grid-cols-2">
-        {([["profile", "01", "Generic resume score", "Resume only — how strong is it overall?"], ["role", "02", "Score against a job", "Resume + job post — will you pass the ATS?"]] as const).map(([m, n, t, d]) => (
-          <button key={m} onClick={() => setMode(m)} className={`rounded-xl border p-5 text-left transition ${mode === m ? "border-primary bg-card shadow-glow" : "bg-card/50 hover:border-primary/40"}`}>
-            <span className={`font-mono text-xs ${mode === m ? "text-primary" : "text-muted-foreground"}`}>{n}</span>
-            <span className="mt-2 block font-medium">{t}</span><span className="mt-1 block text-sm text-muted-foreground">{d}</span></button>))}
+      <div role="group" aria-label="Scoring mode" className="inline-flex max-w-full gap-1 rounded-lg border bg-secondary p-1">
+        <Button size="sm" variant={mode === "profile" ? "outline" : "ghost"} aria-pressed={mode === "profile"} onClick={() => setMode("profile")} className="text-xs sm:text-sm"><ScanText />Profile audit</Button>
+        <Button size="sm" variant={mode === "role" ? "outline" : "ghost"} aria-pressed={mode === "role"} onClick={() => setMode("role")} className="text-xs sm:text-sm"><Target />Match to a job</Button>
       </div>
 
-      <div className={mode === "role" ? "grid gap-6 lg:grid-cols-2" : "mx-auto max-w-3xl"}>
-        {mode === "role" && <div className="space-y-4 rounded-xl border bg-card p-6 shadow-sheet">
-          <div><p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Step 1</p><h2 className="mt-1 text-lg">The target role</h2></div>
-          <label className="block space-y-1.5 text-sm font-medium">Job title<input className={input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Senior Product Designer" /></label>
-          <label className="block space-y-1.5 text-sm font-medium">Job description<textarea rows={10} className={input} value={jd} onChange={(e) => setJd(e.target.value)} placeholder="Paste the job posting you're targeting…" /></label>
-          <JobDiagnostics title={title} description={jd} />
-        </div>}
-        <div className="space-y-4 rounded-xl border bg-card p-6 shadow-sheet">
-          <div><p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">{mode === "role" ? "Step 2" : "Your resume"}</p><h2 className="mt-1 text-lg">Upload or paste your resume</h2></div>
-          <ResumeInput value={resume} onChange={setResume} />
+      <div className={`grid gap-3 border-y py-3 sm:gap-5 sm:py-5 ${mode === "role" ? "sm:grid-cols-2" : ""}`}>
+        <section className="min-w-0 space-y-3">
+          <div className="flex items-baseline justify-between gap-2"><h2 className="text-sm font-semibold">Your resume</h2><span className="text-xs text-muted-foreground">{mode === "profile" ? "Profile audit" : "1 of 2"}</span></div>
+          <ResumeInput value={resume} onChange={setResume} compact />
+        </section>
+        {mode === "role" && <section className="min-w-0 space-y-3 sm:border-l sm:pl-5">
+          <div className="flex items-baseline justify-between gap-2"><h2 className="text-sm font-semibold">Target job</h2><span className="text-xs text-muted-foreground">2 of 2</span></div>
+          <input aria-label="Job title" className={input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Job title · e.g. Senior Product Designer" />
+          <textarea aria-label="Job description" className={`${input} h-24 resize-none focus:outline-none focus:ring-1 focus:ring-ring sm:h-28`} value={jd} onChange={(e) => setJd(e.target.value)} placeholder="Paste the job description…" />
+        </section>}
+      </div>
+
+      <div className="flex flex-col-reverse justify-between gap-3 sm:flex-row sm:items-center">
+        <div className="space-y-1">
+          <p className="text-xs font-medium">{pro ? "Your access includes unlimited scans" : used < FREE_SCANS ? "1 free scan · No credit card required" : "₹99 Job Hunt Pass · All features for 30 days"}</p>
+          <p className="text-xs text-muted-foreground">{pro ? "AI rewrites, verified rescoring and Word exports included" : "Then ₹99 for 30 days · No auto-renewal"}</p>
         </div>
+        <Button size="lg" disabled={busy || !ready} onClick={run} className="w-full shrink-0 sm:w-auto">{busy ? <Loader2 className="animate-spin" /> : <ArrowRight />}{busy ? "Reading your resume…" : pro ? "Get my score" : used < FREE_SCANS ? "Get my free score" : "Get my score · ₹99 pass"}</Button>
       </div>
-
-      <div className="flex flex-col items-center gap-3">
-        <button disabled={busy || !ready} onClick={run} className="w-full max-w-sm rounded-lg bg-gradient-primary px-6 py-3 text-sm font-medium text-primary-foreground shadow-glow transition disabled:opacity-40 disabled:shadow-none">{busy ? "Reading your resume… (about 30s)" : "Get my score →"}</button>
-        {!pro && <p className="text-xs text-muted-foreground">{Math.max(0, FREE_SCANS - used)} of {FREE_SCANS} free scan left · then ₹49 once unlocks everything</p>}
-      </div>
-      <PaywallModal open={wall} onOpenChange={setWall} reason={"You have used your free scan. Pay ₹49 once to unlock unlimited scans, all fixes and the Word download."} />
+      {busy && <p role="status" className="text-xs text-muted-foreground">Checking your evidence. This usually takes about 30 seconds.</p>}
+      <PaywallModal open={wall} onOpenChange={setWall} reason="You have used your free scan. The ₹99 Job Hunt Pass unlocks unlimited scans, AI rewrites, verified rescoring and Word downloads for 30 days." />
     </div>
   );
 }
