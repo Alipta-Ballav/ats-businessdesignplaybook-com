@@ -9,6 +9,7 @@ import { notifyProChanged } from "@/lib/pro";
 import { supabase } from "@/integrations/supabase/client";
 import { createCheckout, confirmCheckout } from "@/lib/payments.functions";
 import { toast } from "sonner";
+import { PaymentPromise } from "@/components/trust/Trust";
 
 declare global { interface Window { Razorpay?: any } }
 
@@ -71,6 +72,7 @@ export function PaywallModal({ open, onOpenChange, reason }: { open: boolean; on
             : <Button className="w-full" disabled={busy || signedIn === null} onClick={() => void pay(p.id)}>{busy ? "Waiting for payment…" : `Pay ₹${p.inr} · UPI, card, netbanking`}</Button>}
         </div>)}
       </div>
+      <PaymentPromise />
       <p className="text-center text-xs text-muted-foreground">Secure payment by Razorpay · no auto-renewal<br />Pay again only when you want another 30-day pass.</p>
     </DialogContent>
   </Dialog>;

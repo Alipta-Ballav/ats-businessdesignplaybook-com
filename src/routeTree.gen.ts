@@ -13,9 +13,12 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CheckRouteImport } from './routes/check'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PromotionRouteImport } from './routes/promotion'
+import { Route as RefundRouteImport } from './routes/refund'
 import { Route as SwipeFileRouteImport } from './routes/swipe-file'
 import { Route as TeardownsRouteImport } from './routes/teardowns'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedMyResumesRouteImport } from './routes/_authenticated/my-resumes'
 import { Route as AuthenticatedWelcomeRouteImport } from './routes/_authenticated/welcome'
 import { Route as RolesIndexRouteImport } from './routes/roles.index'
@@ -47,9 +50,19 @@ const CheckRoute = CheckRouteImport.update({
   path: '/check',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PromotionRoute = PromotionRouteImport.update({
   id: '/promotion',
   path: '/promotion',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RefundRoute = RefundRouteImport.update({
+  id: '/refund',
+  path: '/refund',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SwipeFileRoute = SwipeFileRouteImport.update({
@@ -60,6 +73,11 @@ const SwipeFileRoute = SwipeFileRouteImport.update({
 const TeardownsRoute = TeardownsRouteImport.update({
   id: '/teardowns',
   path: '/teardowns',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedMyResumesRoute = AuthenticatedMyResumesRouteImport.update({
@@ -129,9 +147,12 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/check': typeof CheckRoute
+  '/privacy': typeof PrivacyRoute
   '/promotion': typeof PromotionRoute
+  '/refund': typeof RefundRoute
   '/swipe-file': typeof SwipeFileRoute
   '/teardowns': typeof TeardownsRoute
+  '/terms': typeof TermsRoute
   '/my-resumes': typeof AuthenticatedMyResumesRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/roles/$jobId': typeof RolesJobIdRoute
@@ -148,9 +169,12 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/check': typeof CheckRoute
+  '/privacy': typeof PrivacyRoute
   '/promotion': typeof PromotionRoute
+  '/refund': typeof RefundRoute
   '/swipe-file': typeof SwipeFileRoute
   '/teardowns': typeof TeardownsRoute
+  '/terms': typeof TermsRoute
   '/my-resumes': typeof AuthenticatedMyResumesRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/roles/$jobId': typeof RolesJobIdRoute
@@ -169,9 +193,12 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/check': typeof CheckRoute
+  '/privacy': typeof PrivacyRoute
   '/promotion': typeof PromotionRoute
+  '/refund': typeof RefundRoute
   '/swipe-file': typeof SwipeFileRoute
   '/teardowns': typeof TeardownsRoute
+  '/terms': typeof TermsRoute
   '/_authenticated/my-resumes': typeof AuthenticatedMyResumesRoute
   '/_authenticated/welcome': typeof AuthenticatedWelcomeRoute
   '/roles/$jobId': typeof RolesJobIdRoute
@@ -190,9 +217,12 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/check'
+    | '/privacy'
     | '/promotion'
+    | '/refund'
     | '/swipe-file'
     | '/teardowns'
+    | '/terms'
     | '/my-resumes'
     | '/welcome'
     | '/roles/$jobId'
@@ -209,9 +239,12 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/check'
+    | '/privacy'
     | '/promotion'
+    | '/refund'
     | '/swipe-file'
     | '/teardowns'
+    | '/terms'
     | '/my-resumes'
     | '/welcome'
     | '/roles/$jobId'
@@ -229,9 +262,12 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/check'
+    | '/privacy'
     | '/promotion'
+    | '/refund'
     | '/swipe-file'
     | '/teardowns'
+    | '/terms'
     | '/_authenticated/my-resumes'
     | '/_authenticated/welcome'
     | '/roles/$jobId'
@@ -250,9 +286,12 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   CheckRoute: typeof CheckRoute
+  PrivacyRoute: typeof PrivacyRoute
   PromotionRoute: typeof PromotionRoute
+  RefundRoute: typeof RefundRoute
   SwipeFileRoute: typeof SwipeFileRoute
   TeardownsRoute: typeof TeardownsRoute
+  TermsRoute: typeof TermsRoute
   RolesJobIdRoute: typeof RolesJobIdRoute
   RolesIndexRoute: typeof RolesIndexRoute
   ApiPublicRazorpayWebhookRoute: typeof ApiPublicRazorpayWebhookRoute
@@ -288,11 +327,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/promotion': {
       id: '/promotion'
       path: '/promotion'
       fullPath: '/promotion'
       preLoaderRoute: typeof PromotionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/refund': {
+      id: '/refund'
+      path: '/refund'
+      fullPath: '/refund'
+      preLoaderRoute: typeof RefundRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/swipe-file': {
@@ -307,6 +360,13 @@ declare module '@tanstack/react-router' {
       path: '/teardowns'
       fullPath: '/teardowns'
       preLoaderRoute: typeof TeardownsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/my-resumes': {
@@ -421,9 +481,12 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   CheckRoute: CheckRoute,
+  PrivacyRoute: PrivacyRoute,
   PromotionRoute: PromotionRoute,
+  RefundRoute: RefundRoute,
   SwipeFileRoute: SwipeFileRoute,
   TeardownsRoute: TeardownsRoute,
+  TermsRoute: TermsRoute,
   RolesJobIdRoute: RolesJobIdRoute,
   RolesIndexRoute: RolesIndexRoute,
   ApiPublicRazorpayWebhookRoute: ApiPublicRazorpayWebhookRoute,

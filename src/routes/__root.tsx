@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
+import { Footer } from "@/components/trust/Trust";
 import { supabase } from "@/integrations/supabase/client";
 import { q } from "@/lib/db";
 import { useNavigate } from "@tanstack/react-router";
@@ -140,6 +141,7 @@ function RootComponent() {
       <div className="min-h-screen font-sans">
         <Header />
         <main className="mx-auto max-w-6xl px-6 py-8"><Outlet /></main>
+        <Footer />
       </div>
       <Toaster />
     </QueryClientProvider>

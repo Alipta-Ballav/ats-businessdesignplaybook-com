@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowRight, Bookmark, CalendarDays, FileStack, TrendingUp, CheckCircle2, Gauge, Quote, Sparkles, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { TrustPillars } from "@/components/trust/Trust";
 import { ATS_SYSTEMS, FTI_DIMENSIONS, LEVELS, LEVEL_WEIGHTS, LEVEL_EXAMPLES } from "@/lib/scoring";
 
 const TITLE = "UX Design ATS Checker — FutureTalent AI";
@@ -213,6 +214,8 @@ function Landing() {
           <p className="mt-2 max-w-xl text-sm text-muted-foreground">Generic score or score against a job, ATS engine previews, and a fix-and-rescore workflow that exports to Word.</p>
           <Button asChild className="mt-6"><Link to="/check" search={{ job: undefined }}>Check my resume</Link></Button></div>
       </section>
+
+      <TrustPillars />
 
       <section className="mx-auto max-w-6xl px-6">
         <div className="rounded-2xl bg-gradient-primary p-12 text-center text-primary-foreground shadow-glow">

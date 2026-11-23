@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { CheckCircle2, FileText, Loader2, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PrivacySeal } from "@/components/trust/Trust";
 const input = "w-full rounded-md border bg-background px-3 py-2 text-sm";
 
 async function readFile(f: File): Promise<string> {
@@ -61,6 +62,7 @@ export function ResumeInput({ value, onChange, compact = false }: { value: strin
       {paste && <span className="text-xs text-muted-foreground">{words} words</span>}
     </div>
     {err && <p role="alert" className="text-xs text-destructive">{err}</p>}
+    <PrivacySeal />
   </div>;
   return (
     <div className="space-y-2 text-sm">
@@ -71,6 +73,7 @@ export function ResumeInput({ value, onChange, compact = false }: { value: strin
       {file && <p className="text-xs text-muted-foreground">Loaded <span className="font-medium text-foreground">{file}</span> · {words} words. Review the text below before checking.</p>}
       {err && <p className="text-xs text-destructive">{err}</p>}
       <textarea rows={12} className={input} value={value} onChange={(e) => onChange(e.target.value)} placeholder="Upload a PDF/Word file or paste your full resume here…" />
+      <PrivacySeal />
     </div>
   );
 }
