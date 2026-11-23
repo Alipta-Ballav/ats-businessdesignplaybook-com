@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { BadgeCheck, CreditCard, GraduationCap, Lock, Quote, ShieldCheck } from "lucide-react";
+import { BadgeCheck, Cpu, CreditCard, GraduationCap, Lock, Quote, ShieldCheck } from "lucide-react";
 
 export function PrivacySeal() {
   return (
@@ -24,23 +24,27 @@ const PILLARS = [
   { icon: Lock, fear: "“Is my NDA work safe?”", title: "Designer Privacy Pledge", body: "Your resume is never sold, shared or used to train AI models. Delete your saved data any time." },
   { icon: GraduationCap, fear: "“Who wrote this rubric?”", title: "Built by design educators", body: "Created by The Finishing School, makers of the Business Design Playbook, from real Lead, Staff and Director hiring criteria." },
   { icon: Quote, fear: "“Is the score made up?”", title: "Verbatim Truth Standard", body: "Every point quotes your exact words. If we can't find it in your resume, it doesn't count. Same resume, same score." },
+  { icon: Cpu, fear: "“Which AI reads my resume?”", title: "OpenAI GPT-6 reasoning model", body: "A top-tier reasoning model only finds quotes in your resume. Your final score comes from a fixed, published formula, not AI guesswork. Nothing is stored by the model." },
   { icon: BadgeCheck, fear: "“Is this a subscription trap?”", title: "Zero-trap payment", body: "First scan free. ₹99 once for 30 days. No card saved, no auto-renewal, clear refunds." },
 ];
 
 export function TrustPillars() {
   return (
     <section className="mx-auto max-w-6xl px-6">
-      <p className="text-center font-mono text-xs uppercase tracking-widest text-primary">Why designers trust us</p>
-      <h2 className="mt-2 text-center text-3xl">Your work, your words, your money: protected.</h2>
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {PILLARS.map((p) => (
-          <div key={p.title} className="rounded-xl border bg-card p-5 shadow-sheet">
-            <p.icon className="h-5 w-5 text-primary" />
-            <p className="mt-3 text-xs italic text-muted-foreground">{p.fear}</p>
-            <h3 className="mt-1 text-base font-semibold">{p.title}</h3>
-            <p className="mt-2 text-sm text-muted-foreground">{p.body}</p>
-          </div>
-        ))}
+      <div className="relative overflow-hidden rounded-3xl border-2 border-primary/40 bg-gradient-to-br from-primary/10 via-card to-success/10 p-6 shadow-glow md:p-10">
+        <div className="flex justify-center"><span className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-1.5 font-mono text-xs uppercase tracking-widest text-primary-foreground"><ShieldCheck className="h-4 w-4" />Why trust us</span></div>
+        <h2 className="mt-4 text-center text-3xl md:text-4xl">Your work, your words, your money: <span className="text-gradient">protected.</span></h2>
+        <p className="mx-auto mt-3 max-w-2xl text-center text-muted-foreground">Five promises we build into every scan, so you never have to wonder what happens to your resume.</p>
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {PILLARS.map((p) => (
+            <div key={p.title} className="rounded-xl border bg-card p-5 shadow-sheet transition hover:-translate-y-0.5 hover:border-primary/50">
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10"><p.icon className="h-5 w-5 text-primary" /></span>
+              <p className="mt-3 text-xs italic text-muted-foreground">{p.fear}</p>
+              <h3 className="mt-1 text-base font-semibold">{p.title}</h3>
+              <p className="mt-2 text-sm text-muted-foreground">{p.body}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
