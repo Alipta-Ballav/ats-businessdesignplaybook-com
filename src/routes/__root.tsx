@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Footer } from "@/components/trust/Trust";
 import { supabase } from "@/integrations/supabase/client";
 import { q } from "@/lib/db";
@@ -113,9 +114,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
+        <script dangerouslySetInnerHTML={{ __html: `try{var t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.classList.add("dark")}catch(e){}` }} />
       </head>
       <body>
         {children}
@@ -166,6 +168,7 @@ function Header() {
           {me?.role === "candidate" && <Link to="/candidate" activeProps={active}>Check my resume</Link>}
           {!me && <Link to="/check" activeProps={active}>Resume check</Link>}
         </nav>
+        <ThemeToggle />
         {me ? (
           <div className="flex items-center gap-3 text-sm"><span className="hidden text-muted-foreground sm:inline">{me.name || me.email}{me.role && ` · ${me.role}`}</span>
             <button onClick={signOut} className="rounded-md border px-3 py-1.5">Sign out</button></div>
