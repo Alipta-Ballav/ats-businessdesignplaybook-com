@@ -15,7 +15,7 @@ export function inlineRuns(t: string): { text: string; bold?: boolean; italic?: 
   if (last < t.length) out.push({ text: t.slice(last) });
   return out;
 }
-const runs = (t: string, o: { bold?: boolean; size?: number; color?: string } = {}) => inlineRuns(t).map((r) => new TextRun({ text: r.text, bold: o.bold || r.bold, italics: r.italic, size: o.size, color: o.color }));
+const runs = (t: string, o: { bold?: boolean; size?: number; color?: string } = {}) => inlineRuns(t).map((r) => new TextRun({ text: r.text, bold: !!(o.bold || r.bold), italics: !!r.italic, ...(o.size ? { size: o.size } : {}), ...(o.color ? { color: o.color } : {}) }));
 const plain = (t: string) => inlineRuns(t).map((r) => r.text).join("");
 
 /** A job-title / company / dates line, e.g. "Lead Designer | Acme | 2021 – Present". */
