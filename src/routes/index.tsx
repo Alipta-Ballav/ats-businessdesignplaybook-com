@@ -123,17 +123,20 @@ function Landing() {
           <div className="space-y-6">
             <span className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs text-muted-foreground">
               <span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" /><span className="relative inline-flex h-2 w-2 rounded-full bg-primary" /></span>
-              The only design ATS checker that shows its proof
+              Built only for Product & UX designers
             </span>
-            <h1 className="text-5xl leading-[1.05] md:text-6xl">The resume score you can <span className="text-gradient">actually trust.</span></h1>
-            <p className="max-w-xl text-lg text-muted-foreground">Built for Product & UX designers. Every point is tied to an exact line from your resume, your work is never used to train AI, and you pay once with no auto-debit.</p>
+            <h1 className="text-5xl leading-[1.05] md:text-6xl">Audit your UX resume <span className="text-gradient">in 60 seconds.</span></h1>
+            <p className="max-w-xl text-lg text-muted-foreground">See exactly what Workday, Greenhouse and 6 other ATS engines read — scored like a Design Director would. Every point backed by your own words. No AI training. No subscription.</p>
             <ul className="flex flex-wrap gap-2">{[["100%", "Scores backed by your own words"], ["0", "Resumes used for AI training"], ["₹0", "Auto-debit, ever"]].map(([n, t]) =>
               <li key={t} className="flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm shadow-sheet"><span className="font-mono font-semibold text-primary">{n}</span><span className="text-muted-foreground">{t}</span></li>)}</ul>
             <div className="flex flex-wrap items-center gap-3">
-              <Button asChild size="lg" className="bg-gradient-primary shadow-glow"><Link to="/check" search={{ job: undefined }}>Run free resume audit <ArrowRight /></Link></Button>
+              <Button asChild size="lg" className="bg-gradient-primary shadow-glow"><Link to="/check" search={{ job: undefined }}>Try your free audit <ArrowRight /></Link></Button>
               <Button asChild size="lg" variant="outline"><Link to="/check" search={{ job: undefined }}>Score against a job</Link></Button>
             </div>
-            <p className="flex items-center gap-2 text-xs text-muted-foreground"><CheckCircle2 className="h-4 w-4 text-success" />1 free scan, no signup · delete your data any time · ₹99 for 30 days, no renewal</p>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border bg-card px-4 py-3 text-sm shadow-sheet">
+              <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-success" /><b>1st audit free</b><span className="text-muted-foreground">· no signup</span></span>
+              <span className="flex items-center gap-1.5"><span className="rounded bg-primary/10 px-1.5 py-0.5 font-mono text-xs font-semibold text-primary">₹99</span><span className="text-muted-foreground">to rescore edits & download Word · 30 days · no auto-debit</span></span>
+            </div>
           </div>
           <div className="rounded-2xl border bg-card p-6 shadow-glow">
             <div className="flex items-center justify-between"><p className="text-sm font-medium">Future Talent Index</p><span className="rounded-full bg-success/15 px-2 py-0.5 text-xs text-success">Strong alignment</span></div>
@@ -152,7 +155,32 @@ function Landing() {
         </div>
       </section>
 
+      <section className="mx-auto max-w-6xl px-6">
+        <ol className="grid gap-4 md:grid-cols-3">{[["1", "Drop your resume", "PDF or Word. Read in seconds."], ["2", "See your 8-dimension score", "Find which ATS engine knocks you out, and why."], ["3", "Fix weak bullets", "AI turns tasks into measurable impact. Free."]].map(([n, t, d]) =>
+          <li key={n} className="flex gap-3 rounded-xl border bg-card p-4"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-gradient-primary font-mono text-sm text-primary-foreground">{n}</span><div><p className="font-medium">{t}</p><p className="text-sm text-muted-foreground">{d}</p></div></li>)}</ol>
+      </section>
+
       <TrustPillars />
+
+      <section className="mx-auto max-w-5xl px-6">
+        <p className="text-center text-sm font-medium text-primary">Honest pricing</p>
+        <h2 className="mt-2 text-center text-3xl md:text-4xl">Know what's free before you start</h2>
+        <div className="mt-10 grid gap-5 md:grid-cols-2">
+          <div className="rounded-2xl border bg-card p-6">
+            <p className="text-sm text-muted-foreground">Free audit</p>
+            <p className="mt-1 font-mono text-4xl">₹0</p>
+            <ul className="mt-5 space-y-2 text-sm">{["Full 8-dimension design score", "Scores across all 8 ATS engines", "Seniority level check", "All recommendations + free AI rewrites", "Live estimated score as you edit"].map((t) => <li key={t} className="flex gap-2"><CheckCircle2 className="h-4 w-4 shrink-0 text-success" />{t}</li>)}</ul>
+            <p className="mt-5 text-xs text-muted-foreground">No account or card needed.</p>
+          </div>
+          <div className="rounded-2xl border-2 border-primary bg-card p-6 shadow-glow">
+            <div className="flex items-center justify-between"><p className="text-sm text-muted-foreground">30-Day Job Hunt Pass</p><span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">Pay only when ready</span></div>
+            <p className="mt-1 font-mono text-4xl">₹99 <span className="text-sm text-muted-foreground">one-time</span></p>
+            <ul className="mt-5 space-y-2 text-sm">{["Official verified rescore after your edits", "Download ATS-clean Word (.docx)", "5 full resume scans in 30 days", "UPI or card · no auto-renewal, ever"].map((t) => <li key={t} className="flex gap-2"><CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />{t}</li>)}</ul>
+            <p className="mt-5 text-xs text-muted-foreground">You'll only be asked to pay when you rescore, download Word or run a 2nd scan.</p>
+          </div>
+        </div>
+        <div className="mt-8 text-center"><Button asChild size="lg" className="bg-gradient-primary shadow-glow"><Link to="/check" search={{ job: undefined }}>Try your free audit <ArrowRight /></Link></Button></div>
+      </section>
 
       <section className="mx-auto max-w-6xl px-6">
         <p className="text-sm font-medium text-primary">Why standard ATS fails designers</p>
