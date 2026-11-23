@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { TrustPillars } from "@/components/trust/Trust";
 import { ATS_SYSTEMS, FTI_DIMENSIONS, LEVELS, LEVEL_WEIGHTS, LEVEL_EXAMPLES } from "@/lib/scoring";
 
-const TITLE = "UX Design ATS Checker — FutureTalent AI";
-const DESC = "Get a free, explainable ATS score for your design resume. Every point is tied to a verbatim quote, calibrated across 8 ATS engines: Workday, Greenhouse, Ashby, Taleo, iCIMS, SuccessFactors, Lever and BambooHR.";
+const TITLE = "Trusted UX Design ATS Checker — FutureTalent AI";
+const DESC = "The design ATS score you can trust: no AI training on your resume, no auto-debit. Get a free, explainable ATS score for your design resume. Every point is tied to a verbatim quote, calibrated across 8 ATS engines: Workday, Greenhouse, Ashby, Taleo, iCIMS, SuccessFactors, Lever and BambooHR.";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [
@@ -30,6 +30,7 @@ const compare = [
   ["Fixes", "\"Add more metrics\"", "Rewrite a bullet with your real numbers, rescore live"],
   ["Export", "Broken layouts", "ATS-safe single-column Word file"],
   ["Price", "$29–49 / month", "1 free scan, then ₹99 for 30 days · no auto-renewal"],
+  ["Your data", "May train their AI", "Never used for training · delete any time"],
 ];
 
 const examples = [
@@ -122,17 +123,17 @@ function Landing() {
           <div className="space-y-6">
             <span className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs text-muted-foreground">
               <span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" /><span className="relative inline-flex h-2 w-2 rounded-full bg-primary" /></span>
-              The ATS checker built only for the UX design community
+              The only design ATS checker that shows its proof
             </span>
-            <h1 className="text-5xl leading-[1.05] md:text-6xl">Stop being graded like a sales rep. <span className="text-gradient">Get read like a Design Director would.</span></h1>
-            <p className="max-w-xl text-lg text-muted-foreground">A resume score built for Product & UX designers. Turn your real work into clear evidence of craft, influence and business impact.</p>
-            <ul className="flex flex-wrap gap-2">{[["8", "Product & UX dimensions"], ["8", "ATS engines simulated"], ["100%", "Quote-verified scores"]].map(([n, t]) =>
+            <h1 className="text-5xl leading-[1.05] md:text-6xl">The resume score you can <span className="text-gradient">actually trust.</span></h1>
+            <p className="max-w-xl text-lg text-muted-foreground">Built for Product & UX designers. Every point is tied to an exact line from your resume, your work is never used to train AI, and you pay once with no auto-debit.</p>
+            <ul className="flex flex-wrap gap-2">{[["100%", "Quote-verified scores"], ["0", "Resumes used for AI training"], ["₹0", "Auto-debit, ever"]].map(([n, t]) =>
               <li key={t} className="flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm shadow-sheet"><span className="font-mono font-semibold text-primary">{n}</span><span className="text-muted-foreground">{t}</span></li>)}</ul>
             <div className="flex flex-wrap items-center gap-3">
               <Button asChild size="lg" className="bg-gradient-primary shadow-glow"><Link to="/check" search={{ job: undefined }}>Run free resume audit <ArrowRight /></Link></Button>
               <Button asChild size="lg" variant="outline"><Link to="/check" search={{ job: undefined }}>Score against a job</Link></Button>
             </div>
-            <p className="flex items-center gap-2 text-xs text-muted-foreground"><CheckCircle2 className="h-4 w-4 text-success" />1 free scan, no signup · ₹99 unlocks all features for 30 days</p>
+            <p className="flex items-center gap-2 text-xs text-muted-foreground"><CheckCircle2 className="h-4 w-4 text-success" />1 free scan, no signup · delete your data any time · ₹99 for 30 days, no renewal</p>
           </div>
           <div className="rounded-2xl border bg-card p-6 shadow-glow">
             <div className="flex items-center justify-between"><p className="text-sm font-medium">Future Talent Index</p><span className="rounded-full bg-success/15 px-2 py-0.5 text-xs text-success">Strong alignment</span></div>
@@ -150,6 +151,8 @@ function Landing() {
           </div>
         </div>
       </section>
+
+      <TrustPillars />
 
       <section className="mx-auto max-w-6xl px-6">
         <p className="text-sm font-medium text-primary">Why standard ATS fails designers</p>
@@ -184,7 +187,6 @@ function Landing() {
         {tab === "ats" && <Engines />}
       </section>
 
-      <TrustPillars />
 
       <section className="mx-auto max-w-6xl px-6">
         <p className="text-sm font-medium text-primary">How we compare</p>
@@ -208,7 +210,7 @@ function Landing() {
       <section className="mx-auto max-w-6xl px-6">
         <div className="rounded-2xl bg-gradient-primary p-12 text-center text-primary-foreground shadow-glow">
           <h2 className="text-3xl md:text-4xl">Audit your UX resume in 60 seconds</h2>
-          <p className="mx-auto mt-3 max-w-lg opacity-90">Free, explainable and grounded in your own words.</p>
+          <p className="mx-auto mt-3 max-w-lg opacity-90">Private, explainable and grounded in your own words.</p>
           <Button asChild size="lg" variant="secondary" className="mt-6"><Link to="/check" search={{ job: undefined }}>Start free audit <ArrowRight /></Link></Button>
         </div>
       </section>
