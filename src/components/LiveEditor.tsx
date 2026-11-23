@@ -130,7 +130,16 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
         )}
         {open.length === 0 && <p className="p-4 text-sm text-muted-foreground">All done. Rescore below to find more.</p>}
         <ul className="divide-y">
-          {open.slice(0, 8).map((s, n) => {
+          {queue.filter((q) => !skipped.includes(q.id) && (doneIds.includes(q.id) || open.slice(0, 8).includes(q))).map((s) => {
+            const n = queue.indexOf(s);
+            const f = fixes.find((x) => x.id === s.id);
+            if (f) return (
+              <li key={s.id} className={`flex items-center gap-3 border-l-4 border-success bg-success/10 px-4 py-3 transition-all ${justDone === f.title ? "ring-2 ring-inset ring-success/50" : ""}`}>
+                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-success text-background"><Check className="h-3.5 w-3.5" /></span>
+                <div className="min-w-0 flex-1"><p className="truncate text-sm font-medium"><span className="mr-1 text-muted-foreground">{n + 1}.</span>{s.title}</p><p className="text-xs text-success">Applied · {f.source === "ai" ? "AI" : "Manual"} · highlighted in preview</p></div>
+                <Button size="sm" variant="ghost" onClick={() => undoFix(f)}><Undo2 />Undo</Button>
+              </li>
+            );
             const isActive = s.id === active?.id;
             return (
               <li key={s.id} className={isActive ? "bg-primary/5" : ""}>
@@ -173,7 +182,7 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
               </li>
             );
           })}
-          {fixes.map((f, i) => (
+          {fixes.filter((f) => !queue.some((q) => q.id === f.id)).map((f, i) => (
             <li key={`done-${i}`} className="flex items-center gap-3 bg-success/5 px-4 py-2.5">
               <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-success text-background"><Check className="h-3 w-3" /></span>
               <p className="min-w-0 flex-1 truncate text-sm text-muted-foreground line-through decoration-success/60">{f.title}</p>
