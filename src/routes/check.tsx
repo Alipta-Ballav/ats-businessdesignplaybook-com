@@ -19,7 +19,7 @@ import { FtiReport } from "@/components/FtiReport";
 import { ReportTabs } from "@/components/ReportTabs";
 import { BusinessPlaybook } from "@/components/BusinessPlaybook";
 import { PaywallModal } from "@/components/PaywallModal";
-import { usePro } from "@/lib/pro";
+import { usePro, passAllowance, recordPassScan } from "@/lib/pro";
 import { FREE_SCANS, canScan, countScan, scansUsed } from "@/lib/plans";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle2, Loader2, ScanText, Target } from "lucide-react";
@@ -50,11 +50,17 @@ function CheckPage() {
   const [busy, setBusy] = useState(false); const [mode, setMode] = useState<"profile" | "role">("profile"); const [result, setResult] = useState<GuestScan | null>(null);
   const read = useServerFn(readResumeGuest);
   const pro = usePro(); const [wall, setWall] = useState(false); const [used, setUsed] = useState(0);
+  const [left, setLeft] = useState<number | null>(0);
   useEffect(() => { setUsed(scansUsed()); }, []);
+  useEffect(() => { if (pro) void passAllowance().then(setLeft); }, [pro]);
   useEffect(() => { if (picked) { setMode("role"); setTitle(picked.job.title); setJd(picked.job.description); } }, [picked]);
   useEffect(() => { clearGuestScan(); }, []);
 
   const run = async () => {
+    const allowance = pro ? await passAllowance() : 0;
+    const freeLeft = scansUsed() < FREE_SCANS;
+    const paidOk = pro && (allowance === null || allowance > 0);
+    if (pro && !paidOk && !freeLeft) { toast.error("You've used all 5 scans in your Job Hunt Pass. Your pass still covers rescoring and Word downloads."); return; }
     if (!canScan(scansUsed(), pro)) { window.__lovableEvents?.track?.("project.paywall_shown", { trigger: "scan" }); setWall(true); return; }
     setBusy(true);
     try {
@@ -63,7 +69,7 @@ function CheckPage() {
       window.__lovableEvents?.track?.("project.scan_started", { mode: prof ? "generic" : "job_target" });
       const ev = await read({ data: { resume, jobTitle: jt, jobDescription: jdesc, requirements: prof ? [] : picked?.job.mandatory ?? [] } });
       const g: GuestScan = { jobId: prof ? null : picked?.job.id ?? null, jobTitle: jt, jobDescription: jdesc, resume, evidence: ev, createdAt: new Date().toISOString() };
-      saveGuestScan(g); countScan(); setUsed(scansUsed()); setResult(g); window.__lovableEvents?.track?.("project.report_opened", { mode: prof ? "generic" : "job_target", audience: "candidate", competencies: Object.keys(ev.competencies).length }); window.scrollTo({ top: 0, behavior: "smooth" });
+      saveGuestScan(g); if (pro && !freeLeft && allowance !== null) { await recordPassScan(); setLeft(await passAllowance()); } countScan(); setUsed(scansUsed()); setResult(g); window.__lovableEvents?.track?.("project.report_opened", { mode: prof ? "generic" : "job_target", audience: "candidate", competencies: Object.keys(ev.competencies).length }); window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (e) { toast.error((e as Error).message); }
     setBusy(false);
   };
@@ -145,13 +151,13 @@ function CheckPage() {
 
       <div className="flex flex-col-reverse justify-between gap-3 sm:flex-row sm:items-center">
         <div className="space-y-1">
-          <p className="text-xs font-medium">{pro ? "Your access includes unlimited scans" : used < FREE_SCANS ? "1 free scan · No credit card required" : "₹99 Job Hunt Pass · All features for 30 days"}</p>
+          <p className="text-xs font-medium">{pro ? left === null ? "Your access includes unlimited scans" : `${left} of 5 pass scans left` : used < FREE_SCANS ? "1 free scan · No credit card required" : "₹99 Job Hunt Pass · All features for 30 days"}</p>
           <p className="text-xs text-muted-foreground">{pro ? "AI rewrites, verified rescoring and Word exports included" : "Then ₹99 for 30 days · No auto-renewal"}</p>
         </div>
         <Button size="lg" disabled={busy || !ready} onClick={run} className="w-full shrink-0 sm:w-auto">{busy ? <Loader2 className="animate-spin" /> : <ArrowRight />}{busy ? "Reading your resume…" : pro ? "Get my score" : used < FREE_SCANS ? "Get my free score" : "Get my score · ₹99 pass"}</Button>
       </div>
       {busy && <p role="status" className="text-xs text-muted-foreground">Checking your evidence. This usually takes about 30 seconds.</p>}
-      <PaywallModal open={wall} onOpenChange={setWall} reason="You have used your free scan. The ₹99 Job Hunt Pass unlocks unlimited scans, AI rewrites, verified rescoring and Word downloads for 30 days." />
+      <PaywallModal open={wall} onOpenChange={setWall} reason="You have used your free scan. The ₹99 Job Hunt Pass unlocks 5 scans, AI rewrites, verified rescoring and Word downloads for 30 days." />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { hasPaidAccess } from "@/lib/plans";
+import { hasPaidAccess, passScansLeft } from "@/lib/plans";
 
 /** A paid scan unlocks every Pro feature for the report it produced (this browser tab). */
 const UNLOCK_KEY = "ft-report-unlocked";
@@ -51,4 +51,24 @@ export async function isAdmin(): Promise<boolean> {
   if (!uid) return false;
   const { data } = await supabase.from("user_roles").select("role").eq("user_id", uid).eq("role", "admin").maybeSingle();
   return !!data;
+}
+
+/** Pass scan allowance: null = no cap (admin or lifetime), else scans left in the active pass. */
+export async function passAllowance(): Promise<number | null> {
+  const { data: s } = await supabase.auth.getSession();
+  const uid = s.session?.user.id;
+  if (!uid) return 0;
+  if (await isAdmin()) return null;
+  const { data: paid } = await supabase.from("payments").select("plan, amount, status, paid_at").eq("user_id", uid).eq("status", "completed");
+  const active = (paid ?? []).filter((p) => hasPaidAccess(p));
+  if (active.some((p) => p.plan === "single")) return null;
+  if (!active.length) return 0;
+  const since = active.map((p) => p.paid_at!).sort()[0]!;
+  const { count } = await supabase.from("pass_scans").select("id", { count: "exact", head: true }).eq("user_id", uid).gte("created_at", since);
+  return passScansLeft(count ?? 0);
+}
+export async function recordPassScan() {
+  const { data: s } = await supabase.auth.getSession();
+  const uid = s.session?.user.id;
+  if (uid) await supabase.from("pass_scans").insert({ user_id: uid });
 }

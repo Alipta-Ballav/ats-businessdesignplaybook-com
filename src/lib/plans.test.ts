@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { canScan, canRescore, canApplyFix, canDownloadWord, hasPaidAccess, PASS_DAYS, PLANS } from "./plans";
+import { passScansLeft, canScan, canRescore, canApplyFix, canDownloadWord, hasPaidAccess, PASS_DAYS, PLANS } from "./plans";
 describe("micro-paywall", () => {
   it("free users can apply any number of fixes", () => expect(canApplyFix(20, false)).toBe(true));
   it("official rescore needs the pass", () => { expect(canRescore(false)).toBe(false); expect(canRescore(true)).toBe(true); });
@@ -38,4 +38,8 @@ describe("micro-paywall", () => {
       { plan: "job_hunt_30", amount: 9900, status: "completed", paid_at: "2026-11-23T00:00:00Z" },
     ].some(p => hasPaidAccess(p, now))).toBe(true);
   });
+});
+
+describe("pass scan cap", () => {
+  it("a pass includes 5 scans", () => { expect(passScansLeft(0)).toBe(5); expect(passScansLeft(4)).toBe(1); expect(passScansLeft(5)).toBe(0); expect(passScansLeft(9)).toBe(0); });
 });
