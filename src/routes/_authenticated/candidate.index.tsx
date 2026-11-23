@@ -15,11 +15,14 @@ import { ResumeInput } from "@/components/ResumeInput";
 import { Card, StatusBadge } from "@/components/ui-bits";
 import { DeleteAccount } from "@/components/DeleteAccount";
 import { useQueryClient } from "@tanstack/react-query";
-import { Trash2 } from "lucide-react";
+import { Trash2, ArrowRight, CheckCircle2, Loader2, ScanText, Target } from "lucide-react";
+import { PaywallModal } from "@/components/PaywallModal";
+import { usePro, passAllowance, recordPassScan } from "@/lib/pro";
+import { FREE_SCANS, canScan, countScan, scansUsed } from "@/lib/plans";
 
 export const Route = createFileRoute("/_authenticated/candidate/")({
   validateSearch: (s: Record<string, unknown>): { job?: string | undefined } => ({ job: typeof s["job"] === "string" ? s["job"] : undefined }),
-  head: () => ({ meta: [{ title: "Check my resume — FutureTalent AI" }, { name: "description", content: "See how your resume scores for a role and exactly what to improve." }, { property: "og:title", content: "Check my resume — FutureTalent AI" }, { property: "og:description", content: "Evidence-based resume scoring with fix-it tips." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Score your design resume — FutureTalent AI" }, { name: "description", content: "See how your resume scores for a role and exactly what to improve." }, { property: "og:title", content: "Check my resume — FutureTalent AI" }, { property: "og:description", content: "Evidence-based resume scoring with fix-it tips." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: CandidateHome,
 });
 const input = "w-full rounded-md border bg-background px-3 py-2 text-sm";
@@ -50,8 +53,17 @@ function CandidateHome() {
   useEffect(() => { if (picked) { setMode("role"); setTitle(picked.job.title); setJd(picked.job.description); } }, [picked]);
   useEffect(() => { if (!resume && scans[0]) setResume(scans[0].resume_text); }, [scans]);
 
+  const pro = usePro(); const [wall, setWall] = useState(false); const [used, setUsed] = useState(0);
+  const [left, setLeft] = useState<number | null>(0);
+  useEffect(() => { setUsed(scansUsed()); }, []);
+  useEffect(() => { if (pro) void passAllowance().then(setLeft); }, [pro]);
   const run = async () => {
-    if (!me) return; setBusy(true);
+    if (!me) return;
+    const allowance = pro ? await passAllowance() : 0;
+    const freeLeft = scansUsed() < FREE_SCANS;
+    if (pro && !(allowance === null || allowance > 0) && !freeLeft) { toast.error("You've used all 5 scans in your Job Hunt Pass. Your pass still covers rescoring and Word downloads."); return; }
+    if (!canScan(scansUsed(), pro)) { setWall(true); return; }
+    setBusy(true);
     try {
       const reqs = mode === "profile" ? [] : picked?.job.mandatory ?? [];
       const jobTitle = mode === "profile" ? "Future Talent Index" : title;
@@ -59,28 +71,45 @@ function CandidateHome() {
       const ex = await read({ data: { resume, jobTitle, jobDescription, requirements: reqs } });
       const r = must(await supabase.from("scans").insert({ user_id: me.id, job_id: mode === "profile" ? null : picked?.job.id ?? null, job_title: jobTitle, job_description: jobDescription, mandatory: ex.requirements, resume_text: resume, evidence: ex }).select("id").single());
       if (!r) throw new Error("The report could not be saved. Please try again.");
+      if (pro && !freeLeft && allowance !== null) await recordPassScan();
+      countScan();
       nav({ to: "/candidate/scans/$scanId", params: { scanId: r.id } });
     } catch (e) { toast.error((e as Error).message); setBusy(false); }
   };
   return (
     <div className="space-y-8">
       <CareerNav />
-      <div><p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Know your score before you apply</p>
-        <h1 className="mt-2 font-display text-4xl">Check your resume against a role</h1></div>
-      <div className="flex flex-wrap gap-2" role="group" aria-label="Resume check mode">
-        <Button variant={mode === "profile" ? "default" : "outline"} onClick={() => setMode("profile")}>Generic resume score</Button>
-        <Button variant={mode === "role" ? "default" : "outline"} onClick={() => setMode("role")}>Score against a job</Button>
+      <div className="mx-auto max-w-4xl space-y-3 sm:space-y-5">
+      <header className="space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-2"><h1 className="text-2xl sm:text-3xl">Score your design resume</h1><span className="flex items-center gap-1.5 text-xs text-success"><CheckCircle2 className="h-3.5 w-3.5" />Every score backed by your own words</span></div>
+        <p className="text-sm text-muted-foreground">Your craft, research and impact — evaluated across 8 design dimensions.</p>
+      </header>
+      <div role="group" aria-label="Scoring mode" className="inline-flex max-w-full gap-1 rounded-lg border bg-secondary p-1">
+        <Button size="sm" variant={mode === "profile" ? "outline" : "ghost"} aria-pressed={mode === "profile"} onClick={() => setMode("profile")} className="text-xs sm:text-sm"><ScanText />Profile audit</Button>
+        <Button size="sm" variant={mode === "role" ? "outline" : "ghost"} aria-pressed={mode === "role"} onClick={() => setMode("role")} className="text-xs sm:text-sm"><Target />Match to a job</Button>
       </div>
-      <div className={mode === "role" ? "grid gap-6 lg:grid-cols-2" : "max-w-2xl"}>
-        {mode === "role" && <Card className="space-y-3">
-          <h2 className="font-display text-lg">The target role</h2>
-          <label className="block text-sm">Job title<input className={input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Product Designer" /></label>
-          <label className="block text-sm">Job description<textarea rows={10} className={input} value={jd} onChange={(e) => setJd(e.target.value)} placeholder="Paste the job posting you're targeting…" /></label>
+      <div className={`grid gap-3 border-y py-3 sm:gap-5 sm:py-5 ${mode === "role" ? "sm:grid-cols-2" : ""}`}>
+        <section className="min-w-0 space-y-3">
+          <div className="flex items-baseline justify-between gap-2"><h2 className="text-sm font-semibold">Your resume</h2><span className="text-xs text-muted-foreground">{mode === "profile" ? "Profile audit" : "1 of 2"}</span></div>
+          <ResumeInput value={resume} onChange={setResume} compact />
+        </section>
+        {mode === "role" && <section className="min-w-0 space-y-3 sm:border-l sm:pl-5">
+          <div className="flex items-baseline justify-between gap-2"><h2 className="text-sm font-semibold">Target job</h2><span className="text-xs text-muted-foreground">2 of 2</span></div>
+          <input aria-label="Job title" className={input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Job title · e.g. Senior Product Designer" />
+          <textarea aria-label="Job description" className={`${input} h-24 resize-none sm:h-28`} value={jd} onChange={(e) => setJd(e.target.value)} placeholder="Paste the job description…" />
           <JobDiagnostics title={title} description={jd} />
-        </Card>}
-        <Card><ResumeInput value={resume} onChange={setResume} /></Card>
+        </section>}
       </div>
-      <button disabled={busy || resume.trim().length < 80 || (mode === "role" && (!title.trim() || jd.trim().length < 40))} onClick={run} className="rounded-md bg-primary px-5 py-2 text-sm font-medium text-primary-foreground disabled:opacity-40">{busy ? "Reading your resume… (about 30s)" : "Get my score"}</button>
+      <div className="flex flex-col-reverse justify-between gap-3 sm:flex-row sm:items-center">
+        <div className="space-y-1">
+          <p className="text-xs font-medium">{pro ? left === null ? "Your access includes unlimited scans" : `${left} of 5 pass scans left` : used < FREE_SCANS ? "1 free scan · No credit card required" : "₹99 Job Hunt Pass · All features for 30 days"}</p>
+          <p className="text-xs text-muted-foreground">{pro ? "AI rewrites, verified rescoring and Word exports included" : "Then ₹99 for 30 days · No auto-renewal"}</p>
+        </div>
+        <Button size="lg" disabled={busy || !(resume.trim().length >= 80 && (mode === "profile" || (title.trim() && jd.trim().length >= 40)))} onClick={run} className="w-full shrink-0 sm:w-auto">{busy ? <Loader2 className="animate-spin" /> : <ArrowRight />}{busy ? "Reading your resume…" : pro || used < FREE_SCANS ? "Get my score" : "Get my score · ₹99 pass"}</Button>
+      </div>
+      {busy && <p role="status" className="text-xs text-muted-foreground">Checking your evidence. This usually takes about 30 seconds.</p>}
+      <PaywallModal open={wall} onOpenChange={setWall} reason="You have used your free scan. The ₹99 Job Hunt Pass unlocks 5 scans, AI rewrites, verified rescoring and Word downloads for 30 days." />
+      </div>
       {scans.length > 0 && (
         <section className="space-y-3"><h2 className="font-display text-xl">Your past checks</h2>
           {scans.map((s) => { const { job, cand } = scanToPair(s); const ev = evaluate(job, cand); return (
