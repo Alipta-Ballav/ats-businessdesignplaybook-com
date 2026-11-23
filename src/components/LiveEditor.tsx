@@ -44,6 +44,7 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
   const [showFacts, setShowFacts] = useState(false);
   const [busy, setBusy] = useState<"" | "ai" | "score">("");
   const [wall, setWall] = useState<string | null>(null);
+  const [justDone, setJustDone] = useState<string | null>(null);
 
   const queue = useMemo(() => buildQueue(job, official.cand, official.text), [job, official]);
   const doneIds = fixes.map((f) => f.id);
@@ -73,7 +74,8 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
     if (!canApplyFix(fixesUsed(fixes), pro)) { window.__lovableEvents?.track?.("project.paywall_shown", { trigger: "fix" }); setWall(`You've used your ${FREE_FIXES} free fixes. Unlock every suggestion and the Word download.`); return; }
     const next = applySuggestion(draft, active, text);
     if (next === draft) { toast.error("Write or draft the improved line first."); return; }
-    commit(next); setFixes([...fixes, { id: active.id, source, title: active.title, added: cleanLine(text), removed: active.kind === "rewrite" && active.original && draft.includes(active.original) ? active.original : "" }]); reset(); setOpenId(null);
+    commit(next); setFixes([...fixes, { id: active.id, source, title: active.title, added: cleanLine(text), removed: active.kind === "rewrite" && active.original && draft.includes(active.original) ? active.original : "" }]); reset(); setOpenId(null); setJustDone(active.title);
+    toast.success(`Step done: ${active.title}`, { description: "Highlighted in the preview. You can undo it any time." });
     window.__lovableEvents?.track?.("project.suggestion_applied", { source });
   };
 
@@ -119,13 +121,20 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
           <span className="text-xs text-muted-foreground">{fixes.length}/{total} done</span>
         </div>
         {total > 0 && <div className="h-1 bg-muted"><div className="h-full bg-success transition-all" style={{ width: `${(fixes.length / total) * 100}%` }} /></div>}
+        {justDone && (
+          <div className="flex items-center gap-3 border-b bg-success/10 px-4 py-3 text-sm">
+            <CheckCircle2 className="h-5 w-5 shrink-0 text-success" />
+            <div className="min-w-0 flex-1"><p className="font-medium">Done: {justDone}</p><p className="text-xs text-muted-foreground">{open.length ? <>Next up: <b className="text-foreground">{open[0]?.title}</b></> : "All recommendations applied — rescore at the bottom."}</p></div>
+            <Button size="sm" variant="ghost" onClick={() => { const f = fixes[fixes.length - 1]; if (f) undoFix(f); setJustDone(null); }}><Undo2 />Undo</Button>
+          </div>
+        )}
         {open.length === 0 && <p className="p-4 text-sm text-muted-foreground">All done. Rescore below to find more.</p>}
         <ul className="divide-y">
           {open.slice(0, 8).map((s, n) => {
             const isActive = s.id === active?.id;
             return (
               <li key={s.id} className={isActive ? "bg-primary/5" : ""}>
-                <button className="flex w-full items-start gap-3 px-4 py-3 text-left" onClick={() => { setOpenId(s.id); reset(); }}>
+                <button className="flex w-full items-start gap-3 px-4 py-3 text-left" onClick={() => { setOpenId(s.id); reset(); setJustDone(null); }}>
                   <span className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full text-[10px] font-semibold ${isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{n + 1}</span>
                   <div className="min-w-0"><p className="text-sm font-medium">{s.title}</p>{!isActive && <p className="truncate text-xs text-muted-foreground">{s.detail}</p>}</div>
                 </button>
@@ -164,6 +173,14 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
               </li>
             );
           })}
+          {fixes.map((f, i) => (
+            <li key={`done-${i}`} className="flex items-center gap-3 bg-success/5 px-4 py-2.5">
+              <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-success text-background"><Check className="h-3 w-3" /></span>
+              <p className="min-w-0 flex-1 truncate text-sm text-muted-foreground line-through decoration-success/60">{f.title}</p>
+              <span className="shrink-0 rounded bg-success/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-success">Applied</span>
+              <Button size="sm" variant="ghost" onClick={() => undoFix(f)}><Undo2 />Undo</Button>
+            </li>
+          ))}
         </ul>
       </Card>
 
