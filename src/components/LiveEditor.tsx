@@ -10,7 +10,7 @@ import { PaywallModal } from "@/components/PaywallModal";
 import { SaveResumeVersion } from "@/components/SaveResumeVersion";
 import { readResumeGuest } from "@/lib/evaluate.functions";
 import { suggestRewrite } from "@/lib/rewrite.functions";
-import { applySuggestion, buildQueue, headlineScore } from "@/lib/fixer";
+import { applySuggestion, buildQueue, cleanLine, headlineScore } from "@/lib/fixer";
 import { estimateCandidate, fixesUsed, newFacts, revertFix, type FixEntry } from "@/lib/editor";
 import { downloadResumeDocx } from "@/lib/export-docx";
 import { usePro } from "@/lib/pro";
@@ -60,7 +60,7 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
 
   const askAi = async () => {
     if (!pro) { window.__lovableEvents?.track?.("project.paywall_shown", { trigger: "ai_rewrite" }); setWall("AI suggestions are part of the ₹49 unlock."); return; }
-    if (!facts.trim() && !active?.original) { setShowFacts(true); toast.error("Add a true fact first — AI only rephrases what you give it."); return; }
+    if (!facts.trim() && !active?.original) { setShowFacts(true); toast.error("Fill in at least one question below — AI writes the new bullet only from your facts."); return; }
     setBusy("ai");
     try {
       const { text } = await ai({ data: { original: active?.original ?? "", facts } });
@@ -74,7 +74,7 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
     if (!canApplyFix(fixesUsed(fixes), pro)) { window.__lovableEvents?.track?.("project.paywall_shown", { trigger: "fix" }); setWall(`You've used your ${FREE_FIXES} free fixes. Unlock every suggestion and the Word download.`); return; }
     const next = applySuggestion(draft, active, text);
     if (next === draft) { toast.error("Write or draft the improved line first."); return; }
-    commit(next); setFixes([...fixes, { id: active.id, source, title: active.title, added: text.trim(), removed: active.kind === "rewrite" && active.original && draft.includes(active.original) ? active.original : "" }]); reset(); setOpenId(null);
+    commit(next); setFixes([...fixes, { id: active.id, source, title: active.title, added: cleanLine(text), removed: active.kind === "rewrite" && active.original && draft.includes(active.original) ? active.original : "" }]); reset(); setOpenId(null);
     window.__lovableEvents?.track?.("project.suggestion_applied", { source });
   };
 
@@ -135,7 +135,7 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
                     {s.original && <div className="rounded-md border bg-muted/40 p-3"><p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Your line now</p><p className="mt-1 text-sm">{s.original}</p></div>}
                     {!proposal.trim() ? (
                       <div className="space-y-2">
-                        <Button className="w-full" onClick={askAi} disabled={busy === "ai"}>{pro ? <Wand2 /> : <Lock />}{busy === "ai" ? "Writing a better line…" : "Improve this line with AI"}</Button>
+                        <Button className="w-full" onClick={askAi} disabled={busy === "ai"}>{pro ? <Wand2 /> : <Lock />}{busy === "ai" ? "Writing…" : s.original ? "Improve this line with AI" : "Write a new bullet with AI"}</Button>
                         <button className="w-full text-center text-xs text-muted-foreground hover:text-foreground hover:underline" onClick={() => setProposal(s.original ?? " ")}>or write it myself</button>
                       </div>
                     ) : (
@@ -150,8 +150,9 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
                         </div>
                       </div>
                     )}
-                    <details open={showFacts} onToggle={(e) => setShowFacts((e.target as HTMLDetailsElement).open)} className="rounded-md border border-dashed px-3 py-2 text-xs">
-                      <summary className="cursor-pointer text-muted-foreground">Want a stronger line? Add a real number or result (optional)</summary>
+                    {!s.original && <p className="rounded-md bg-muted/40 p-3 text-xs">Your resume has no line for this yet. Answer one question below with something true, then let AI write a new bullet — it's added under “Additional evidence”.</p>}
+                    <details open={showFacts || !s.original} onToggle={(e) => setShowFacts((e.target as HTMLDetailsElement).open)} className="rounded-md border border-dashed px-3 py-2 text-xs">
+                      <summary className="cursor-pointer text-muted-foreground">{s.original ? "Want a stronger line? Add a real number or result (optional)" : "Your facts for this bullet"}</summary>
                       <div className="mt-2 grid gap-2">
                         {([["action", "What did you do?"], ["constraint", "What made it hard?"], ["outcome", "What changed?"]] as const).map(([k, l]) => <label key={k} className="text-muted-foreground">{l}<input className="mt-1 w-full rounded-md border bg-background px-2 py-1.5 text-sm text-foreground placeholder:text-muted-foreground/60" placeholder={EXAMPLES[k]} value={fields[k]} onChange={(e) => setFields({ ...fields, [k]: e.target.value })} /></label>)}
                         <p className="text-muted-foreground">Then press “Try again” — AI will use only these facts.</p>
@@ -169,7 +170,7 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
       {(fixes.length > 0 || skipped.length > 0) && (
         <Card className="space-y-1 p-4">
           <div className="mb-2 flex items-center justify-between">
-            <h3 className="text-sm font-semibold">Steps</h3>
+            <h3 className="text-sm font-semibold">Steps{stale && <span className="ml-2 font-normal text-xs text-muted-foreground">· changes not rescored yet</span>}</h3>
             <div className="flex gap-1"><Button size="sm" variant="ghost" onClick={undo} disabled={!history.length}><Undo2 />Undo last</Button><Button size="sm" variant="ghost" onClick={resetAll} disabled={draft === resume}><RotateCcw />Reset</Button></div>
           </div>
           {fixes.map((f, i) => (

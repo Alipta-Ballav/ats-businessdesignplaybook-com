@@ -24,8 +24,11 @@ export function decodeJob(title: string, description: string) {
 }
 
 export type BulletFinding = { id: string; original: string; issues: string[] };
+const MARKER = /^\s*([-•*▪●–]|\d+[.)])\s+/;
+/** Whole resume lines (one bullet = one line), with any bullet marker removed. */
+const bulletLines = (text: string) => text.split(/\n+/).map(l => l.replace(MARKER, "").trim()).filter(Boolean);
 export function inspectBullets(resume: string): BulletFinding[] {
-  return sentences(resume).flatMap((original, index) => {
+  return bulletLines(resume).flatMap((original, index) => {
     if (original.length < 35 || /@|https?:\/\//i.test(original)) return [];
     const issues: string[] = [];
     if (/synerg|world.class|cutting.edge|results.driven|user.centric|innovative solutions|seamless experience|spearheaded/i.test(original)) issues.push("Generic wording obscures the work");

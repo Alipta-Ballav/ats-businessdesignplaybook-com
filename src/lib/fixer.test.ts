@@ -18,3 +18,17 @@ describe("applySuggestion", () => {
 import { describe as d2, it as i2, expect as e2 } from "vitest";
 import { BUSINESS_PLAYBOOK } from "./fixer";
 d2("business playbook", () => { i2("has 3 formulas", () => { e2(BUSINESS_PLAYBOOK).toHaveLength(3); }); });
+
+describe("applySuggestion keeps bullet formatting", () => {
+  it("preserves the bullet marker and replaces the whole line", async () => {
+    const { applySuggestion } = await import("./fixer");
+    const r = "Work\n• Led checkout redesign. Shipped it fast.\n• Other";
+    const out = applySuggestion(r, { kind: "rewrite", original: "Led checkout redesign. Shipped it fast." }, "- Redesigned checkout into 2 steps");
+    expect(out).toBe("Work\n• Redesigned checkout into 2 steps\n• Other");
+  });
+  it("finds whole bullets, not sentence fragments", async () => {
+    const { inspectBullets } = await import("./diagnostics");
+    const f = inspectBullets("• Spearheaded the redesign of the onboarding flow. Worked with engineers.");
+    expect(f[0]?.original).toBe("Spearheaded the redesign of the onboarding flow. Worked with engineers.");
+  });
+});

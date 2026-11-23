@@ -27,12 +27,24 @@ export function buildQueue(job: Job, c: Candidate, resume: string): Suggestion[]
 
 /** Replace the original line with the revision, or append a new bullet under an "Additional evidence" section. Never invents text. */
 export function applySuggestion(resume: string, s: Pick<Suggestion, "kind" | "original">, text: string): string {
-  const t = text.trim();
+  const t = cleanLine(text);
   if (!t) return resume;
-  if (s.kind === "rewrite" && s.original && resume.includes(s.original)) return resume.replace(s.original, t);
+  if (s.kind === "rewrite" && s.original) {
+    const lines = resume.split("\n");
+    const i = lines.findIndex((l) => l.includes(s.original!));
+    if (i >= 0) {
+      // Keep the line's indentation + bullet marker so Word/preview keep it as a bullet.
+      const prefix = lines[i]!.match(/^\s*(?:[-•*▪●–]|\d+[.)])?\s*/)?.[0] ?? "";
+      lines[i] = lines[i]!.trim().replace(/^(?:[-•*▪●–]|\d+[.)])\s+/, "") === s.original ? prefix + t : lines[i]!.replace(s.original, t);
+      return lines.join("\n");
+    }
+  }
   const base = resume.replace(/\s+$/, "");
   return base.includes(`\n${ADDED_HEADING}\n`) ? `${base}\n- ${t}\n` : `${base}\n\n${ADDED_HEADING}\n- ${t}\n`;
 }
+
+/** Strip bullet markers / line breaks the AI or user may add, so a revision is one clean line. */
+export const cleanLine = (text: string) => text.replace(/\s*\n+\s*/g, " ").trim().replace(/^(?:[-•*▪●–]|\d+[.)])\s+/, "").trim();
 
 /** Headline score: FTI for a generic audit, composite fit for a job match. */
 export function headlineScore(job: Job, c: Candidate, level?: Level): number {
