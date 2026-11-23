@@ -233,7 +233,7 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
           <h3 className="text-base font-semibold">{stale ? "Finished editing? Lock in your new score." : "Your score is up to date"}</h3>
           <p className="mt-1 text-xs text-muted-foreground">{stale ? <>{fixes.length} change{fixes.length === 1 ? "" : "s"} applied · Estimated score <b className="text-foreground">~{estimate}</b> ({estimate - base >= 0 ? "+" : ""}{estimate - base} from {base})</> : "Apply recommendations above, then rescore here."}</p>
         </div>
-        <Button size="lg" className="w-full" onClick={rescore} disabled={!!busy || !stale}><Sparkles />{!pro && <Lock />}{busy === "score" ? "Rescoring…" : pro ? "Rescore my resume" : "Verify final score · ₹99 pass"}</Button>
+        <Button size="lg" className="w-full" onClick={rescore} disabled={!!busy || !stale}><Sparkles />{!pro && <Lock />}{busy === "score" ? "Rescoring…" : pro ? "Rescore my resume · unlimited rescores left" : "Verify final score · 0 rescores left · ₹99 pass"}</Button>
       </Card>
     </div>
   );

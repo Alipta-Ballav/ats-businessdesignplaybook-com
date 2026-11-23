@@ -179,6 +179,16 @@ function Landing() {
             <p className="mt-5 text-xs text-muted-foreground">You'll only be asked to pay when you rescore, download Word or run a 2nd scan.</p>
           </div>
         </div>
+        <div className="mt-10 overflow-hidden rounded-2xl border bg-card">
+          <div className="border-b bg-muted/40 px-6 py-4"><h3 className="text-lg font-semibold">Exactly what you get</h3><p className="text-sm text-muted-foreground">No hidden limits. Pass lasts 30 days from payment.</p></div>
+          <table className="w-full text-sm">
+            <thead><tr className="border-b text-left text-xs text-muted-foreground"><th className="px-6 py-2 font-medium">Benefit</th><th className="px-4 py-2 font-medium">Free</th><th className="px-4 py-2 font-medium text-primary">₹99 pass</th></tr></thead>
+            <tbody>{[["Full resume scans", "1", "5 in 30 days"], ["Rescores after your edits", "—", "Unlimited (don't use scans)"], ["AI bullet rewrites", "Unlimited", "Unlimited"], ["Live estimated score", "Yes", "Yes"], ["ATS-clean Word download", "—", "Unlimited"], ["Auto-renewal", "Never", "Never"]].map(([b, f, p]) =>
+              <tr key={b} className="border-b last:border-0"><td className="px-6 py-3">{b}</td><td className="px-4 py-3 font-mono text-muted-foreground">{f}</td><td className="px-4 py-3 font-mono font-medium">{p}</td></tr>)}</tbody>
+          </table>
+          <div className="grid gap-4 border-t bg-primary/5 px-6 py-5 sm:grid-cols-3">{[["≈ ₹20", "per full scan (₹99 ÷ 5)"], ["₹3.30", "per day of your job hunt"], ["1 interview", "is all it takes to pay back many times over"]].map(([v, l]) =>
+            <div key={l}><p className="font-mono text-2xl font-semibold text-primary">{v}</p><p className="text-xs text-muted-foreground">{l}</p></div>)}</div>
+        </div>
         <div className="mt-8 text-center"><Button asChild size="lg" className="bg-gradient-primary shadow-glow"><Link to="/check" search={{ job: undefined }}>Try your free audit <ArrowRight /></Link></Button></div>
       </section>
 

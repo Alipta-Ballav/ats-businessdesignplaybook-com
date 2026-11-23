@@ -54,7 +54,7 @@ export function Footer() {
   return (
     <footer className="mt-16 border-t">
       <div className="mx-auto grid max-w-6xl gap-6 px-6 py-10 text-sm text-muted-foreground sm:grid-cols-4">
-        <div><p className="font-display text-base font-semibold text-foreground">FutureTalent AI</p>
+        <div><p className="font-display text-base font-semibold text-foreground">FutureTalent AI</p><p className="text-xs font-medium text-primary">An initiative by Design shots</p>
           <p className="mt-2">The ATS check built only for Product & UX designers. By The Finishing School, creators of the <a href="https://businessdesignplaybook.com/" target="_blank" rel="noreferrer" className="underline">Business Design Playbook</a>.</p></div>
         <div className="flex flex-col gap-1.5"><p className="font-medium text-foreground">Trust</p>
           <Link to="/privacy">Privacy policy</Link><Link to="/terms">Terms of service</Link><Link to="/refund">Refund policy</Link></div>
