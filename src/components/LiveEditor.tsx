@@ -111,7 +111,7 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
           <p className="font-display text-3xl font-semibold tabular-nums">{official.score}</p>
           <p className="text-xs text-muted-foreground">from {base} · <span className={delta >= 0 ? "text-success" : "text-destructive"}>{delta >= 0 ? "+" : ""}{delta}</span>{stale && <> · <b className="text-foreground">Estimated: ~{estimate}</b></>}</p>
         </div>
-        <Button size="sm" onClick={rescore} disabled={!!busy || !stale}><Sparkles />{!pro && <Lock />}{busy === "score" ? "Rescoring…" : pro ? "Rescore" : "Verify score · ₹49"}</Button>
+        <span className="text-xs text-muted-foreground">{fixes.length} of {total} applied</span>
       </Card>
 
       <Card className="overflow-hidden p-0">
@@ -120,7 +120,7 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
           <span className="text-xs text-muted-foreground">{fixes.length}/{total} done{!pro && ` · ${Math.max(0, FREE_FIXES - fixesUsed(fixes))} free left`}</span>
         </div>
         {total > 0 && <div className="h-1 bg-muted"><div className="h-full bg-success transition-all" style={{ width: `${(fixes.length / total) * 100}%` }} /></div>}
-        {open.length === 0 && <p className="p-4 text-sm text-muted-foreground">All done. Rescore to find more.</p>}
+        {open.length === 0 && <p className="p-4 text-sm text-muted-foreground">All done. Rescore below to find more.</p>}
         <ul className="divide-y">
           {open.slice(0, 8).map((s, n) => {
             const isActive = s.id === active?.id;
@@ -193,6 +193,14 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
         <summary className="cursor-pointer px-4 py-3 text-sm font-medium">Edit full resume text <span className="font-normal text-muted-foreground">— for typos or anything not covered above</span></summary>
         <textarea rows={14} className="w-full border-t bg-background p-3 font-mono text-xs leading-relaxed focus:outline-none" value={draft} onChange={(e) => onType(e.target.value)} onBlur={() => setTyping(false)} />
       </details>
+
+      <Card className={`space-y-3 p-5 ${stale ? "border-2 border-primary/40 bg-primary/5" : ""}`}>
+        <div>
+          <h3 className="text-base font-semibold">{stale ? "Finished editing? Lock in your new score." : "Your score is up to date"}</h3>
+          <p className="mt-1 text-xs text-muted-foreground">{stale ? <>{fixes.length} change{fixes.length === 1 ? "" : "s"} applied · Estimated score <b className="text-foreground">~{estimate}</b> ({estimate - base >= 0 ? "+" : ""}{estimate - base} from {base})</> : "Apply recommendations above, then rescore here."}</p>
+        </div>
+        <Button size="lg" className="w-full" onClick={rescore} disabled={!!busy || !stale}><Sparkles />{!pro && <Lock />}{busy === "score" ? "Rescoring…" : pro ? "Rescore my resume" : "Rescore & verify final score · ₹49"}</Button>
+      </Card>
     </div>
   );
 
