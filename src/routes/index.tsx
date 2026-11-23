@@ -124,7 +124,9 @@ function Landing() {
               The ATS checker built only for the UX design community
             </span>
             <h1 className="text-5xl leading-[1.05] md:text-6xl">Stop being graded like a sales rep. <span className="text-gradient">Get read like a Design Director would.</span></h1>
-            <p className="max-w-xl text-lg text-muted-foreground">8 years of solid UX, still auto-rejected before a human sees your portfolio? Generic scanners count "Figma" mentions. We score systems thinking, cross-functional influence and business impact. Made for UX, product and design leadership roles — from Senior to Director. Not a generic keyword scanner: an 8-dimension Future Talent Index, ATS engine calibration and quote-verified scoring — for job seekers and the people hiring them.</p>
+            <p className="max-w-xl text-lg text-muted-foreground">Still auto-rejected after years of solid UX work? Generic scanners count "Figma" mentions. We score what design hiring managers actually look for: systems thinking, influence and business impact.</p>
+            <ul className="flex flex-wrap gap-2">{[["8", "Product & UX dimensions"], ["8", "ATS engines simulated"], ["100%", "Quote-verified scores"]].map(([n, t]) =>
+              <li key={t} className="flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm shadow-sheet"><span className="font-mono font-semibold text-primary">{n}</span><span className="text-muted-foreground">{t}</span></li>)}</ul>
             <div className="flex flex-wrap items-center gap-3">
               <Button asChild size="lg" className="bg-gradient-primary shadow-glow"><Link to="/check" search={{ job: undefined }}>Run free resume audit <ArrowRight /></Link></Button>
               <Button asChild size="lg" variant="outline"><Link to="/check" search={{ job: undefined }}>Score against a job</Link></Button>
