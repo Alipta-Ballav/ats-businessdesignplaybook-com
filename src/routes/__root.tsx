@@ -162,7 +162,6 @@ function Header() {
         <Link to="/" className="font-display text-xl font-semibold">FutureTalent<span className="ml-1 rounded-md bg-gradient-primary px-1.5 text-sm text-primary-foreground">AI</span></Link>
         <nav className="flex flex-1 gap-4 text-sm text-muted-foreground">
           <Link to="/swipe-file" activeProps={active}>Design workspace</Link>
-          {me?.role === "recruiter" && <><Link to="/recruiter" activeOptions={{ exact: true }} activeProps={active}>Dashboard</Link><Link to="/recruiter/jobs/new" activeProps={active}>New evaluation</Link></>}
           {me?.role === "candidate" && <Link to="/candidate" activeProps={active}>Check my resume</Link>}
           {!me && <Link to="/check" activeProps={active}>Resume check</Link>}
         </nav>

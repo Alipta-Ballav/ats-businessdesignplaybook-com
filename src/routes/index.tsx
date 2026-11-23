@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowRight, Bookmark, CalendarDays, FileStack, TrendingUp, CheckCircle2, Gauge, Quote, ShieldCheck, Sparkles, Wand2 } from "lucide-react";
+import { ArrowRight, Bookmark, CalendarDays, FileStack, TrendingUp, CheckCircle2, Gauge, Quote, Sparkles, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ATS_SYSTEMS, FTI_DIMENSIONS, LEVELS, LEVEL_WEIGHTS, LEVEL_EXAMPLES } from "@/lib/scoring";
 
@@ -208,13 +208,10 @@ function Landing() {
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-6xl gap-5 px-6 md:grid-cols-2">
+      <section className="mx-auto max-w-6xl px-6">
         <div className="rounded-xl border bg-card p-8 shadow-sheet"><Sparkles className="h-5 w-5 text-primary" /><h3 className="mt-4 text-2xl">For job seekers</h3>
-          <p className="mt-2 text-sm text-muted-foreground">Generic score or score against a job, ATS engine previews, and a fix-and-rescore workflow that exports to Word.</p>
+          <p className="mt-2 max-w-xl text-sm text-muted-foreground">Generic score or score against a job, ATS engine previews, and a fix-and-rescore workflow that exports to Word.</p>
           <Button asChild className="mt-6"><Link to="/check" search={{ job: undefined }}>Check my resume</Link></Button></div>
-        <div className="rounded-xl border bg-card p-8 shadow-sheet"><ShieldCheck className="h-5 w-5 text-primary" /><h3 className="mt-4 text-2xl">For recruiters</h3>
-          <p className="mt-2 text-sm text-muted-foreground">Strict-to-flexible screening, essentials never waived, every score backed by a quote, decisions recorded for audit.</p>
-          <Button asChild variant="outline" className="mt-6"><Link to="/auth" search={{ mode: "signup", as: "recruiter" }}>Start evaluating</Link></Button></div>
       </section>
 
       <section className="mx-auto max-w-6xl px-6">

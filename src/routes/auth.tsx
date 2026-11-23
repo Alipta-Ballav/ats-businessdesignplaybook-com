@@ -16,9 +16,9 @@ export const Route = createFileRoute("/auth")({
   }),
   head: () => ({ meta: [
     { title: "Sign in or create an account — FutureTalent AI" },
-    { name: "description", content: "Join as a candidate to check your resume score, or as a recruiter to evaluate applicants." },
+    { name: "description", content: "Join to check your design resume score and fix it with evidence." },
     { property: "og:title", content: "Join FutureTalent AI" },
-    { property: "og:description", content: "Candidates check their fit. Recruiters evaluate with evidence." },
+    { property: "og:description", content: "Check your fit, fix your resume with evidence." },
   , { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: AuthPage,
 });
@@ -32,7 +32,7 @@ function AuthPage() {
   const search = Route.useSearch();
   const nav = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">(search.mode ?? (search.as ? "signup" : "signin"));
-  const [role, setRole] = useState<Role>(search.as ?? "candidate");
+  const [role] = useState<Role>(search.as === "recruiter" ? "recruiter" : "candidate");
   const [name, setName] = useState(""); const [email, setEmail] = useState(""); const [pw, setPw] = useState("");
   const [busy, setBusy] = useState(false); const [sent, setSent] = useState(false);
   const target = search.redirect ?? "/welcome";
@@ -73,16 +73,7 @@ function AuthPage() {
       <h1 className="font-display text-3xl">{mode === "signup" ? "Create your account" : "Welcome back"}</h1>
       <Card className="space-y-4">
         {mode === "signup" && (
-          <div>
-            <p className="mb-2 text-sm">I am a…</p>
-            <div className="grid grid-cols-2 gap-2">
-              {([["candidate", "Job seeker", "Check my resume score"], ["recruiter", "Recruiter", "Evaluate applicants"]] as const).map(([k, t, d]) => (
-                <button type="button" key={k} onClick={() => setRole(k)} className={`rounded-md border p-3 text-left ${role === k ? "border-primary bg-accent" : ""}`}>
-                  <span className="block text-sm font-medium">{t}</span><span className="text-xs text-muted-foreground">{d}</span>
-                </button>
-              ))}
-            </div>
-          </div>
+          <p className="rounded-md border bg-secondary px-3 py-2 text-xs text-muted-foreground">Signing up as a job seeker — check your resume score and fix it with evidence.</p>
         )}
         <div className="grid gap-2">
           <button type="button" onClick={() => social("google")} className="flex h-10 items-center justify-center gap-2.5 rounded-md border border-[#747775] bg-[#FFFFFF] px-3 text-sm font-medium text-[#1F1F1F]"><GoogleG />Continue with Google</button>

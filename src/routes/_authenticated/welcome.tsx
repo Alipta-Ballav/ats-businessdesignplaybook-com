@@ -31,9 +31,8 @@ function Welcome() {
   return (
     <div className="mx-auto max-w-2xl space-y-4">
       <h1 className="font-display text-3xl">How will you use FutureTalent?</h1>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4">
         <button disabled={busy} onClick={() => choose("candidate")} className="text-left"><Card className="h-full hover:border-primary"><h2 className="font-display text-xl">I'm looking for a job</h2><p className="mt-1 text-sm text-muted-foreground">Check your resume against any role, see exactly what's missing and how to fix it.</p></Card></button>
-        <button disabled={busy} onClick={() => choose("recruiter")} className="text-left"><Card className="h-full hover:border-primary"><h2 className="font-display text-xl">I'm hiring</h2><p className="mt-1 text-sm text-muted-foreground">Set screening criteria, compare resumes with evidence, and assess transferable skills.</p></Card></button>
       </div>
     </div>
   );
