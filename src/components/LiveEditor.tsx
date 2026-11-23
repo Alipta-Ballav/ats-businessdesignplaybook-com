@@ -16,7 +16,7 @@ import { estimateCandidate, fixesUsed, newFacts, revertFix, type FixEntry } from
 import { downloadResumeDocx } from "@/lib/export-docx";
 import { usePro } from "@/lib/pro";
 import { FREE_FIXES, canApplyFix, canDownloadWord } from "@/lib/plans";
-import type { Candidate, Job } from "@/lib/scoring";
+import { inferLevel, type Candidate, type Job, type Level } from "@/lib/scoring";
 
 type Fix = FixEntry & { title: string };
 const EXAMPLES = {
@@ -26,11 +26,12 @@ const EXAMPLES = {
 };
 const blank = { action: "", constraint: "", outcome: "", text: "" };
 
-export function LiveEditor({ job, cand, resume, initialDraft }: { job: Job; cand: Candidate; resume: string; initialDraft?: string }) {
+export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { job: Job; cand: Candidate; resume: string; initialDraft?: string; scoringLevel?: Level }) {
   const read = useServerFn(readResumeGuest);
   const ai = useServerFn(suggestRewrite);
   const pro = usePro();
-  const base = headlineScore(job, cand);
+  const level = scoringLevel ?? inferLevel(cand.years, cand.role);
+  const base = headlineScore(job, cand, level);
   const [draft, setDraft] = useState(initialDraft ?? resume);
   const [history, setHistory] = useState<string[]>([]);
   const [typing, setTyping] = useState(false);
@@ -48,7 +49,7 @@ export function LiveEditor({ job, cand, resume, initialDraft }: { job: Job; cand
   const doneIds = fixes.map((f) => f.id);
   const open = queue.filter((s) => !doneIds.includes(s.id) && !skipped.includes(s.id));
   const active = open.find((s) => s.id === openId) ?? open[0];
-  const estimate = headlineScore(job, estimateCandidate(official.cand, draft));
+  const estimate = headlineScore(job, estimateCandidate(official.cand, draft), level);
   const stale = draft !== official.text;
   const delta = official.score - base;
 
@@ -83,7 +84,7 @@ export function LiveEditor({ job, cand, resume, initialDraft }: { job: Job; cand
     try {
       const ev = await read({ data: { resume: draft, jobTitle: job.title, jobDescription: job.description, requirements: job.mandatory } });
       const c: Candidate = { ...official.cand, name: ev.name, role: ev.role, years: ev.years, domain: ev.domain, mandatory: ev.mandatory, competencies: ev.competencies };
-      const score = headlineScore(job, c);
+      const score = headlineScore(job, c, level);
       toast.success(`Score updated: ${official.score} → ${score}`);
       setOfficial({ cand: c, score, text: draft });
     } catch (e) { toast.error((e as Error).message); }
@@ -207,7 +208,7 @@ export function LiveEditor({ job, cand, resume, initialDraft }: { job: Job; cand
         <Button size="sm" onClick={word}>{pro ? <FileText /> : <Lock />}Download Word (.docx)</Button>
         <Button size="sm" variant="outline" onClick={copy}><Copy />Copy</Button>
       </div>
-      <SaveResumeVersion resume={draft} candidate={official.cand} job={job} scoredText={official.text} />
+      <SaveResumeVersion resume={draft} candidate={official.cand} job={job} scoredText={official.text} level={level} />
     </div>
   );
 

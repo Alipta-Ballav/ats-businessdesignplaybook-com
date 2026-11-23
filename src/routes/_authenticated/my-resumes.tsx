@@ -36,7 +36,7 @@ function MyResumes() {
       {comparable.length > 0 && <div className="flex items-end gap-2 overflow-x-auto border-b pt-4" aria-label="Score progression">{comparable.map(v => <div key={v.id} className="min-w-20 flex-1 text-center"><span className="font-mono text-xs">{versionScore(v)}</span><meter aria-label={`${v.name} score`} min={0} max={100} value={versionScore(v) ?? 0} className="mt-2 block h-5 w-full accent-primary" /><p className="max-w-full truncate py-2 text-[10px] text-muted-foreground">{v.name}</p></div>)}</div>}
       <Button variant="outline" onClick={() => setEditing(!editing)}>{editing ? 'Close editor' : 'Edit a new revision'}</Button>
       {!editing && <ResumePreview original={current.scored_text} draft={current.resume_text} />}</section>}
-      </div>{editing && current && <LiveEditor key={current.id} job={current.job} cand={current.candidate} resume={current.scored_text} initialDraft={current.resume_text} />}
+      </div>{editing && current && <LiveEditor key={current.id} job={current.job} cand={current.candidate} resume={current.scored_text} initialDraft={current.resume_text} scoringLevel={current.level} />}
     </>}
   </div>;
 }
