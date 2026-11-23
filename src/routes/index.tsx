@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowRight, Bookmark, CalendarDays, FileStack, TrendingUp, CheckCircle2, Gauge, Quote, Sparkles, Wand2 } from "lucide-react";
+import { ArrowRight, CheckCircle2, Gauge, Quote, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TrustPillars } from "@/components/trust/Trust";
 import { ATS_SYSTEMS, FTI_DIMENSIONS, LEVELS, LEVEL_WEIGHTS, LEVEL_EXAMPLES } from "@/lib/scoring";
@@ -73,11 +73,9 @@ const ENGINE_GROUPS = [
 
 function Engines() {
   return (
-    <section className="mx-auto max-w-6xl px-6">
-      <p className="text-sm font-medium text-primary">ATS engine calibration</p>
-      <h2 className="mt-2 max-w-3xl text-3xl">Eight engines. Eight different answers.</h2>
-      <p className="mt-3 max-w-2xl text-muted-foreground">The same resume scores differently depending on which system parses it. We simulate all eight and show you the spread — so you fix the resume that's actually reading you.</p>
-      <div className="mt-10 space-y-10">
+    <div>
+      <p className="mt-4 max-w-2xl text-muted-foreground">The same resume scores differently depending on which system parses it. We simulate all eight and show you the spread — so you fix the resume that's actually reading you.</p>
+      <div className="mt-6 space-y-8">
         {ENGINE_GROUPS.map((g) => {
           const items = Object.entries(ATS_SYSTEMS).filter(([, s]) => s.style === g.style);
           return (
@@ -108,16 +106,17 @@ function Engines() {
         })}
       </div>
       <p className="mt-4 text-xs text-muted-foreground">Flexibility is the published strictness we apply per engine: 0 is exact-term matching, 100 gives full credit to transferable evidence.</p>
-    </section>
+    </div>
   );
 }
 
 function Landing() {
   const [lvl, setLvl] = useState(0);
+  const [tab, setTab] = useState<"dims" | "level" | "ats">("dims");
   const cur = LEVELS[lvl] ?? "Senior Product Designer";
   const top = Object.entries(LEVEL_WEIGHTS[cur]).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([id, w]) => ({ name: FTI_DIMENSIONS.find((d) => d.id === id)?.name ?? id, w }));
   return (
-    <div className="-mx-6 -mt-8 space-y-28 pb-16">
+    <div className="-mx-6 -mt-8 space-y-20 pb-16">
       <section className="bg-hero px-6 pt-20">
         <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[1.1fr_1fr]">
           <div className="space-y-6">
@@ -165,17 +164,27 @@ function Landing() {
       <BeforeAfter />
 
       <section className="mx-auto max-w-6xl px-6">
-        <p className="text-sm font-medium text-primary">Your design career workspace</p>
-        <h2 className="mt-2 max-w-2xl text-3xl">Not just before you apply. Between every next step.</h2>
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          {[{ icon: Bookmark, title: "The design swipe file", text: "128 resume formulas across your eight dimensions. Keep the ones that fit your work.", to: "/swipe-file" as const, action: "Explore bullet formulas" },
-            { icon: TrendingUp, title: "Your next-level audit", text: "See what your resume proves at Staff, Lead or Director scope — and where to build evidence next.", to: "/promotion" as const, action: "Audit my next level" },
-            { icon: CalendarDays, title: "This week’s role teardowns", text: "Read real design requirements through eight dimensions, with quotes from the original posting.", to: "/teardowns" as const, action: "Read this week’s roles" },
-            { icon: FileStack, title: "A story that keeps getting stronger", text: "Save resume versions, compare like-for-like scores, and add an optional 90-day calendar check-in.", to: "/my-resumes" as const, action: "Open my resumes" }].map(({ icon: Icon, title, text, to, action }) => <article key={to} className="rounded-lg border bg-card p-6"><Icon className="h-5 w-5 text-primary" /><h3 className="mt-4 text-xl">{title}</h3><p className="mt-2 text-sm text-muted-foreground">{text}</p><Button asChild variant="ghost" className="mt-4"><Link to={to}>{action}<ArrowRight /></Link></Button></article>)}
+        <p className="text-sm font-medium text-primary">How we score · fully transparent</p>
+        <h2 className="mt-2 max-w-2xl text-3xl">No black box. Here's the exact rubric.</h2>
+        <div className="mt-6 inline-flex flex-wrap gap-1 rounded-lg border bg-secondary p-1">{([["dims", "8 design dimensions"], ["level", "Weighted for your level"], ["ats", "8 ATS engines"]] as const).map(([k, l]) =>
+          <button key={k} onClick={() => setTab(k)} className={`rounded-md px-3 py-1.5 text-sm transition ${tab === k ? "bg-card shadow-sheet" : "text-muted-foreground hover:text-foreground"}`}>{l}</button>)}</div>
+        {tab === "dims" && <div className="mt-6 grid gap-px overflow-hidden rounded-xl border bg-border sm:grid-cols-2 lg:grid-cols-4">{FTI_DIMENSIONS.map((d, i) =>
+          <div key={d.id} className="bg-card p-5"><p className="font-mono text-xs text-muted-foreground">0{i + 1} · {d.weight}%</p><p className="mt-2 font-medium">{d.name}</p><p className="mt-2 text-xs leading-relaxed text-muted-foreground">{d.skills.slice(0, 4).join(" · ")} +{d.skills.length - 4} more</p></div>)}</div>
+      }
+        {tab === "level" && <div><p className="mt-3 max-w-2xl text-muted-foreground">We read your years and latest title from the CV — no form to fill. Then the 8 dimensions are weighted for that level. You can switch to the level you're aiming for.</p>
+        <div className="mt-8 inline-flex flex-wrap gap-1 rounded-lg border bg-secondary p-1">{LEVELS.map((l, i) =>
+          <button key={l} onClick={() => setLvl(i)} className={`rounded-md px-3 py-1.5 text-sm transition ${i === lvl ? "bg-card shadow-sheet" : "text-muted-foreground hover:text-foreground"}`}>{l}</button>)}</div>
+        <div className="mt-5 grid gap-5 rounded-xl border bg-card p-6 shadow-sheet md:grid-cols-2">
+          <div><p className="text-sm font-medium">What matters most at this level</p>
+            <div className="mt-3 space-y-2">{top.map((t) => <div key={t.name}><div className="flex justify-between text-sm"><span>{t.name}</span><span className="font-mono text-muted-foreground">{t.w}%</span></div><div className="mt-1 h-1.5 rounded-full bg-muted"><div className="h-1.5 rounded-full bg-gradient-primary" style={{ width: `${t.w * 3}%` }} /></div></div>)}</div></div>
+          <div><p className="text-sm font-medium">A line recruiters expect to see</p>
+            <blockquote className="mt-3 border-l-2 border-primary pl-3 text-sm text-muted-foreground">“{LEVEL_EXAMPLES[cur]}”</blockquote></div>
         </div>
+      </div>}
+        {tab === "ats" && <Engines />}
       </section>
 
-      <Engines />
+      <TrustPillars />
 
       <section className="mx-auto max-w-6xl px-6">
         <p className="text-sm font-medium text-primary">How we compare</p>
@@ -189,33 +198,12 @@ function Landing() {
       </section>
 
       <section className="mx-auto max-w-6xl px-6">
-        <p className="text-sm font-medium text-primary">The Future Talent Index</p>
-        <h2 className="mt-2 text-3xl">Eight dimensions of Product & UX design</h2>
-        <div className="mt-10 grid gap-px overflow-hidden rounded-xl border bg-border sm:grid-cols-2 lg:grid-cols-4">{FTI_DIMENSIONS.map((d, i) =>
-          <div key={d.id} className="bg-card p-5"><p className="font-mono text-xs text-muted-foreground">0{i + 1} · {d.weight}%</p><p className="mt-2 font-medium">{d.name}</p><p className="mt-2 text-xs leading-relaxed text-muted-foreground">{d.skills.slice(0, 4).join(" · ")} +{d.skills.length - 4} more</p></div>)}</div>
-      </section>
-
-      <section className="mx-auto max-w-6xl px-6">
-        <p className="text-sm font-medium text-primary">Scored at your level</p>
-        <h2 className="mt-2 text-3xl">A Director isn't judged like a Senior Designer</h2>
-        <p className="mt-3 max-w-2xl text-muted-foreground">We read your years and latest title from the CV — no form to fill. Then the 8 dimensions are weighted for that level. You can switch to the level you're aiming for.</p>
-        <div className="mt-8 inline-flex flex-wrap gap-1 rounded-lg border bg-secondary p-1">{LEVELS.map((l, i) =>
-          <button key={l} onClick={() => setLvl(i)} className={`rounded-md px-3 py-1.5 text-sm transition ${i === lvl ? "bg-card shadow-sheet" : "text-muted-foreground hover:text-foreground"}`}>{l}</button>)}</div>
-        <div className="mt-5 grid gap-5 rounded-xl border bg-card p-6 shadow-sheet md:grid-cols-2">
-          <div><p className="text-sm font-medium">What matters most at this level</p>
-            <div className="mt-3 space-y-2">{top.map((t) => <div key={t.name}><div className="flex justify-between text-sm"><span>{t.name}</span><span className="font-mono text-muted-foreground">{t.w}%</span></div><div className="mt-1 h-1.5 rounded-full bg-muted"><div className="h-1.5 rounded-full bg-gradient-primary" style={{ width: `${t.w * 3}%` }} /></div></div>)}</div></div>
-          <div><p className="text-sm font-medium">A line recruiters expect to see</p>
-            <blockquote className="mt-3 border-l-2 border-primary pl-3 text-sm text-muted-foreground">“{LEVEL_EXAMPLES[cur]}”</blockquote></div>
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border bg-card p-6 shadow-sheet">
+          <div><p className="text-sm font-medium text-primary">Keep coming back</p><p className="mt-1 text-muted-foreground">Swipe file, next-level audit, weekly role teardowns and saved resume versions.</p></div>
+          <div className="flex flex-wrap gap-2">{([["/swipe-file", "Swipe file"], ["/promotion", "Next-level audit"], ["/teardowns", "Teardowns"]] as const).map(([to, l]) => <Button key={to} asChild variant="outline" size="sm"><Link to={to}>{l}</Link></Button>)}</div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-6">
-        <div className="rounded-xl border bg-card p-8 shadow-sheet"><Sparkles className="h-5 w-5 text-primary" /><h3 className="mt-4 text-2xl">For job seekers</h3>
-          <p className="mt-2 max-w-xl text-sm text-muted-foreground">Generic score or score against a job, ATS engine previews, and a fix-and-rescore workflow that exports to Word.</p>
-          <Button asChild className="mt-6"><Link to="/check" search={{ job: undefined }}>Check my resume</Link></Button></div>
-      </section>
-
-      <TrustPillars />
 
       <section className="mx-auto max-w-6xl px-6">
         <div className="rounded-2xl bg-gradient-primary p-12 text-center text-primary-foreground shadow-glow">
