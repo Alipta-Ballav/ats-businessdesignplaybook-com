@@ -186,8 +186,6 @@ function Landing() {
             <tbody>{[["First resume score", "1 free", "Included"], ["Verified scores (new resume or after edits)", "No", "5 in 30 days"], ["Live estimated score while editing", "Yes", "Yes"], ["AI help to rewrite lines", "Yes", "Yes"], ["Download your resume as Word", "No", "Yes"], ["Charged again automatically", "Never", "Never"]].map(([b, f, p]) =>
               <tr key={b} className="border-b last:border-0"><td className="px-6 py-3">{b}</td><td className="px-4 py-3 text-muted-foreground">{f}</td><td className="px-4 py-3 font-medium">{p}</td></tr>)}</tbody>
           </table>
-          <div className="grid gap-4 border-t bg-primary/5 px-6 py-5 sm:grid-cols-3">{[["≈ ₹20", "per full scan (₹99 ÷ 5)"], ["₹3.30", "per day of your job hunt"], ["1 interview", "is all it takes to pay back many times over"]].map(([v, l]) =>
-            <div key={l}><p className="font-mono text-2xl font-semibold text-primary">{v}</p><p className="text-xs text-muted-foreground">{l}</p></div>)}</div>
         </div>
         <div className="mt-8 text-center"><Button asChild size="lg" className="bg-gradient-primary shadow-glow"><Link to="/check" search={{ job: undefined }}>Try your free audit <ArrowRight /></Link></Button></div>
       </section>
