@@ -42,4 +42,5 @@ describe("micro-paywall", () => {
 
 describe("pass scan cap", () => {
   it("a pass includes 5 scans", () => { expect(passScansLeft(0)).toBe(5); expect(passScansLeft(4)).toBe(1); expect(passScansLeft(5)).toBe(0); expect(passScansLeft(9)).toBe(0); });
+  it("renewing while a pass is active adds 5 more scans", () => { expect(passScansLeft(5, 2)).toBe(5); expect(passScansLeft(7, 2)).toBe(3); expect(passScansLeft(10, 2)).toBe(0); });
 });

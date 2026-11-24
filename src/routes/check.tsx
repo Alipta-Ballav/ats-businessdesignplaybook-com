@@ -50,7 +50,8 @@ function CheckPage() {
   const [busy, setBusy] = useState(false); const [mode, setMode] = useState<"profile" | "role">("profile"); const [result, setResult] = useState<GuestScan | null>(null);
   const read = useServerFn(readResumeGuest);
   const pro = usePro(); const [wall, setWall] = useState(false); const [used, setUsed] = useState(0);
-  const [left, setLeft] = useState<number | null>(0);
+  const [left, setLeft] = useState<number | null>(0); const [renew, setRenew] = useState(false);
+  useEffect(() => { const on = () => { void passAllowance().then(setLeft); }; window.addEventListener("ft-pro-changed", on); return () => window.removeEventListener("ft-pro-changed", on); }, []);
   useEffect(() => { setUsed(scansUsed()); }, []);
   useEffect(() => { if (pro) void passAllowance().then(setLeft); }, [pro]);
   useEffect(() => { if (picked) { setMode("role"); setTitle(picked.job.title); setJd(picked.job.description); } }, [picked]);
@@ -60,7 +61,7 @@ function CheckPage() {
     const allowance = pro ? await passAllowance() : 0;
     const freeLeft = scansUsed() < FREE_SCANS;
     const paidOk = pro && (allowance === null || allowance > 0);
-    if (pro && !paidOk && !freeLeft) { toast.error("You've used all 5 scans in your Job Hunt Pass. Your pass still covers rescoring and Word downloads."); return; }
+    if (pro && !paidOk && !freeLeft) { setRenew(true); setWall(true); return; }
     if (!canScan(scansUsed(), pro)) { window.__lovableEvents?.track?.("project.paywall_shown", { trigger: "scan" }); setWall(true); return; }
     setBusy(true);
     try {
@@ -151,13 +152,13 @@ function CheckPage() {
 
       <div className="flex flex-col-reverse justify-between gap-3 sm:flex-row sm:items-center">
         <div className="space-y-1">
-          <p className="text-xs font-medium">{pro ? left === null ? "No score limit on this account" : `${left} of 5 verified scores left` : used < FREE_SCANS ? "1 free scan · No credit card required" : "₹99 Job Hunt Pass · All features for 30 days"}</p>
+          <p className="text-xs font-medium">{pro ? left === null ? "No score limit on this account" : left === 0 ? "Pass used up · renew anytime" : `${left} verified scores left` : used < FREE_SCANS ? "1 free scan · No credit card required" : "₹99 Job Hunt Pass · All features for 30 days"}</p>
           <p className="text-xs text-muted-foreground">{pro ? "5 verified scores (new resumes or rescores) · AI rewrites · Word exports" : "Then ₹99: 5 verified scores (new resumes or rescores) for 30 days · No auto-renewal"}</p>
         </div>
-        <Button size="lg" disabled={busy || !ready} onClick={run} className="w-full shrink-0 sm:w-auto">{busy ? <Loader2 className="animate-spin" /> : <ArrowRight />}{busy ? "Reading your resume…" : pro ? (left === null ? "Get my score" : `Get my score · ${left} of 5 scans left`) : used < FREE_SCANS ? "Get my free score" : "Get my score · ₹99 pass"}</Button>
+        <Button size="lg" disabled={busy || !ready} onClick={run} className="w-full shrink-0 sm:w-auto">{busy ? <Loader2 className="animate-spin" /> : <ArrowRight />}{busy ? "Reading your resume…" : pro ? (left === null ? "Get my score" : left === 0 ? "Renew pass · ₹99 (5 more scans)" : `Get my score · ${left} scans left`) : used < FREE_SCANS ? "Get my free score" : "Get my score · ₹99 pass"}</Button>
       </div>
       {busy && <p role="status" className="text-xs text-muted-foreground">Checking your evidence. This usually takes about 30 seconds.</p>}
-      <PaywallModal open={wall} onOpenChange={setWall} reason="You have used your free scan. The ₹99 Job Hunt Pass unlocks 5 scans, AI rewrites, verified rescoring and Word downloads for 30 days." />
+      <PaywallModal open={wall} onOpenChange={(o) => { setWall(o); if (!o) setRenew(false); }} reason={renew ? "You've used all 5 scans in your pass. Renew for ₹99 to add 5 more verified scores and 30 days of access." : "You have used your free scan. The ₹99 Job Hunt Pass unlocks 5 scans, AI rewrites, verified rescoring and Word downloads for 30 days."} />
     </div>
   );
 }

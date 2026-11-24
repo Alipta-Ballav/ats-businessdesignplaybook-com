@@ -30,7 +30,7 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
   const ai = useServerFn(suggestRewrite);
   const pro = usePro();
   const [passLeft, setPassLeft] = useState<number | null>(null);
-  useEffect(() => { if (pro) passAllowance().then(setPassLeft); }, [pro]);
+  useEffect(() => { if (pro) passAllowance().then(setPassLeft); const on = () => { void passAllowance().then(setPassLeft); }; window.addEventListener("ft-pro-changed", on); return () => window.removeEventListener("ft-pro-changed", on); }, [pro]);
   const level = scoringLevel ?? inferLevel(cand.years, cand.role);
   const base = headlineScore(job, cand, level);
   const [draft, setDraft] = useState(initialDraft ?? resume);
@@ -84,7 +84,7 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
   const rescore = async () => {
     if (!canRescore(pro)) { window.__lovableEvents?.track?.("project.paywall_shown", { trigger: "rescore" }); setWall("Your estimated score is free. The ₹99 Job Hunt Pass unlocks your official AI-verified rescore and Word downloads for 30 days."); return; }
     const allowed = await passAllowance(); setPassLeft(allowed);
-    if (allowed === 0) { toast.error("You've used all 5 verified scores in your pass."); return; }
+    if (allowed === 0) { setWall("You've used all 5 scans in your pass. Renew for ₹99 to add 5 more verified scores and 30 days of access."); return; }
     setBusy("score");
     try {
       const ev = await read({ data: { resume: draft, jobTitle: job.title, jobDescription: job.description, requirements: job.mandatory } });
@@ -222,7 +222,7 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
           <h3 className="text-base font-semibold">{stale ? "Finished editing? Lock in your new score." : "Your score is up to date"}</h3>
           <p className="mt-1 text-xs text-muted-foreground">{stale ? <>{fixes.length} change{fixes.length === 1 ? "" : "s"} applied · Estimated score <b className="text-foreground">~{estimate}</b> ({estimate - base >= 0 ? "+" : ""}{estimate - base} from {base})</> : "Apply recommendations above, then rescore here."}</p>
         </div>
-        <Button size="lg" className="w-full" onClick={rescore} disabled={!!busy || !stale}><Sparkles />{!pro && <Lock />}{busy === "score" ? "Rescoring…" : pro ? (passLeft === null ? "Verify final score" : passLeft === 0 ? "No verified scores left in your pass" : `Verify final score · uses 1 of ${passLeft} left`) : "Verify final score · ₹99 pass"}</Button>
+        <Button size="lg" className="w-full" onClick={rescore} disabled={!!busy || !stale}><Sparkles />{!pro && <Lock />}{busy === "score" ? "Rescoring…" : pro ? (passLeft === null ? "Verify final score" : passLeft === 0 ? "Renew pass to rescore · ₹99" : `Verify final score · uses 1 of ${passLeft} left`) : "Verify final score · ₹99 pass"}</Button>
       </Card>
     </div>
   );

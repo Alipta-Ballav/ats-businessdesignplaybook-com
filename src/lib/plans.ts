@@ -31,4 +31,4 @@ export const scansUsed = () => (typeof window === "undefined" ? 0 : Number(local
 export const countScan = () => localStorage.setItem(KEY, String(scansUsed() + 1));
 
 /** A 30-day pass includes PASS_SCANS new scans counted from the pass start; admins are uncapped. */
-export function passScansLeft(scansSincePass: number) { return Math.max(0, PASS_SCANS - scansSincePass); }
+export function passScansLeft(scansSincePass: number, activePasses = 1) { return Math.max(0, PASS_SCANS * activePasses - scansSincePass); }
