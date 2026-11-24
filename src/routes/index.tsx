@@ -156,7 +156,7 @@ function Landing() {
       </section>
 
       <section className="mx-auto max-w-6xl px-6">
-        <ol className="grid gap-4 md:grid-cols-3">{[["1", "Drop your resume", "PDF or Word. Read in seconds."], ["2", "See your 8-dimension score", "Find which ATS engine knocks you out, and why."], ["3", "Fix weak bullets", "AI turns tasks into measurable impact. Free."]].map(([n, t, d]) =>
+        <ol className="grid gap-4 md:grid-cols-3">{[["1", "Drop your resume", "PDF or Word. Read in seconds."], ["2", "See your 8-dimension score", "Find which ATS engine knocks you out, and why."], ["3", "Fix weak bullets", "AI turns task-based bullets into measurable business impact."]].map(([n, t, d]) =>
           <li key={n} className="flex gap-3 rounded-xl border bg-card p-4"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-gradient-primary font-mono text-sm text-primary-foreground">{n}</span><div><p className="font-medium">{t}</p><p className="text-sm text-muted-foreground">{d}</p></div></li>)}</ol>
       </section>
 

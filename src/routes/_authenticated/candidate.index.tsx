@@ -106,7 +106,7 @@ function CandidateHome() {
         <Button size="lg" disabled={busy || !(resume.trim().length >= 80 && (mode === "profile" || (title.trim() && jd.trim().length >= 40)))} onClick={run} className="w-full shrink-0 sm:w-auto">{busy ? <Loader2 className="animate-spin" /> : <ArrowRight />}{busy ? "Reading your resume…" : pro && left === 0 ? "Get my score · 0 scans left" : pro || used < FREE_SCANS ? "Get my score" : "Get my score · ₹99 pass"}</Button>
       </div>
       {busy && <p role="status" className="text-xs text-muted-foreground">Checking your evidence. This usually takes about 30 seconds.</p>}
-      <PaywallModal open={wall} onOpenChange={(o) => { setWall(o); if (!o) setRenew(false); }} reason={renew ? "You've used all 5 scans in your pass. Renew for ₹99 to add 5 more verified scores and 30 days of access." : "You have used your free scan. The ₹99 Job Hunt Pass unlocks 5 scans, AI rewrites, verified rescoring and Word downloads for 30 days."} />
+      <PaywallModal open={wall} onOpenChange={(o) => { setWall(o); if (!o) setRenew(false); }} reason={renew ? "You've used all 5 scans in your pass. Renew for ₹99 to add 5 more verified scores and 30 days of access." : "You have used your free scan. The ₹99 Job Hunt Pass unlocks 5 scans, verified rescoring and Word downloads for 30 days."} />
       </div>
       {scans.length > 0 && (
         <section className="space-y-3"><h2 className="font-display text-xl">Your past checks</h2>
