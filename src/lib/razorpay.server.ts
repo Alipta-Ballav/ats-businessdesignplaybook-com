@@ -55,5 +55,20 @@ export async function confirmPaymentRow(paymentId: string): Promise<"completed" 
     const { error: e2 } = await supabaseAdmin.from("scan_credits").upsert({ user_id: p.user_id, credits: (c?.credits ?? 0) + p.scans_granted, updated_at: new Date().toISOString() });
     if (e2) throw e2;
   }
+  if (changed && changed.length) await sendReceipt(p).catch((e) => console.error("receipt email failed", e));
   return "completed";
+}
+
+async function sendReceipt(p: { id: string; user_id: string; amount: number; scans_granted: number }) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: u } = await supabaseAdmin.auth.admin.getUserById(p.user_id);
+  const email = u?.user?.email; if (!email) return;
+  const { count } = await supabaseAdmin.from("payments").select("id", { count: "exact", head: true })
+    .eq("user_id", p.user_id).eq("status", "completed").neq("id", p.id);
+  const expires = new Date(Date.now() + 30 * 864e5).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" });
+  const { sendTemplateEmail } = await import("@/lib/email-templates/send-email");
+  await sendTemplateEmail("pass-receipt", email, {
+    templateData: { name: u.user?.user_metadata?.["full_name"], renewal: (count ?? 0) > 0, amount: `₹${p.amount / 100}`, scans: p.scans_granted || 5, expires },
+    idempotencyKey: `pass-receipt-${p.id}`,
+  });
 }

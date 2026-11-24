@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { q, type Role } from "@/lib/db";
 import { Card } from "@/components/ui-bits";
+import { sendWelcomeEmail } from "@/lib/welcome.functions";
 
 export const Route = createFileRoute("/_authenticated/welcome")({
   head: () => ({ meta: [{ title: "Welcome — FutureTalent AI" }, { name: "description", content: "Choose how you'll use FutureTalent AI." }, { property: "og:title", content: "Welcome — FutureTalent AI" }, { property: "og:description", content: "Choose how you'll use FutureTalent AI." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -18,6 +19,7 @@ function Welcome() {
     setBusy(true);
     await supabase.rpc("choose_role", { _role: role });
     sessionStorage.removeItem("ft-role");
+    sendWelcomeEmail().catch(() => {});
     await qc.invalidateQueries({ queryKey: ["me"] });
     nav({ to: role === "recruiter" ? "/recruiter" : "/candidate", replace: true });
   };

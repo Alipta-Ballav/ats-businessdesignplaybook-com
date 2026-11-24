@@ -34,6 +34,7 @@ import { Route as AuthenticatedCandidateScansScanIdRouteImport } from './routes/
 import { Route as AuthenticatedRecruiterApplicantsAppIdRouteImport } from './routes/_authenticated/recruiter.applicants.$appId'
 import { Route as AuthenticatedRecruiterJobsJobIdRouteImport } from './routes/_authenticated/recruiter.jobs.$jobId'
 import { Route as AuthenticatedRecruiterJobsNewRouteImport } from './routes/_authenticated/recruiter.jobs.new'
+import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -166,6 +167,12 @@ const AuthenticatedRecruiterJobsNewRoute =
     path: '/recruiter/jobs/new',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const LovableEmailTransactionalPreviewRoute =
+  LovableEmailTransactionalPreviewRouteImport.update({
+    id: '/lovable/email/transactional/preview',
+    path: '/lovable/email/transactional/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -192,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/recruiter/applicants/$appId': typeof AuthenticatedRecruiterApplicantsAppIdRoute
   '/recruiter/jobs/$jobId': typeof AuthenticatedRecruiterJobsJobIdRoute
   '/recruiter/jobs/new': typeof AuthenticatedRecruiterJobsNewRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -218,6 +226,7 @@ export interface FileRoutesByTo {
   '/recruiter/applicants/$appId': typeof AuthenticatedRecruiterApplicantsAppIdRoute
   '/recruiter/jobs/$jobId': typeof AuthenticatedRecruiterJobsJobIdRoute
   '/recruiter/jobs/new': typeof AuthenticatedRecruiterJobsNewRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -246,6 +255,7 @@ export interface FileRoutesById {
   '/_authenticated/recruiter/applicants/$appId': typeof AuthenticatedRecruiterApplicantsAppIdRoute
   '/_authenticated/recruiter/jobs/$jobId': typeof AuthenticatedRecruiterJobsJobIdRoute
   '/_authenticated/recruiter/jobs/new': typeof AuthenticatedRecruiterJobsNewRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -274,6 +284,7 @@ export interface FileRouteTypes {
     | '/recruiter/applicants/$appId'
     | '/recruiter/jobs/$jobId'
     | '/recruiter/jobs/new'
+    | '/lovable/email/transactional/preview'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -300,6 +311,7 @@ export interface FileRouteTypes {
     | '/recruiter/applicants/$appId'
     | '/recruiter/jobs/$jobId'
     | '/recruiter/jobs/new'
+    | '/lovable/email/transactional/preview'
   id:
     | '__root__'
     | '/'
@@ -327,6 +339,7 @@ export interface FileRouteTypes {
     | '/_authenticated/recruiter/applicants/$appId'
     | '/_authenticated/recruiter/jobs/$jobId'
     | '/_authenticated/recruiter/jobs/new'
+    | '/lovable/email/transactional/preview'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -345,6 +358,7 @@ export interface RootRouteChildren {
   RolesJobIdRoute: typeof RolesJobIdRoute
   RolesIndexRoute: typeof RolesIndexRoute
   ApiPublicRazorpayWebhookRoute: typeof ApiPublicRazorpayWebhookRoute
+  LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -524,6 +538,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRecruiterJobsNewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/lovable/email/transactional/preview': {
+      id: '/lovable/email/transactional/preview'
+      path: '/lovable/email/transactional/preview'
+      fullPath: '/lovable/email/transactional/preview'
+      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -574,6 +595,7 @@ const rootRouteChildren: RootRouteChildren = {
   RolesJobIdRoute: RolesJobIdRoute,
   RolesIndexRoute: RolesIndexRoute,
   ApiPublicRazorpayWebhookRoute: ApiPublicRazorpayWebhookRoute,
+  LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
