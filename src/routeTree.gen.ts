@@ -16,6 +16,7 @@ import { Route as CheckRouteImport } from './routes/check'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PromotionRouteImport } from './routes/promotion'
 import { Route as RefundRouteImport } from './routes/refund'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SwipeFileRouteImport } from './routes/swipe-file'
 import { Route as TeardownsRouteImport } from './routes/teardowns'
 import { Route as TermsRouteImport } from './routes/terms'
@@ -64,6 +65,11 @@ const PromotionRoute = PromotionRouteImport.update({
 const RefundRoute = RefundRouteImport.update({
   id: '/refund',
   path: '/refund',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SwipeFileRoute = SwipeFileRouteImport.update({
@@ -156,6 +162,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/promotion': typeof PromotionRoute
   '/refund': typeof RefundRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/swipe-file': typeof SwipeFileRoute
   '/teardowns': typeof TeardownsRoute
   '/terms': typeof TermsRoute
@@ -179,6 +186,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/promotion': typeof PromotionRoute
   '/refund': typeof RefundRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/swipe-file': typeof SwipeFileRoute
   '/teardowns': typeof TeardownsRoute
   '/terms': typeof TermsRoute
@@ -204,6 +212,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/promotion': typeof PromotionRoute
   '/refund': typeof RefundRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/swipe-file': typeof SwipeFileRoute
   '/teardowns': typeof TeardownsRoute
   '/terms': typeof TermsRoute
@@ -229,6 +238,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/promotion'
     | '/refund'
+    | '/sitemap.xml'
     | '/swipe-file'
     | '/teardowns'
     | '/terms'
@@ -252,6 +262,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/promotion'
     | '/refund'
+    | '/sitemap.xml'
     | '/swipe-file'
     | '/teardowns'
     | '/terms'
@@ -276,6 +287,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/promotion'
     | '/refund'
+    | '/sitemap.xml'
     | '/swipe-file'
     | '/teardowns'
     | '/terms'
@@ -301,6 +313,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   PromotionRoute: typeof PromotionRoute
   RefundRoute: typeof RefundRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SwipeFileRoute: typeof SwipeFileRoute
   TeardownsRoute: typeof TeardownsRoute
   TermsRoute: typeof TermsRoute
@@ -358,6 +371,13 @@ declare module '@tanstack/react-router' {
       path: '/refund'
       fullPath: '/refund'
       preLoaderRoute: typeof RefundRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/swipe-file': {
@@ -505,6 +525,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   PromotionRoute: PromotionRoute,
   RefundRoute: RefundRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   SwipeFileRoute: SwipeFileRoute,
   TeardownsRoute: TeardownsRoute,
   TermsRoute: TermsRoute,
