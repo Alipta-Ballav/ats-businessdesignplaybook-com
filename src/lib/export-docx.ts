@@ -2,11 +2,34 @@ import {
   AlignmentType,
   BorderStyle,
   Document,
+  ImageRun,
   LevelFormat,
+  Table,
+  TableCell,
+  TableRow,
+  VerticalAlign,
+  WidthType,
   Packer,
   Paragraph,
   TextRun,
 } from "docx";
+import {
+  HEADSHOT_BOX,
+  VISUAL_BOX,
+  dataUrlBytes,
+  fitBox,
+  getResumeImages,
+  type ResumeImage,
+  type ResumeImages,
+} from "@/lib/resume-images";
+
+const NONE = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" };
+const NO_BORDERS = { top: NONE, bottom: NONE, left: NONE, right: NONE, insideHorizontal: NONE, insideVertical: NONE };
+const CONTENT_W = 10224; // page width minus margins, in twentieths of a point
+const picture = (img: ResumeImage, maxW: number, maxH: number) => {
+  const f = fitBox(img.w, img.h, maxW, maxH);
+  return new ImageRun({ type: "png", data: dataUrlBytes(img.src), transformation: { width: f.w, height: f.h } });
+};
 
 export const BULLET = /^\s*([-•*▪●–]|\d+[.)])\s+/;
 export const isHeading = (l: string) => {
@@ -63,10 +86,11 @@ export const isRoleLine = (l: string) => {
 };
 
 /** Turns plain resume text into an ATS-safe single-column Word document: name, section rules, real bullets. */
-export function resumeToDocx(text: string): Document {
+export function resumeToDocx(text: string, images?: ResumeImages): Document {
   const lines = text.replace(/\r/g, "").split("\n");
   const first = lines.findIndex((l) => l.trim());
   const kids: Paragraph[] = [];
+  let headerEnd = -1; // number of paragraphs before the first section heading
   lines.forEach((raw, i) => {
     const l = raw.trim();
     if (!l) return;
@@ -81,6 +105,7 @@ export function resumeToDocx(text: string): Document {
       return;
     }
     if (isHeading(plain(l))) {
+      if (headerEnd < 0) headerEnd = kids.length;
       kids.push(
         new Paragraph({
           keepNext: true,
@@ -115,6 +140,88 @@ export function resumeToDocx(text: string): Document {
     }
     kids.push(new Paragraph({ spacing: { after: 60 }, children: runs(l) }));
   });
+  const on = images?.on !== false;
+  const body: (Paragraph | Table)[] = [...kids];
+  if (on && images?.headshot) {
+    // Borderless fixed-width table: text left, photo right. Inline image, never floating, so nothing reflows.
+    const n = headerEnd < 0 ? Math.min(1, kids.length) : headerEnd;
+    const photoW = 1800;
+    body.splice(
+      0,
+      n,
+      new Table({
+        width: { size: CONTENT_W, type: WidthType.DXA },
+        columnWidths: [CONTENT_W - photoW, photoW],
+        layout: "fixed",
+        borders: NO_BORDERS,
+        rows: [
+          new TableRow({
+            cantSplit: true,
+            children: [
+              new TableCell({
+                width: { size: CONTENT_W - photoW, type: WidthType.DXA },
+                borders: NO_BORDERS,
+                children: kids.slice(0, n).length ? kids.slice(0, n) : [new Paragraph("")],
+              }),
+              new TableCell({
+                width: { size: photoW, type: WidthType.DXA },
+                borders: NO_BORDERS,
+                verticalAlign: VerticalAlign.TOP,
+                children: [
+                  new Paragraph({
+                    alignment: AlignmentType.RIGHT,
+                    children: [picture(images.headshot, HEADSHOT_BOX, HEADSHOT_BOX)],
+                  }),
+                ],
+              }),
+            ],
+          }),
+        ],
+      }),
+    );
+  }
+  if (on && images?.visuals.length) {
+    body.push(
+      new Paragraph({
+        keepNext: true,
+        spacing: { before: 240, after: 80 },
+        border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: "1F2A44", space: 2 } },
+        children: [new TextRun({ text: "PORTFOLIO VISUALS", bold: true, size: 22, color: "1F2A44" })],
+      }),
+    );
+    const half = CONTENT_W / 2;
+    const rows: TableRow[] = [];
+    for (let i = 0; i < images.visuals.length; i += 2) {
+      const pair = images.visuals.slice(i, i + 2);
+      rows.push(
+        new TableRow({
+          cantSplit: true,
+          children: [0, 1].map(
+            (k) =>
+              new TableCell({
+                width: { size: half, type: WidthType.DXA },
+                borders: NO_BORDERS,
+                children: [
+                  new Paragraph({
+                    spacing: { after: 120 },
+                    children: pair[k] ? [picture(pair[k], VISUAL_BOX.w, VISUAL_BOX.h)] : [],
+                  }),
+                ],
+              }),
+          ),
+        }),
+      );
+    }
+    body.push(
+      new Table({
+        width: { size: CONTENT_W, type: WidthType.DXA },
+        columnWidths: [half, half],
+        layout: "fixed",
+        borders: NO_BORDERS,
+        rows,
+      }),
+    );
+  }
   return new Document({
     styles: { default: { document: { run: { font: "Calibri", size: 21 } } } },
     numbering: {
@@ -141,14 +248,14 @@ export function resumeToDocx(text: string): Document {
             margin: { top: 1008, right: 1008, bottom: 1008, left: 1008 },
           },
         },
-        children: kids,
+        children: body,
       },
     ],
   });
 }
 
 export async function downloadResumeDocx(text: string, filename = "resume-revised.docx") {
-  const blob = await Packer.toBlob(resumeToDocx(text));
+  const blob = await Packer.toBlob(resumeToDocx(text, getResumeImages()));
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;

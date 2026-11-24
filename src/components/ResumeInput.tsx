@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { CheckCircle2, FileText, Loader2, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PrivacySeal } from "@/components/trust/Trust";
+import { classifyImages, extractDocxImages, extractPdfImages, setResumeImages } from "@/lib/resume-images";
 const input = "w-full rounded-md border bg-background px-3 py-2 text-sm";
 
 async function readFile(f: File): Promise<string> {
@@ -26,11 +27,18 @@ async function readFile(f: File): Promise<string> {
       if (line) lines.push(line);
       pages.push(lines.join("\n"));
     }
+    extractPdfImages(pdfjs, doc)
+      .then((r) => setResumeImages(classifyImages(r)))
+      .catch(() => setResumeImages(null));
     return pages.join("\n\n");
   }
   if (name.endsWith(".docx")) {
     const mammoth = await import("mammoth");
-    return (await mammoth.extractRawText({ arrayBuffer: await f.arrayBuffer() })).value;
+    const buf = await f.arrayBuffer();
+    extractDocxImages(buf.slice(0))
+      .then((r) => setResumeImages(classifyImages(r)))
+      .catch(() => setResumeImages(null));
+    return (await mammoth.extractRawText({ arrayBuffer: buf })).value;
   }
   if (name.endsWith(".doc"))
     throw new Error("Old .doc files aren't supported. Save as .docx or PDF.");
@@ -54,6 +62,7 @@ export function ResumeInput({
   const picker = useRef<HTMLInputElement>(null);
   const words = value.trim() ? value.trim().split(/\s+/).length : 0;
   const load = async (f: File) => {
+    setResumeImages(null);
     setBusy(true);
     setErr("");
     try {

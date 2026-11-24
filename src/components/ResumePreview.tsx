@@ -19,11 +19,36 @@ const plain = (t: string) =>
     .map((r) => r.text)
     .join("");
 import { diffLines } from "@/lib/editor";
+import {
+  HEADSHOT_BOX,
+  VISUAL_BOX,
+  fitBox,
+  hasImages,
+  toggleResumeImages,
+  useResumeImages,
+  type ResumeImage,
+} from "@/lib/resume-images";
+
+const Pic = ({ img, w, h }: { img: ResumeImage; w: number; h: number }) => {
+  const f = fitBox(img.w, img.h, w, h);
+  return <img src={img.src} alt="" width={f.w} height={f.h} style={{ width: f.w, height: f.h }} />;
+};
 
 const PAGE_H = 1123; // A4 at 96dpi
 
 /** Live, print-like single-column render of the resume (same rules as the Word export). Changed lines are highlighted on screen only. */
-export function ResumePreview({ original, draft }: { original: string; draft: string }) {
+export function ResumePreview({
+  original,
+  draft,
+  withImages = false,
+}: {
+  original: string;
+  draft: string;
+  withImages?: boolean;
+}) {
+  const imgs = useResumeImages();
+  const showToggle = withImages && hasImages(imgs);
+  const on = showToggle && imgs.on;
   const lines = diffLines(original, draft);
   const first = lines.findIndex((l) => l.text.trim());
   const changed = lines.filter((l) => l.changed).length;
@@ -58,6 +83,16 @@ export function ResumePreview({ original, draft }: { original: string; draft: st
         </div>
         <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
           <span className="hidden sm:inline font-mono">Calibri · 11pt · A4</span>
+          {showToggle && (
+            <label className="flex cursor-pointer items-center gap-1">
+              <input
+                type="checkbox"
+                checked={imgs.on}
+                onChange={(e) => toggleResumeImages(e.target.checked)}
+              />
+              Images
+            </label>
+          )}
           <span>{changed} changed</span>
           <div className="flex items-center rounded border bg-background">
             <button
@@ -100,7 +135,8 @@ export function ResumePreview({ original, draft }: { original: string; draft: st
                 Page {n + 1} of {pages}
               </span>
             ))}
-            {lines.map((l, i) => {
+            {(() => {
+              const render = (l: (typeof lines)[number], i: number) => {
               const t = l.text.trim();
               if (!t) return <div key={i} className="h-2" />;
               const mark = l.changed
@@ -140,7 +176,42 @@ export function ResumePreview({ original, draft }: { original: string; draft: st
                   <Rich t={t} />
                 </p>
               );
-            })}
+              };
+              const els = lines.map(render);
+              let h = lines.findIndex((l, i) => i !== first && l.text.trim() && isHeading(plain(l.text.trim())));
+              if (h < 0) h = first + 1;
+              return (
+                <>
+                  {on && imgs.headshot ? (
+                    <div className="flex items-start gap-4">
+                      <div className="min-w-0 flex-1">{els.slice(0, h)}</div>
+                      <div className="shrink-0" style={{ width: 120 }}>
+                        <div className="flex justify-end">
+                          <Pic img={imgs.headshot} w={HEADSHOT_BOX} h={HEADSHOT_BOX} />
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    els.slice(0, h)
+                  )}
+                  {els.slice(h)}
+                  {on && imgs.visuals.length > 0 && (
+                    <>
+                      <h4 className="mb-1.5 mt-4 border-b border-foreground/70 pb-0.5 text-[11px] font-semibold uppercase tracking-[0.15em]">
+                        Portfolio visuals
+                      </h4>
+                      <div className="grid grid-cols-2 gap-y-2">
+                        {imgs.visuals.map((v, k) => (
+                          <div key={k}>
+                            <Pic img={v} w={VISUAL_BOX.w} h={VISUAL_BOX.h} />
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </>
+              );
+            })()}
           </div>
         </div>
       </div>

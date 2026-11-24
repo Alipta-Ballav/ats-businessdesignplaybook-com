@@ -639,7 +639,7 @@ export function LiveEditor({
 
   const right = (
     <div className="space-y-3 md:sticky md:top-20 md:self-start">
-      <ResumePreview original={resume} draft={pending} />
+      <ResumePreview original={resume} draft={pending} withImages />
       <div className="flex flex-wrap gap-2">
         <Button size="sm" onClick={word}>
           {pro ? <FileText /> : <Lock />}Download Word (.docx)
