@@ -116,6 +116,8 @@ function Landing() {
   const [tab, setTab] = useState<"dims" | "level" | "ats">("dims");
   const cur = LEVELS[lvl] ?? "Senior Product Designer";
   const top = Object.entries(LEVEL_WEIGHTS[cur]).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([id, w]) => ({ name: FTI_DIMENSIONS.find((d) => d.id === id)?.name ?? id, w }));
+  const SHORT: Record<string, string> = { craft: "Design Craft", research: "Research", product: "Product Thinking", systems: "Systems Thinking", ai: "AI Fluency", critical: "Critical Thinking", leadership: "Design Leadership", learning: "Learning Agility" };
+  const SAMPLE: Record<string, number> = { craft: 88, research: 76, product: 84, systems: 88, ai: 77, critical: 82, leadership: 81, learning: 78 };
   return (
     <div className="-mx-6 -mt-8 space-y-20 pb-16">
       <section className="bg-hero px-6 pt-20">
@@ -141,13 +143,17 @@ function Landing() {
           <div className="rounded-2xl border bg-card p-6 shadow-glow">
             <div className="flex items-center justify-between"><p className="text-sm font-medium">Sample UX Resume Audit</p><span className="rounded-full bg-success/15 px-2 py-0.5 text-xs text-success">Strong alignment</span></div>
             <div className="mt-5 flex items-center gap-6">
-              <div className="grid h-28 w-28 place-items-center rounded-full" style={{ background: "conic-gradient(var(--primary) 295deg, var(--muted) 0)" }}>
+              <div className="grid h-28 w-28 shrink-0 place-items-center rounded-full" style={{ background: "conic-gradient(var(--primary) 295deg, var(--muted) 0)" }}>
                 <div className="grid h-[92px] w-[92px] place-items-center rounded-full bg-card"><span className="font-mono text-2xl">82</span></div>
               </div>
-              <div className="flex-1 space-y-2">{[["Systems thinking", 88], ["AI fluency", 74], ["Influence", 81]].map(([n, v]) =>
-                <div key={n}><div className="flex justify-between text-xs"><span>{n}</span><span className="font-mono text-muted-foreground">{v}</span></div>
-                  <div className="mt-1 h-1.5 rounded-full bg-muted"><div className="h-1.5 rounded-full bg-gradient-primary" style={{ width: `${v}%` }} /></div></div>)}</div>
+              <div className="flex-1 text-sm">
+                <p className="font-medium">Overall design score</p>
+                <p className="mt-1 text-xs text-muted-foreground">Weighted across all 8 dimensions, then re-scored on every ATS engine below.</p>
+              </div>
             </div>
+            <div className="mt-5 grid gap-x-6 gap-y-2 sm:grid-cols-2">{FTI_DIMENSIONS.map((d) => { const v = SAMPLE[d.id] ?? 0; return (
+              <div key={d.id}><div className="flex justify-between text-xs"><span>{SHORT[d.id] ?? d.name}</span><span className="font-mono text-muted-foreground">{v}</span></div>
+                <div className="mt-1 h-1.5 rounded-full bg-muted"><div className="h-1.5 rounded-full bg-gradient-primary" style={{ width: `${v}%` }} /></div></div>); })}</div>
             <div className="mt-5 flex flex-wrap gap-1.5">{[["Taleo", 62], ["Workday", 71], ["iCIMS", 69], ["SuccessFactors", 68], ["Lever", 77], ["Greenhouse", 80], ["BambooHR", 79], ["Ashby", 84]].map(([a, v]) => <span key={a} className="rounded-md border bg-secondary px-2 py-1 font-mono text-[11px]">{a} {v}</span>)}</div>
             <p className="mt-2 text-[11px] text-muted-foreground">All 8 engines, scored separately on one resume.</p>
             <blockquote className="mt-5 border-l-2 border-primary pl-3 text-sm text-muted-foreground">“Led the design system migration across 4 product teams, cutting UI defects 32%.”<span className="mt-1 block text-xs text-success">✓ Verified verbatim in resume</span></blockquote>
