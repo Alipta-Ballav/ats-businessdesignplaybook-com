@@ -5,6 +5,12 @@ export const checkoutReady = true;
 export const PASS_DAYS = 30;
 export const PASS_SCANS = 5;
 export const PASS_DURATION_MS = PASS_DAYS * 24 * 60 * 60 * 1000;
+/** Launch offer: the first LAUNCH_SPOTS completed passes cost LAUNCH_INR, later ones REGULAR_INR. */
+export const LAUNCH_INR = 99;
+export const REGULAR_INR = 149;
+export const LAUNCH_SPOTS = 50;
+export const LAUNCH_BANNER = `Launch offer: ₹${LAUNCH_INR} for the first ${LAUNCH_SPOTS} users (then ₹${REGULAR_INR})`;
+export function passPriceInr(completedPasses: number) { return completedPasses < LAUNCH_SPOTS ? LAUNCH_INR : REGULAR_INR; }
 export type PlanId = "job_hunt_30";
 export const PLANS: { id: PlanId; name: string; inr: number; usd: number; blurb: string; perks: string[]; best?: boolean }[] = [
   { id: "job_hunt_30", name: "30-Day Job Hunt Pass", inr: 99, usd: 1.19, blurb: "5 scans + all features for 30 days from payment. No auto-renewal.", best: true, perks: ["5 verified scores in 30 days (new resumes or rescores)", "ATS-ready Word downloads", "Custom ATS tuning"] },
@@ -22,7 +28,7 @@ export type AccessPayment = { plan: string; amount: number; status: string; paid
 export function hasPaidAccess(payment: AccessPayment, now = Date.now()): boolean {
   if (payment.status !== "completed") return false;
   if (payment.plan === "single" && payment.amount === 4900) return true;
-  if (payment.plan !== "job_hunt_30" || payment.amount !== 9900 || !payment.paid_at) return false;
+  if (payment.plan !== "job_hunt_30" || (payment.amount !== LAUNCH_INR * 100 && payment.amount !== REGULAR_INR * 100) || !payment.paid_at) return false;
   const paidAt = Date.parse(payment.paid_at);
   return Number.isFinite(paidAt) && now >= paidAt && now < paidAt + PASS_DURATION_MS;
 }

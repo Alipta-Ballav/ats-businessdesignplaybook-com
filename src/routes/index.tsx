@@ -180,7 +180,8 @@ function Landing() {
           </div>
           <div className="rounded-2xl border-2 border-primary bg-card p-6 shadow-glow">
             <div className="flex items-center justify-between"><p className="text-sm text-muted-foreground">30-Day Job Hunt Pass</p><span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">Pay only when ready</span></div>
-            <p className="mt-1 font-mono text-4xl">₹99 <span className="text-sm text-muted-foreground">one-time</span></p>
+            <p className="mt-1 font-mono text-4xl">₹99 <span className="text-lg text-muted-foreground line-through">₹149</span> <span className="text-sm text-muted-foreground">one-time</span></p>
+            <p className="mt-1 text-xs font-semibold text-primary">Launch offer: ₹99 for the first 50 users (then ₹149)</p>
             <ul className="mt-5 space-y-2 text-sm">{["5 verified scores in 30 days (new resumes or after edits)", "Download ATS-clean Word (.docx)", "Free live estimated score while you edit", "UPI or card · no auto-renewal, ever"].map((t) => <li key={t} className="flex gap-2"><CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />{t}</li>)}</ul>
             <p className="mt-5 text-xs text-muted-foreground">You'll only be asked to pay when you rescore, download Word or run a 2nd scan.</p>
           </div>

@@ -4,10 +4,10 @@ import { useServerFn } from "@tanstack/react-start";
 import { Check, Lock } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { PLANS, type PlanId } from "@/lib/plans";
+import { PLANS, LAUNCH_BANNER, type PlanId } from "@/lib/plans";
 import { notifyProChanged } from "@/lib/pro";
 import { supabase } from "@/integrations/supabase/client";
-import { createCheckout, confirmCheckout } from "@/lib/payments.functions";
+import { createCheckout, confirmCheckout, getPassPrice } from "@/lib/payments.functions";
 import { toast } from "sonner";
 import { PaymentPromise } from "@/components/trust/Trust";
 
@@ -27,6 +27,9 @@ export function PaywallModal({ open, onOpenChange, reason }: { open: boolean; on
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
   const create = useServerFn(createCheckout); const confirm = useServerFn(confirmCheckout);
+  const [price, setPrice] = useState<number | null>(null);
+  const getPrice = useServerFn(getPassPrice);
+  useEffect(() => { if (open) void getPrice().then((r) => setPrice(r.inr)).catch(() => {}); }, [open]);
   useEffect(() => { if (open) void supabase.auth.getSession().then(({ data }) => setSignedIn(!!data.session)); }, [open]);
 
   const pay = async (plan: PlanId) => {
@@ -62,14 +65,15 @@ export function PaywallModal({ open, onOpenChange, reason }: { open: boolean; on
         <DialogTitle className="flex items-center gap-2"><Lock className="h-4 w-4" />Unlock your UX resume</DialogTitle>
         <DialogDescription>{reason}</DialogDescription>
       </DialogHeader>
+      <p className="rounded-md bg-primary/10 px-3 py-2 text-center text-xs font-semibold text-primary">{LAUNCH_BANNER}</p>
       <div className="grid gap-4">
         {PLANS.map((p) => <div key={p.id} className={`relative space-y-3 rounded-lg border p-5 ${p.best ? "border-primary shadow-glow" : ""}`}>
           <div><p className="font-medium">{p.name}</p><p className="text-xs text-muted-foreground">{p.blurb}</p></div>
-          <p><span className="text-3xl font-semibold">₹{p.inr}</span><span className="ml-2 text-sm text-muted-foreground">/ 30 days</span></p>
+          <p><span className="text-3xl font-semibold">₹{price ?? p.inr}</span><span className="ml-2 text-sm text-muted-foreground">/ 30 days</span></p>
           <ul className="space-y-1 text-sm">{p.perks.map((x) => <li key={x} className="flex gap-2"><Check className="h-4 w-4 text-success" />{x}</li>)}</ul>
           {signedIn === false
-            ? <Button asChild className="w-full"><Link to="/auth" search={{ mode: "signup", as: "candidate", redirect: "/check" }}>Sign in to pay ₹{p.inr}</Link></Button>
-            : <Button className="w-full" disabled={busy || signedIn === null} onClick={() => void pay(p.id)}>{busy ? "Waiting for payment…" : `Pay ₹${p.inr} · UPI, card, netbanking`}</Button>}
+            ? <Button asChild className="w-full"><Link to="/auth" search={{ mode: "signup", as: "candidate", redirect: "/check" }}>Sign in to pay ₹{price ?? p.inr}</Link></Button>
+            : <Button className="w-full" disabled={busy || signedIn === null} onClick={() => void pay(p.id)}>{busy ? "Waiting for payment…" : `Pay ₹${price ?? p.inr} · UPI, card, netbanking`}</Button>}
         </div>)}
       </div>
       <PaymentPromise />

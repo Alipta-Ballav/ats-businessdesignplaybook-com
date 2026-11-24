@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { PaywallModal } from "@/components/PaywallModal";
 import { supabase } from "@/integrations/supabase/client";
-import { hasPaidAccess, PASS_DURATION_MS, PASS_SCANS } from "@/lib/plans";
+import { hasPaidAccess, PASS_DURATION_MS, PASS_SCANS, LAUNCH_BANNER } from "@/lib/plans";
 import { passAllowance, PRO_EVENT } from "@/lib/pro";
 
 export const Route = createFileRoute("/pass")({
@@ -38,11 +38,12 @@ function PassPage() {
   const active = pays.filter((p) => hasPaidAccess(p));
   const expiry = active.map((p) => Date.parse(p.paid_at!) + PASS_DURATION_MS).sort((a, b) => b - a)[0];
   const status = !signedIn ? null : left === null ? "No score limit on this account" : active.length ? `${left} of ${PASS_SCANS * active.length} scans left · expires ${new Date(expiry!).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}` : pays.length ? "Your pass has expired" : "You don't have a pass yet";
-  const label = active.length ? "Renew pass · ₹99 for 5 more scans" : pays.length ? "Renew pass · ₹99" : "Buy pass · ₹99";
+  const label = active.length ? "Renew pass · 5 more scans" : pays.length ? "Renew pass" : "Buy pass";
   return <main className="mx-auto max-w-xl px-6 py-12 space-y-6">
     <h1 className="text-3xl font-semibold">Job Hunt Pass</h1>
+    <p className="rounded-md bg-primary/10 px-4 py-2 text-center text-sm font-semibold text-primary">{LAUNCH_BANNER}</p>
     <div className="rounded-lg border p-6 space-y-4">
-      <p className="text-sm text-muted-foreground">₹99 once · 30 days · 5 verified scores (new resumes or rescores) · Word downloads · No auto-renewal. Buying again adds 5 more scans.</p>
+      <p className="text-sm text-muted-foreground">One payment · 30 days · 5 verified scores (new resumes or rescores) · Word downloads · No auto-renewal. Buying again adds 5 more scans.</p>
       {status && <p className="font-medium">{status}</p>}
       {signedIn === false
         ? <Button asChild className="w-full"><Link to="/auth" search={{ mode: "signin", redirect: "/pass" }}>Sign in to buy or renew</Link></Button>

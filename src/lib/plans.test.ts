@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { passScansLeft, canScan, canRescore, canApplyFix, canDownloadWord, hasPaidAccess, PASS_DAYS, PLANS } from "./plans";
+import { passPriceInr, passScansLeft, canScan, canRescore, canApplyFix, canDownloadWord, hasPaidAccess, PASS_DAYS, PLANS } from "./plans";
 describe("micro-paywall", () => {
   it("free users can apply any number of fixes", () => expect(canApplyFix(20, false)).toBe(true));
   it("official rescore needs the pass", () => { expect(canRescore(false)).toBe(false); expect(canRescore(true)).toBe(true); });
@@ -43,4 +43,9 @@ describe("micro-paywall", () => {
 describe("pass scan cap", () => {
   it("a pass includes 5 scans", () => { expect(passScansLeft(0)).toBe(5); expect(passScansLeft(4)).toBe(1); expect(passScansLeft(5)).toBe(0); expect(passScansLeft(9)).toBe(0); });
   it("renewing while a pass is active adds 5 more scans", () => { expect(passScansLeft(5, 2)).toBe(5); expect(passScansLeft(7, 2)).toBe(3); expect(passScansLeft(10, 2)).toBe(0); });
+});
+describe("launch offer", () => {
+  it("first 50 passes cost ₹99", () => { expect(passPriceInr(0)).toBe(99); expect(passPriceInr(49)).toBe(99); });
+  it("51st pass onward costs ₹149", () => { expect(passPriceInr(50)).toBe(149); expect(passPriceInr(200)).toBe(149); });
+  it("₹149 payment grants access", () => expect(hasPaidAccess({ plan: "job_hunt_30", amount: 14900, status: "completed", paid_at: "2026-11-23T00:00:00Z" }, Date.parse("2026-11-24T00:00:00Z"))).toBe(true));
 });

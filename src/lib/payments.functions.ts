@@ -1,7 +1,17 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { PLANS } from "@/lib/plans";
+import { PLANS, passPriceInr } from "@/lib/plans";
+
+async function currentPassInr() {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { count, error } = await supabaseAdmin.from("payments").select("id", { count: "exact", head: true }).eq("plan", "job_hunt_30").eq("status", "completed");
+  if (error) throw error;
+  return passPriceInr(count ?? 0);
+}
+
+/** Public: current pass price only (no counts exposed). */
+export const getPassPrice = createServerFn({ method: "GET" }).handler(async () => ({ inr: await currentPassInr() }));
 
 /** Creates a pending payment + Razorpay order. Price comes from the server-side plan catalog. */
 export const createCheckout = createServerFn({ method: "POST" })
@@ -12,7 +22,7 @@ export const createCheckout = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const plan = PLANS.find((p) => p.id === data.plan);
     if (!plan) throw new Error("Plan not found.");
-    const amount = plan.inr * 100;
+    const amount = (await currentPassInr()) * 100;
     const { data: row, error } = await supabaseAdmin.from("payments")
       .insert({ user_id: context.userId, plan: plan.id, amount, currency: "INR", scans_granted: 0 }).select("id").single();
     if (error) throw error;
