@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Check, Lock } from "lucide-react";
 import {
@@ -39,6 +39,12 @@ declare global {
   }
 }
 
+// After payment the buyer lands on the resume checker, unless they are already
+// inside it — leaving mid-edit would discard their unsaved draft.
+export function shouldLandOnCandidate(pathname: string): boolean {
+  return !(pathname === "/candidate" || pathname.startsWith("/candidate/scans/"));
+}
+
 function loadCheckoutJs(): Promise<void> {
   if (window.Razorpay) return Promise.resolve();
   return new Promise((res, rej) => {
@@ -63,6 +69,7 @@ export function PaywallModal({
   const [busy, setBusy] = useState(false);
   const create = useServerFn(createCheckout);
   const confirm = useServerFn(confirmCheckout);
+  const navigate = useNavigate();
   const [price, setPrice] = useState<number | null>(null);
   const getPrice = useServerFn(getPassPrice);
   useEffect(() => {
@@ -93,6 +100,7 @@ export function PaywallModal({
             notifyProChanged();
             toast.success("Payment received. Your 30-day Job Hunt Pass is active.");
             onOpenChange(false);
+            if (shouldLandOnCandidate(window.location.pathname)) void navigate({ to: "/candidate" });
           }
         } catch (e) {
           toast.error((e as Error).message);
