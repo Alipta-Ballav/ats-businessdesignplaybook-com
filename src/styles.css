@@ -201,9 +201,14 @@
 }
 @utility bg-gradient-primary { background-image: var(--gradient-primary); }
 @utility bg-hero { background-image: var(--gradient-hero); }
+/* Break a centered page container out to the full viewport width. */
+@utility full-bleed {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+}
 @utility text-gradient { background-image: var(--gradient-primary); -webkit-background-clip: text; background-clip: text; color: transparent; }
 @layer base {
-  body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+  body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; overflow-x: clip; }
   h1, h2, h3, .font-display { font-family: var(--font-display); letter-spacing: -0.02em; font-weight: 600; }
 }
 

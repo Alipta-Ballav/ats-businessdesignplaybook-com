@@ -267,7 +267,7 @@ function Landing() {
     learning: 78,
   };
   return (
-    <div className="-mx-6 -mt-8 space-y-20 pb-16">
+    <div className="full-bleed -mt-8 space-y-20 pb-16">
       <section className="bg-hero px-6 pt-20">
         <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[1.1fr_1fr]">
           <div className="space-y-6">
