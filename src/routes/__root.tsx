@@ -168,6 +168,7 @@ function Header() {
         <nav className="flex flex-1 gap-4 text-sm text-muted-foreground">
           {me?.role === "candidate" && <Link to="/candidate" activeProps={active}>Check my resume</Link>}
           {!me && <Link to="/check" activeProps={active}>Resume check</Link>}
+          <Link to="/pass" activeProps={active}>{me ? "My pass · Renew" : "Pricing"}</Link>
         </nav>
         <ThemeToggle />
         {me ? (

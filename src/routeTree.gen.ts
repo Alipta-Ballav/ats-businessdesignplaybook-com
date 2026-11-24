@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CheckRouteImport } from './routes/check'
+import { Route as PassRouteImport } from './routes/pass'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PromotionRouteImport } from './routes/promotion'
 import { Route as RefundRouteImport } from './routes/refund'
@@ -50,6 +51,11 @@ const AuthRoute = AuthRouteImport.update({
 const CheckRoute = CheckRouteImport.update({
   id: '/check',
   path: '/check',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PassRoute = PassRouteImport.update({
+  id: '/pass',
+  path: '/pass',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -159,6 +165,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/check': typeof CheckRoute
+  '/pass': typeof PassRoute
   '/privacy': typeof PrivacyRoute
   '/promotion': typeof PromotionRoute
   '/refund': typeof RefundRoute
@@ -183,6 +190,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/check': typeof CheckRoute
+  '/pass': typeof PassRoute
   '/privacy': typeof PrivacyRoute
   '/promotion': typeof PromotionRoute
   '/refund': typeof RefundRoute
@@ -209,6 +217,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/check': typeof CheckRoute
+  '/pass': typeof PassRoute
   '/privacy': typeof PrivacyRoute
   '/promotion': typeof PromotionRoute
   '/refund': typeof RefundRoute
@@ -235,6 +244,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/check'
+    | '/pass'
     | '/privacy'
     | '/promotion'
     | '/refund'
@@ -259,6 +269,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/check'
+    | '/pass'
     | '/privacy'
     | '/promotion'
     | '/refund'
@@ -284,6 +295,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/check'
+    | '/pass'
     | '/privacy'
     | '/promotion'
     | '/refund'
@@ -310,6 +322,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   CheckRoute: typeof CheckRoute
+  PassRoute: typeof PassRoute
   PrivacyRoute: typeof PrivacyRoute
   PromotionRoute: typeof PromotionRoute
   RefundRoute: typeof RefundRoute
@@ -350,6 +363,13 @@ declare module '@tanstack/react-router' {
       path: '/check'
       fullPath: '/check'
       preLoaderRoute: typeof CheckRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pass': {
+      id: '/pass'
+      path: '/pass'
+      fullPath: '/pass'
+      preLoaderRoute: typeof PassRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -522,6 +542,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   CheckRoute: CheckRoute,
+  PassRoute: PassRoute,
   PrivacyRoute: PrivacyRoute,
   PromotionRoute: PromotionRoute,
   RefundRoute: RefundRoute,

@@ -223,7 +223,7 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
           <p className="mt-1 text-xs text-muted-foreground">{stale ? <>{fixes.length} change{fixes.length === 1 ? "" : "s"} applied · Estimated score <b className="text-foreground">~{estimate}</b> ({estimate - base >= 0 ? "+" : ""}{estimate - base} from {base})</> : "Apply recommendations above, then rescore here."}</p>
         </div>
         <Button size="lg" className="w-full" onClick={rescore} disabled={!!busy || !stale}><Sparkles />{!pro && <Lock />}{busy === "score" ? "Rescoring…" : pro ? (passLeft === null ? "Verify final score" : passLeft === 0 ? "Verify final score · 0 scans left" : `Verify final score · uses 1 of ${passLeft} left`) : "Verify final score · ₹99 pass"}</Button>
-        {pro && passLeft === 0 && <p className="mt-2 text-center text-xs text-muted-foreground">No scans left. <button type="button" className="font-semibold text-primary underline underline-offset-2" onClick={() => setWall("You've used all 5 scans in your pass. Renew for ₹99 to add 5 more verified scores and 30 days of access.")}>Renew pass · ₹99 for 5 more scans</button></p>}
+        {pro && passLeft === 0 && <p className="mt-2 text-center text-xs text-muted-foreground">No scans left. <a href="/pass" target="_blank" rel="noopener" className="font-semibold text-primary underline underline-offset-2">Renew pass · ₹99 for 5 more scans</a></p>}
       </Card>
     </div>
   );
