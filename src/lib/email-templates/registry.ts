@@ -7,6 +7,7 @@ export interface TemplateData {
   scans?: number;
   expires?: string;
   paymentId?: string;
+  email?: string;
 }
 
 export interface TemplateEntry {
@@ -28,10 +29,12 @@ export interface TemplateEntry {
  */
 import { template as welcome } from "./welcome";
 import { template as passReceipt } from "./pass-receipt";
+import { template as newSignupAlert } from "./new-signup-alert";
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   welcome: welcome,
   "pass-receipt": passReceipt,
+  "new-signup-alert": newSignupAlert,
   // Add templates here as they are created, e.g.:
   // 'welcome': welcomeTemplate,
 };

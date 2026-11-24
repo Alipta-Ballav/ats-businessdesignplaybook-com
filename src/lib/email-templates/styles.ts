@@ -1,3 +1,4 @@
+import logoAsset from "@/assets/futuretalent-logo-email.png.asset.json";
 export const main = {
   backgroundColor: "#ffffff",
   fontFamily: "Arial, Helvetica, sans-serif",
@@ -26,3 +27,5 @@ export const button = {
 };
 export const foot = { fontSize: "11px", color: "#94A3B8", marginTop: "28px" };
 export const SITE = "https://ats.businessdesignplaybook.com";
+
+export const LOGO_URL = `${SITE}${logoAsset.url}`;

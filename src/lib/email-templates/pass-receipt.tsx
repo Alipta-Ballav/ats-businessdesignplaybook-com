@@ -6,6 +6,7 @@ import {
   Head,
   Heading,
   Html,
+  Img,
   Preview,
   Section,
   Text,
@@ -28,8 +29,13 @@ const Receipt = ({ name, renewal, amount = "₹99", scans = 5, expires, paymentI
     <Preview>{`${renewal ? "Your pass is renewed" : "Your Job Hunt Pass is active"} · ${scans} scans added`}</Preview>
     <Body style={s.main}>
       <Container style={s.container}>
-        <Text style={s.brand}>FutureTalent AI</Text>
-        <Text style={s.sub}>An initiative by Design shots</Text>
+        <Img
+          src={s.LOGO_URL}
+          width="210"
+          height="48"
+          alt="FutureTalent AI by Design shots"
+          style={{ margin: "0 0 24px" }}
+        />
         <Heading style={s.h1}>
           {renewal ? "Your pass is renewed" : "Your Job Hunt Pass is active"}
         </Heading>

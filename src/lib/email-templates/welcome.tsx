@@ -6,6 +6,7 @@ import {
   Head,
   Heading,
   Html,
+  Img,
   Preview,
   Text,
 } from "@react-email/components";
@@ -18,8 +19,13 @@ const Welcome = ({ name }: { name?: string }) => (
     <Preview>Your free design resume scan is ready</Preview>
     <Body style={s.main}>
       <Container style={s.container}>
-        <Text style={s.brand}>FutureTalent AI</Text>
-        <Text style={s.sub}>An initiative by Design shots</Text>
+        <Img
+          src={s.LOGO_URL}
+          width="210"
+          height="48"
+          alt="FutureTalent AI by Design shots"
+          style={{ margin: "0 0 24px" }}
+        />
         <Heading style={s.h1}>{name ? `Welcome, ${name}!` : "Welcome aboard!"}</Heading>
         <Text style={s.text}>
           Your account is ready. Upload your resume to see your score across 8 design dimensions,
