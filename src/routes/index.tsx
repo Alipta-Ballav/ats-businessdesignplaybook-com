@@ -139,7 +139,7 @@ function Landing() {
             </div>
           </div>
           <div className="rounded-2xl border bg-card p-6 shadow-glow">
-            <div className="flex items-center justify-between"><p className="text-sm font-medium">Future Talent Index</p><span className="rounded-full bg-success/15 px-2 py-0.5 text-xs text-success">Strong alignment</span></div>
+            <div className="flex items-center justify-between"><p className="text-sm font-medium">Sample UX Resume Audit</p><span className="rounded-full bg-success/15 px-2 py-0.5 text-xs text-success">Strong alignment</span></div>
             <div className="mt-5 flex items-center gap-6">
               <div className="grid h-28 w-28 place-items-center rounded-full" style={{ background: "conic-gradient(var(--primary) 295deg, var(--muted) 0)" }}>
                 <div className="grid h-[92px] w-[92px] place-items-center rounded-full bg-card"><span className="font-mono text-2xl">82</span></div>
