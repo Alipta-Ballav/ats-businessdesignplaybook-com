@@ -1,3 +1,4 @@
+import { Logo } from "@/components/Logo";
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import {
   Outlet,
@@ -103,7 +104,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
     ],
   }),
   shellComponent: RootShell,
@@ -163,7 +164,7 @@ function Header() {
   return (
     <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-6 py-4">
-        <Link to="/" className="font-display text-xl font-semibold">FutureTalent<span className="ml-1 rounded-md bg-gradient-primary px-1.5 text-sm text-primary-foreground">AI</span><span className="ml-2 hidden text-[11px] font-normal text-muted-foreground sm:inline">by Design shots</span></Link>
+        <Link to="/" className="inline-flex items-center"><Logo /><span className="ml-2 hidden text-[11px] font-normal text-muted-foreground sm:inline">by Design shots</span></Link>
         <nav className="flex flex-1 gap-4 text-sm text-muted-foreground">
           {me?.role === "candidate" && <Link to="/candidate" activeProps={active}>Check my resume</Link>}
           {!me && <Link to="/check" activeProps={active}>Resume check</Link>}
