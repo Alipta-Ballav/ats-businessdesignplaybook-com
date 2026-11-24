@@ -160,24 +160,34 @@ function Header() {
     await supabase.auth.signOut();
     nav({ to: "/auth", replace: true });
   };
-  const active = { className: "text-foreground font-medium" };
+  const active = { className: "bg-muted text-foreground" };
+  const navLink = "rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground";
+  const quiet = "rounded-md border px-3 py-1.5 text-sm hover:bg-muted";
+  const primary = "rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground hover:bg-primary/90";
   return (
     <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-6 py-4">
-        <Link to="/" className="inline-flex items-center"><Logo /><span className="ml-2 hidden text-[11px] font-normal text-muted-foreground sm:inline">by Design shots</span></Link>
-        <nav className="flex flex-1 gap-4 text-sm text-muted-foreground">
-          {me?.role === "candidate" && <Link to="/candidate" activeProps={active}>Check my resume</Link>}
-          {!me && <Link to="/check" activeProps={active}>Resume check</Link>}
-          <Link to="/pass" activeProps={active}>{me ? "My pass · Renew" : "Pricing"}</Link>
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 sm:gap-x-4 sm:px-6">
+        <Link to="/" className="shrink-0"><Logo /></Link>
+        <span className="ml-auto sm:order-3"><ThemeToggle /></span>
+        <span aria-hidden="true" className="basis-full sm:hidden" />
+        <nav className="order-3 flex items-center gap-1 sm:order-2 sm:ml-auto">
+          {me?.role === "candidate" && <Link to="/candidate" activeProps={active} className={navLink}><span className="hidden sm:inline">Check my resume</span><span className="sm:hidden">Resume</span></Link>}
+          {!me && <Link to="/check" activeProps={active} className={navLink}><span className="hidden sm:inline">Resume check</span><span className="sm:hidden">Resume</span></Link>}
+          <Link to="/pass" activeProps={active} className={navLink}>{me ? "My pass" : "Pricing"}</Link>
         </nav>
-        <ThemeToggle />
-        {me ? (
-          <div className="flex items-center gap-3 text-sm"><Link to="/account" className="text-muted-foreground hover:text-foreground"><span className="hidden sm:inline">{me.name || me.email} · </span>Account</Link>
-            <button onClick={signOut} className="rounded-md border px-3 py-1.5">Sign out</button></div>
-        ) : (
-          <div className="flex gap-2 text-sm"><Link to="/auth" search={{ mode: "signin" }} className="rounded-md border px-3 py-1.5">Sign in</Link>
-            <Link to="/auth" search={{ mode: "signup" }} className="rounded-md bg-primary px-3 py-1.5 text-primary-foreground">Sign up</Link></div>
-        )}
+        <div className="order-4 flex items-center gap-1.5 sm:border-l sm:pl-3 sm:gap-2">
+          {me ? (
+            <>
+              <Link to="/account" className={navLink}><span className="hidden sm:inline">{me.name || me.email} · </span>Account</Link>
+              <button onClick={signOut} className={quiet}>Sign out</button>
+            </>
+          ) : (
+            <>
+              <Link to="/auth" search={{ mode: "signin" }} className={quiet}>Sign in</Link>
+              <Link to="/auth" search={{ mode: "signup" }} className={primary}><span className="hidden sm:inline">Sign up free</span><span className="sm:hidden">Sign up</span></Link>
+            </>
+          )}
+        </div>
       </div>
     </header>
   );

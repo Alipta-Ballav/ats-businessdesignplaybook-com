@@ -22,13 +22,19 @@ export function LogoMark({ className = "h-8 w-8" }: { className?: string }) {
   );
 }
 
-export function Logo() {
+/** "F" mark + FutureTalent AI wordmark, with the Design shots credit on its own line. */
+export function Logo({ tagline = "by Design shots" }: { tagline?: string | null }) {
   return (
-    <span className="inline-flex items-center gap-2" aria-label="FutureTalent AI">
-      <LogoMark className="h-8 w-8" />
-      <span className="text-lg font-bold tracking-tight text-foreground" aria-hidden="true">
-        FutureTalent{" "}
-        <span className="bg-gradient-to-r from-[#818CF8] to-[#C084FC] bg-clip-text text-transparent">AI</span>
+    <span className="inline-flex items-center gap-2" aria-label={tagline ? `FutureTalent AI, ${tagline}` : "FutureTalent AI"}>
+      <LogoMark className="h-8 w-8 shrink-0" />
+      <span className="flex flex-col leading-none" aria-hidden="true">
+        <span className="text-lg font-bold tracking-tight text-foreground">
+          FutureTalent{" "}
+          <span className="bg-gradient-to-r from-[#818CF8] to-[#C084FC] bg-clip-text text-transparent">AI</span>
+        </span>
+        {tagline && (
+          <span className="mt-1 text-[10px] font-medium tracking-wide text-muted-foreground">{tagline}</span>
+        )}
       </span>
     </span>
   );
