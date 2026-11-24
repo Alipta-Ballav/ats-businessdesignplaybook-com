@@ -222,7 +222,8 @@ export function LiveEditor({ job, cand, resume, initialDraft, scoringLevel }: { 
           <h3 className="text-base font-semibold">{stale ? "Finished editing? Lock in your new score." : "Your score is up to date"}</h3>
           <p className="mt-1 text-xs text-muted-foreground">{stale ? <>{fixes.length} change{fixes.length === 1 ? "" : "s"} applied · Estimated score <b className="text-foreground">~{estimate}</b> ({estimate - base >= 0 ? "+" : ""}{estimate - base} from {base})</> : "Apply recommendations above, then rescore here."}</p>
         </div>
-        <Button size="lg" className="w-full" onClick={rescore} disabled={!!busy || !stale}><Sparkles />{!pro && <Lock />}{busy === "score" ? "Rescoring…" : pro ? (passLeft === null ? "Verify final score" : passLeft === 0 ? "Renew pass to rescore · ₹99" : `Verify final score · uses 1 of ${passLeft} left`) : "Verify final score · ₹99 pass"}</Button>
+        <Button size="lg" className="w-full" onClick={rescore} disabled={!!busy || !stale}><Sparkles />{!pro && <Lock />}{busy === "score" ? "Rescoring…" : pro ? (passLeft === null ? "Verify final score" : passLeft === 0 ? "Verify final score · 0 scans left" : `Verify final score · uses 1 of ${passLeft} left`) : "Verify final score · ₹99 pass"}</Button>
+        {pro && passLeft === 0 && <p className="mt-2 text-center text-xs text-muted-foreground">No scans left. <button type="button" className="font-semibold text-primary underline underline-offset-2" onClick={() => setWall("You've used all 5 scans in your pass. Renew for ₹99 to add 5 more verified scores and 30 days of access.")}>Renew pass · ₹99 for 5 more scans</button></p>}
       </Card>
     </div>
   );
