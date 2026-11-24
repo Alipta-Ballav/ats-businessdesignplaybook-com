@@ -21,6 +21,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SwipeFileRouteImport } from './routes/swipe-file'
 import { Route as TeardownsRouteImport } from './routes/teardowns'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedMyResumesRouteImport } from './routes/_authenticated/my-resumes'
 import { Route as AuthenticatedWelcomeRouteImport } from './routes/_authenticated/welcome'
@@ -92,6 +93,11 @@ const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
@@ -173,6 +179,7 @@ export interface FileRoutesByFullPath {
   '/swipe-file': typeof SwipeFileRoute
   '/teardowns': typeof TeardownsRoute
   '/terms': typeof TermsRoute
+  '/account': typeof AuthenticatedAccountRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/my-resumes': typeof AuthenticatedMyResumesRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
@@ -198,6 +205,7 @@ export interface FileRoutesByTo {
   '/swipe-file': typeof SwipeFileRoute
   '/teardowns': typeof TeardownsRoute
   '/terms': typeof TermsRoute
+  '/account': typeof AuthenticatedAccountRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/my-resumes': typeof AuthenticatedMyResumesRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
@@ -225,6 +233,7 @@ export interface FileRoutesById {
   '/swipe-file': typeof SwipeFileRoute
   '/teardowns': typeof TeardownsRoute
   '/terms': typeof TermsRoute
+  '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/my-resumes': typeof AuthenticatedMyResumesRoute
   '/_authenticated/welcome': typeof AuthenticatedWelcomeRoute
@@ -252,6 +261,7 @@ export interface FileRouteTypes {
     | '/swipe-file'
     | '/teardowns'
     | '/terms'
+    | '/account'
     | '/admin'
     | '/my-resumes'
     | '/welcome'
@@ -277,6 +287,7 @@ export interface FileRouteTypes {
     | '/swipe-file'
     | '/teardowns'
     | '/terms'
+    | '/account'
     | '/admin'
     | '/my-resumes'
     | '/welcome'
@@ -303,6 +314,7 @@ export interface FileRouteTypes {
     | '/swipe-file'
     | '/teardowns'
     | '/terms'
+    | '/_authenticated/account'
     | '/_authenticated/admin'
     | '/_authenticated/my-resumes'
     | '/_authenticated/welcome'
@@ -421,6 +433,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/account': {
+      id: '/_authenticated/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AuthenticatedAccountRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
       path: '/admin'
@@ -509,6 +528,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedMyResumesRoute: typeof AuthenticatedMyResumesRoute
   AuthenticatedWelcomeRoute: typeof AuthenticatedWelcomeRoute
@@ -521,6 +541,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedMyResumesRoute: AuthenticatedMyResumesRoute,
   AuthenticatedWelcomeRoute: AuthenticatedWelcomeRoute,

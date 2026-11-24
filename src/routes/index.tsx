@@ -30,7 +30,7 @@ const compare = [
   ["Fixes", "\"Add more metrics\"", "Rewrite a bullet with your real numbers, rescore live"],
   ["Export", "Broken layouts", "ATS-safe single-column Word file"],
   ["Price", "$29–49 / month", "1 free scan, then ₹99 for 30 days · no auto-renewal"],
-  ["Your data", "May train their AI", "Never used for training · delete any time"],
+  ["Your data", "May train their AI", "Never stored or used for AI training"],
 ];
 
 const examples = [

@@ -12,7 +12,6 @@ import { readResume } from "@/lib/evaluate.functions";
 import { evaluate } from "@/lib/scoring";
 import { ResumeInput } from "@/components/ResumeInput";
 import { Card, StatusBadge } from "@/components/ui-bits";
-import { DeleteAccount } from "@/components/DeleteAccount";
 import { useQueryClient } from "@tanstack/react-query";
 import { Trash2, ArrowRight, CheckCircle2, Loader2, ScanText, Target } from "lucide-react";
 import { PaywallModal } from "@/components/PaywallModal";
@@ -120,7 +119,6 @@ function CandidateHome() {
             </Link><button aria-label={`Delete check ${s.job_title}`} onClick={() => removeScan(s.id)} className="rounded-md border p-2 text-muted-foreground hover:text-destructive"><Trash2 className="h-4 w-4" /></button></div>); })}
         </section>
       )}
-      <DeleteAccount />
     </div>
   );
 }

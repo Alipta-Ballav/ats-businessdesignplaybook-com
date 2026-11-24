@@ -172,7 +172,7 @@ function Header() {
         </nav>
         <ThemeToggle />
         {me ? (
-          <div className="flex items-center gap-3 text-sm"><span className="hidden text-muted-foreground sm:inline">{me.name || me.email}{me.role && ` · ${me.role}`}</span>
+          <div className="flex items-center gap-3 text-sm"><Link to="/account" className="text-muted-foreground hover:text-foreground"><span className="hidden sm:inline">{me.name || me.email} · </span>Account</Link>
             <button onClick={signOut} className="rounded-md border px-3 py-1.5">Sign out</button></div>
         ) : (
           <div className="flex gap-2 text-sm"><Link to="/auth" search={{ mode: "signin" }} className="rounded-md border px-3 py-1.5">Sign in</Link>
