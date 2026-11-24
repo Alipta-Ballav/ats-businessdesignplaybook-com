@@ -17,7 +17,10 @@ export function LogoMark({ className = "h-8 w-8" }: { className?: string }) {
         </linearGradient>
       </defs>
       <path d="M8 24C8 12 15 4 27 4H46L41.5 13H27.5C20 13 15.5 17 14 24Z" fill={`url(#t${id})`} />
-      <path d="M17 21.5H38L33.5 30.5H20.5C16.5 30.5 14 33.5 13 37L11.5 44H3L6 31C7.5 25 11.5 21.5 17 21.5Z" fill={`url(#c${id})`} />
+      <path
+        d="M17 21.5H38L33.5 30.5H20.5C16.5 30.5 14 33.5 13 37L11.5 44H3L6 31C7.5 25 11.5 21.5 17 21.5Z"
+        fill={`url(#c${id})`}
+      />
     </svg>
   );
 }
@@ -25,15 +28,22 @@ export function LogoMark({ className = "h-8 w-8" }: { className?: string }) {
 /** "F" mark + FutureTalent AI wordmark, with the Design shots credit on its own line. */
 export function Logo({ tagline = "by Design shots" }: { tagline?: string | null }) {
   return (
-    <span className="inline-flex items-center gap-2" aria-label={tagline ? `FutureTalent AI, ${tagline}` : "FutureTalent AI"}>
+    <span
+      className="inline-flex items-center gap-2"
+      aria-label={tagline ? `FutureTalent AI, ${tagline}` : "FutureTalent AI"}
+    >
       <LogoMark className="h-8 w-8 shrink-0" />
       <span className="flex flex-col leading-none" aria-hidden="true">
         <span className="text-lg font-bold tracking-tight text-foreground">
           FutureTalent{" "}
-          <span className="bg-gradient-to-r from-[#818CF8] to-[#C084FC] bg-clip-text text-transparent">AI</span>
+          <span className="bg-gradient-to-r from-[#818CF8] to-[#C084FC] bg-clip-text text-transparent">
+            AI
+          </span>
         </span>
         {tagline && (
-          <span className="mt-1 text-[10px] font-medium tracking-wide text-muted-foreground">{tagline}</span>
+          <span className="mt-1 text-[10px] font-medium tracking-wide text-muted-foreground">
+            {tagline}
+          </span>
         )}
       </span>
     </span>

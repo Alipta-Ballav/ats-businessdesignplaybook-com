@@ -7,12 +7,22 @@ import { Card } from "@/components/ui-bits";
 import { sendWelcomeEmail } from "@/lib/welcome.functions";
 
 export const Route = createFileRoute("/_authenticated/welcome")({
-  head: () => ({ meta: [{ title: "Welcome — FutureTalent AI" }, { name: "description", content: "Choose how you'll use FutureTalent AI." }, { property: "og:title", content: "Welcome — FutureTalent AI" }, { property: "og:description", content: "Choose how you'll use FutureTalent AI." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({
+    meta: [
+      { title: "Welcome — FutureTalent AI" },
+      { name: "description", content: "Choose how you'll use FutureTalent AI." },
+      { property: "og:title", content: "Welcome — FutureTalent AI" },
+      { property: "og:description", content: "Choose how you'll use FutureTalent AI." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: Welcome,
 });
 
 function Welcome() {
-  const nav = useNavigate(); const qc = useQueryClient();
+  const nav = useNavigate();
+  const qc = useQueryClient();
   const { data: me, isLoading } = useQuery(q.me());
   const [busy, setBusy] = useState(false);
   const choose = async (role: Role) => {
@@ -25,7 +35,10 @@ function Welcome() {
   };
   useEffect(() => {
     if (!me) return;
-    if (me.role) { nav({ to: me.role === "recruiter" ? "/recruiter" : "/candidate", replace: true }); return; }
+    if (me.role) {
+      nav({ to: me.role === "recruiter" ? "/recruiter" : "/candidate", replace: true });
+      return;
+    }
     const pending = sessionStorage.getItem("ft-role");
     if (pending === "candidate" || pending === "recruiter") choose(pending);
   }, [me]);
@@ -34,7 +47,14 @@ function Welcome() {
     <div className="mx-auto max-w-2xl space-y-4">
       <h1 className="font-display text-3xl">How will you use FutureTalent?</h1>
       <div className="grid gap-4">
-        <button disabled={busy} onClick={() => choose("candidate")} className="text-left"><Card className="h-full hover:border-primary"><h2 className="font-display text-xl">I'm looking for a job</h2><p className="mt-1 text-sm text-muted-foreground">Check your resume against any role, see exactly what's missing and how to fix it.</p></Card></button>
+        <button disabled={busy} onClick={() => choose("candidate")} className="text-left">
+          <Card className="h-full hover:border-primary">
+            <h2 className="font-display text-xl">I'm looking for a job</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Check your resume against any role, see exactly what's missing and how to fix it.
+            </p>
+          </Card>
+        </button>
       </div>
     </div>
   );

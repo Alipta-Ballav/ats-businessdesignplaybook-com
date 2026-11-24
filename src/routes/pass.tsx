@@ -7,13 +7,24 @@ import { hasPaidAccess, PASS_DURATION_MS, PASS_SCANS, LAUNCH_BANNER } from "@/li
 import { passAllowance, PRO_EVENT } from "@/lib/pro";
 
 export const Route = createFileRoute("/pass")({
-  head: () => ({ meta: [
-    { title: "Job Hunt Pass — buy or renew · FutureTalent AI" },
-    { name: "description", content: "Buy or renew the ₹99 30-day Job Hunt Pass: 5 verified UX resume scores, rescoring and Word downloads. No auto-renewal." },
-    { property: "og:title", content: "Job Hunt Pass — buy or renew · FutureTalent AI" },
-    { property: "og:description", content: "₹99 for 30 days and 5 verified UX resume scores. Pay by UPI or card. No auto-renewal." },
-    { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" },
-  ] }),
+  head: () => ({
+    meta: [
+      { title: "Job Hunt Pass — buy or renew · FutureTalent AI" },
+      {
+        name: "description",
+        content:
+          "Buy or renew the ₹99 30-day Job Hunt Pass: 5 verified UX resume scores, rescoring and Word downloads. No auto-renewal.",
+      },
+      { property: "og:title", content: "Job Hunt Pass — buy or renew · FutureTalent AI" },
+      {
+        property: "og:description",
+        content:
+          "₹99 for 30 days and 5 verified UX resume scores. Pay by UPI or card. No auto-renewal.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: PassPage,
 });
 
@@ -27,31 +38,91 @@ function PassPage() {
   useEffect(() => {
     const load = async () => {
       const { data: s } = await supabase.auth.getSession();
-      const uid = s.session?.user.id; setSignedIn(!!uid);
+      const uid = s.session?.user.id;
+      setSignedIn(!!uid);
       if (!uid) return;
-      const { data } = await supabase.from("payments").select("plan, amount, status, paid_at").eq("user_id", uid).eq("status", "completed").order("paid_at", { ascending: false });
-      setPays((data ?? []) as Pay[]); setLeft(await passAllowance());
+      const { data } = await supabase
+        .from("payments")
+        .select("plan, amount, status, paid_at")
+        .eq("user_id", uid)
+        .eq("status", "completed")
+        .order("paid_at", { ascending: false });
+      setPays((data ?? []) as Pay[]);
+      setLeft(await passAllowance());
     };
-    void load(); window.addEventListener(PRO_EVENT, load);
+    void load();
+    window.addEventListener(PRO_EVENT, load);
     return () => window.removeEventListener(PRO_EVENT, load);
   }, []);
   const active = pays.filter((p) => hasPaidAccess(p));
-  const expiry = active.map((p) => Date.parse(p.paid_at!) + PASS_DURATION_MS).sort((a, b) => b - a)[0];
-  const status = !signedIn ? null : left === null ? "No score limit on this account" : active.length ? `${left} of ${PASS_SCANS * active.length} scans left · expires ${new Date(expiry!).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}` : pays.length ? "Your pass has expired" : "You don't have a pass yet";
-  const label = active.length ? "Renew pass · 5 more scans" : pays.length ? "Renew pass" : "Buy pass";
-  return <main className="mx-auto max-w-xl px-6 py-12 space-y-6">
-    <h1 className="text-3xl font-semibold">Job Hunt Pass</h1>
-    <p className="rounded-md bg-primary/10 px-4 py-2 text-center text-sm font-semibold text-primary">{LAUNCH_BANNER}</p>
-    <div className="rounded-lg border p-6 space-y-4">
-      <p className="text-sm text-muted-foreground">One payment · 30 days · 5 verified scores (new resumes or rescores) · Word downloads · No auto-renewal. Buying again adds 5 more scans.</p>
-      {status && <p className="font-medium">{status}</p>}
-      {signedIn === false
-        ? <Button asChild className="w-full"><Link to="/auth" search={{ mode: "signin", redirect: "/pass" }}>Sign in to buy or renew</Link></Button>
-        : <Button className="w-full" size="lg" disabled={signedIn === null} onClick={() => setOpen(true)}>{label}</Button>}
-      <p className="text-xs text-muted-foreground">Secure payment by Razorpay · UPI, card, netbanking.</p>
-    </div>
-    {pays.length > 0 && <div className="space-y-2"><h2 className="font-medium">Past payments</h2>
-      <ul className="text-sm text-muted-foreground space-y-1">{pays.map((p, i) => <li key={i}>₹{p.amount / 100} · {p.paid_at ? new Date(p.paid_at).toLocaleDateString("en-IN") : ""} · {hasPaidAccess(p) ? "active" : "expired"}</li>)}</ul></div>}
-    <PaywallModal open={open} onOpenChange={setOpen} reason="One payment of ₹99 adds 5 verified scores and 30 days of access." />
-  </main>;
+  const expiry = active
+    .map((p) => Date.parse(p.paid_at!) + PASS_DURATION_MS)
+    .sort((a, b) => b - a)[0];
+  const status = !signedIn
+    ? null
+    : left === null
+      ? "No score limit on this account"
+      : active.length
+        ? `${left} of ${PASS_SCANS * active.length} scans left · expires ${new Date(expiry!).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`
+        : pays.length
+          ? "Your pass has expired"
+          : "You don't have a pass yet";
+  const label = active.length
+    ? "Renew pass · 5 more scans"
+    : pays.length
+      ? "Renew pass"
+      : "Buy pass";
+  return (
+    <main className="mx-auto max-w-xl px-6 py-12 space-y-6">
+      <h1 className="text-3xl font-semibold">Job Hunt Pass</h1>
+      <p className="rounded-md bg-primary/10 px-4 py-2 text-center text-sm font-semibold text-primary">
+        {LAUNCH_BANNER}
+      </p>
+      <div className="rounded-lg border p-6 space-y-4">
+        <p className="text-sm text-muted-foreground">
+          One payment · 30 days · 5 verified scores (new resumes or rescores) · Word downloads · No
+          auto-renewal. Buying again adds 5 more scans.
+        </p>
+        {status && <p className="font-medium">{status}</p>}
+        {signedIn === false ? (
+          <Button asChild className="w-full">
+            <Link to="/auth" search={{ mode: "signin", redirect: "/pass" }}>
+              Sign in to buy or renew
+            </Link>
+          </Button>
+        ) : (
+          <Button
+            className="w-full"
+            size="lg"
+            disabled={signedIn === null}
+            onClick={() => setOpen(true)}
+          >
+            {label}
+          </Button>
+        )}
+        <p className="text-xs text-muted-foreground">
+          Secure payment by Razorpay · UPI, card, netbanking.
+        </p>
+      </div>
+      {pays.length > 0 && (
+        <div className="space-y-2">
+          <h2 className="font-medium">Past payments</h2>
+          <ul className="text-sm text-muted-foreground space-y-1">
+            {pays.map((p, i) => (
+              <li key={i}>
+                ₹{p.amount / 100} ·{" "}
+                {p.paid_at ? new Date(p.paid_at).toLocaleDateString("en-IN") : ""} ·{" "}
+                {hasPaidAccess(p) ? "active" : "expired"}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      <PaywallModal
+        open={open}
+        onOpenChange={setOpen}
+        reason="One payment of ₹99 adds 5 verified scores and 30 days of access."
+      />
+    </main>
+  );
 }

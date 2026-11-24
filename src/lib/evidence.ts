@@ -1,13 +1,20 @@
 import { COMPETENCIES, type CompEvidence, type EvidenceLevel, type Requirement } from "./scoring";
 
 export type Extracted = {
-  name: string; role: string; years: number; domain: string;
+  name: string;
+  role: string;
+  years: number;
+  domain: string;
   requirements: Requirement[];
   mandatory: Record<string, "met" | "transferable" | "missing">;
   competencies: Record<string, CompEvidence>;
 };
 
-const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+const norm = (s: string) =>
+  s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
 
 /** A quote only counts as evidence if it actually appears in the resume (guards against invented evidence). */
 export function isGrounded(quote: string, resume: string) {
@@ -15,11 +22,26 @@ export function isGrounded(quote: string, resume: string) {
   return q.length >= 8 && norm(resume).includes(q);
 }
 
-type RawComp = { id: string; proficiency: number; level: number; transferable: boolean; quote: string; source: string };
+type RawComp = {
+  id: string;
+  proficiency: number;
+  level: number;
+  transferable: boolean;
+  quote: string;
+  source: string;
+};
 type RawMand = { name: string; value: string };
 
 export function normalizeExtraction(
-  raw: { name: string; role: string; years: number; domain: string; requirements: Requirement[]; mandatory: RawMand[]; competencies: RawComp[] },
+  raw: {
+    name: string;
+    role: string;
+    years: number;
+    domain: string;
+    requirements: Requirement[];
+    mandatory: RawMand[];
+    competencies: RawComp[];
+  },
   resume: string,
 ): Extracted {
   const ids = new Set(COMPETENCIES.map((c) => c.id));
@@ -40,9 +62,14 @@ export function normalizeExtraction(
   }
   return {
     name: raw.name.trim() || "Unnamed candidate",
-    role: raw.role.trim(), domain: raw.domain.trim(),
+    role: raw.role.trim(),
+    domain: raw.domain.trim(),
     years: Math.max(0, Math.min(60, Math.round(raw.years || 0))),
-    requirements: raw.requirements.filter((r) => r.name.trim()).slice(0, 8).map((r) => ({ name: r.name.trim(), essential: !!r.essential })),
-    mandatory, competencies,
+    requirements: raw.requirements
+      .filter((r) => r.name.trim())
+      .slice(0, 8)
+      .map((r) => ({ name: r.name.trim(), essential: !!r.essential })),
+    mandatory,
+    competencies,
   };
 }

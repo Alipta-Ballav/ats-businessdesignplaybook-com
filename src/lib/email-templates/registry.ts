@@ -1,12 +1,21 @@
-import type { ComponentType } from 'react'
+import type { ComponentType } from "react";
+
+export interface TemplateData {
+  name?: string;
+  renewal?: boolean;
+  amount?: string;
+  scans?: number;
+  expires?: string;
+  paymentId?: string;
+}
 
 export interface TemplateEntry {
-  component: ComponentType<any>
-  subject: string | ((data: Record<string, any>) => string)
-  displayName?: string
-  previewData?: Record<string, any>
+  component: ComponentType<TemplateData>;
+  subject: string | ((data: TemplateData) => string);
+  displayName?: string;
+  previewData?: TemplateData;
   /** Fixed recipient — overrides caller-provided recipientEmail when set. */
-  to?: string
+  to?: string;
 }
 
 /**
@@ -17,12 +26,12 @@ export interface TemplateEntry {
  *   import { template as welcomeTemplate } from './welcome'
  *   // then add to TEMPLATES: 'welcome': welcomeTemplate
  */
-import { template as welcome } from './welcome'
-import { template as passReceipt } from './pass-receipt'
+import { template as welcome } from "./welcome";
+import { template as passReceipt } from "./pass-receipt";
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
-  'welcome': welcome,
-  'pass-receipt': passReceipt,
+  welcome: welcome,
+  "pass-receipt": passReceipt,
   // Add templates here as they are created, e.g.:
   // 'welcome': welcomeTemplate,
-}
+};

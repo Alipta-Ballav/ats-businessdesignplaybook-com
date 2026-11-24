@@ -5,13 +5,24 @@ import { COMPETENCIES, FTI_DIMENSIONS, type Requirement } from "../scoring";
 import { createLovableAiGatewayRunIdFetch } from "./run-id.server";
 
 const schema = z.object({
-  name: z.string(), role: z.string(), years: z.number(), domain: z.string(),
+  name: z.string(),
+  role: z.string(),
+  years: z.number(),
+  domain: z.string(),
   requirements: z.array(z.object({ name: z.string(), essential: z.boolean() })),
-  mandatory: z.array(z.object({ name: z.string(), value: z.enum(["met", "transferable", "missing"]) })),
-  competencies: z.array(z.object({
-    id: z.enum(COMPETENCIES.map((c) => c.id) as [string, ...string[]]),
-    proficiency: z.number(), level: z.number(), transferable: z.boolean(), quote: z.string(), source: z.string(),
-  })),
+  mandatory: z.array(
+    z.object({ name: z.string(), value: z.enum(["met", "transferable", "missing"]) }),
+  ),
+  competencies: z.array(
+    z.object({
+      id: z.enum(COMPETENCIES.map((c) => c.id) as [string, ...string[]]),
+      proficiency: z.number(),
+      level: z.number(),
+      transferable: z.boolean(),
+      quote: z.string(),
+      source: z.string(),
+    }),
+  ),
 });
 export type RawExtraction = z.infer<typeof schema>;
 
@@ -25,12 +36,18 @@ requirements: if the recruiter gave must-haves, return them unchanged; otherwise
 mandatory: for each requirement, met (directly evidenced), transferable (only adjacent evidence) or missing.
 name/role/years/domain: candidate's name, most recent title, total years of experience, main industry. Use "" or 0 if unknown.`;
 
-export async function extractEvidence(input: { resume: string; jobTitle: string; jobDescription: string; requirements: Requirement[] }): Promise<RawExtraction> {
+export async function extractEvidence(input: {
+  resume: string;
+  jobTitle: string;
+  jobDescription: string;
+  requirements: Requirement[];
+}): Promise<RawExtraction> {
   const apiKey = process.env["LOVABLE_API_KEY"];
   if (!apiKey) throw new Error("AI is not configured.");
   const runId = createLovableAiGatewayRunIdFetch();
   const provider = createOpenAI({
-    baseURL: "https://ai.gateway.lovable.dev/v1", apiKey,
+    baseURL: "https://ai.gateway.lovable.dev/v1",
+    apiKey,
     headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
     fetch: runId.fetch,
   });
@@ -41,8 +58,18 @@ export async function extractEvidence(input: { resume: string; jobTitle: string;
     instructions: INSTRUCTIONS,
     messages: [{ role: "user", content: prompt }],
     output: Output.object({ schema }),
-    onError: ({ error }) => { streamError = error; },
-    providerOptions: { openai: { forceReasoning: true, reasoningEffort: "low", reasoningSummary: "auto", store: false, include: ["reasoning.encrypted_content"] } },
+    onError: ({ error }) => {
+      streamError = error;
+    },
+    providerOptions: {
+      openai: {
+        forceReasoning: true,
+        reasoningEffort: "low",
+        reasoningSummary: "auto",
+        store: false,
+        include: ["reasoning.encrypted_content"],
+      },
+    },
   });
   try {
     return await result.output;
@@ -50,9 +77,11 @@ export async function extractEvidence(input: { resume: string; jobTitle: string;
     const err = streamError ?? e;
     console.error("extractEvidence failed", err);
     const status = (err as { statusCode?: number })?.statusCode;
-    if (status === 402) throw new Error("AI credits are used up. Add credits in Settings → Plans & credits.");
+    if (status === 402)
+      throw new Error("AI credits are used up. Add credits in Settings → Plans & credits.");
     if (status === 429) throw new Error("Too many requests right now — try again in a minute.");
-    if (NoObjectGeneratedError.isInstance(e)) throw new Error("The AI couldn't read this resume. Try pasting plain text.");
+    if (NoObjectGeneratedError.isInstance(e))
+      throw new Error("The AI couldn't read this resume. Try pasting plain text.");
     throw new Error("Resume reading failed. Please try again.");
   }
 }

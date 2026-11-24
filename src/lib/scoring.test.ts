@@ -16,12 +16,23 @@ describe("scoring rules", () => {
     expect(job.weights).toEqual({ JR: 30, FR: 40, HP: 30 });
   });
   it("missing mandatory requirement is flagged even with high future readiness", () => {
-    expect(evaluate({ ...job, flexibility: 100 }, tomas).status).toBe("Significant gaps identified");
+    expect(evaluate({ ...job, flexibility: 100 }, tomas).status).toBe(
+      "Significant gaps identified",
+    );
   });
   it("essential requirements are never waived by flexibility", () => {
-    const strictJob = { ...job, flexibility: 100, mandatory: [{ name: "Product design experience", essential: true }] };
+    const strictJob = {
+      ...job,
+      flexibility: 100,
+      mandatory: [{ name: "Product design experience", essential: true }],
+    };
     expect(evaluate(strictJob, tomas).mandatoryOk).toBe(false);
-    expect(evaluate({ ...strictJob, mandatory: [{ name: "Product design experience", essential: false }] }, tomas).mandatoryOk).toBe(true);
+    expect(
+      evaluate(
+        { ...strictJob, mandatory: [{ name: "Product design experience", essential: false }] },
+        tomas,
+      ).mandatoryOk,
+    ).toBe(true);
   });
   it("insufficient evidence gives no composite score", () => {
     expect(evaluate(job, ana).composite).toBeNull();
@@ -35,10 +46,13 @@ describe("scoring rules", () => {
 import { DESIGN_LEVELS, SCREEN_LENSES } from "./scoring";
 describe("design presets", () => {
   it("weights total 100", () => {
-    for (const p of [...Object.values(DESIGN_LEVELS), ...Object.values(SCREEN_LENSES)]) expect(p.weights.JR + p.weights.FR + p.weights.HP).toBe(100);
+    for (const p of [...Object.values(DESIGN_LEVELS), ...Object.values(SCREEN_LENSES)])
+      expect(p.weights.JR + p.weights.FR + p.weights.HP).toBe(100);
   });
   it("recruiter screen is the strictest lens", () => {
-    expect(SCREEN_LENSES["Recruiter screen"]!.flexibility).toBeLessThan(SCREEN_LENSES["VP / Head of Design"]!.flexibility);
+    expect(SCREEN_LENSES["Recruiter screen"]!.flexibility).toBeLessThan(
+      SCREEN_LENSES["VP / Head of Design"]!.flexibility,
+    );
   });
 });
 
@@ -46,7 +60,16 @@ import { ATS_SYSTEMS, atsFormatPenalty, formatRisks } from "./scoring";
 describe("target ATS", () => {
   it("ships 8 engines: 4 strict parsers and 4 semantic readers", () => {
     expect(Object.keys(ATS_SYSTEMS).sort()).toEqual(
-      ["Ashby", "BambooHR", "Greenhouse", "Lever", "SuccessFactors", "Taleo", "Workday", "iCIMS"].sort(),
+      [
+        "Ashby",
+        "BambooHR",
+        "Greenhouse",
+        "Lever",
+        "SuccessFactors",
+        "Taleo",
+        "Workday",
+        "iCIMS",
+      ].sort(),
     );
     const strict = Object.entries(ATS_SYSTEMS).filter(([, s]) => s.style === "legacy");
     const semantic = Object.entries(ATS_SYSTEMS).filter(([, s]) => s.style === "semantic");
@@ -60,7 +83,9 @@ describe("target ATS", () => {
     expect(ATS_SYSTEMS["Ashby"]!.flexibility).toBe(Math.max(...flex));
   });
   it("Workday is stricter than Greenhouse and Ashby", () => {
-    expect(ATS_SYSTEMS["Workday"]!.flexibility).toBeLessThan(ATS_SYSTEMS["Greenhouse"]!.flexibility);
+    expect(ATS_SYSTEMS["Workday"]!.flexibility).toBeLessThan(
+      ATS_SYSTEMS["Greenhouse"]!.flexibility,
+    );
     expect(ATS_SYSTEMS["Workday"]!.flexibility).toBeLessThan(ATS_SYSTEMS["Ashby"]!.flexibility);
   });
   it("formatting risks cost more on Workday than on Ashby", () => {
@@ -78,14 +103,22 @@ describe("Future Talent Index", () => {
   });
   it("empty resume scores 0, full impact evidence scores 100", () => {
     expect(futureTalentIndex({ competencies: {} }).total).toBe(0);
-    const all = Object.fromEntries(FTI_DIMENSIONS.flatMap((d) => d.comps).map((id) => [id, { proficiency: 5, level: 4 as const, quote: "x", source: "" }]));
+    const all = Object.fromEntries(
+      FTI_DIMENSIONS.flatMap((d) => d.comps).map((id) => [
+        id,
+        { proficiency: 5, level: 4 as const, quote: "x", source: "" },
+      ]),
+    );
     expect(futureTalentIndex({ competencies: all }).total).toBe(100);
   });
 });
 
 import { LEVELS, LEVEL_WEIGHTS, inferLevel } from "./scoring";
 describe("Seniority levels", () => {
-  it("each level's weights sum to 100", () => { for (const l of LEVELS) expect(Object.values(LEVEL_WEIGHTS[l]).reduce((a, b) => a + b, 0)).toBe(100); });
+  it("each level's weights sum to 100", () => {
+    for (const l of LEVELS)
+      expect(Object.values(LEVEL_WEIGHTS[l]).reduce((a, b) => a + b, 0)).toBe(100);
+  });
   it("title wins over years", () => {
     expect(inferLevel(4, "Head of Design")).toBe("Head / Director of Design");
     expect(inferLevel(15, "Design Manager")).toBe("Design Manager / Lead");

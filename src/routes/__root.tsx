@@ -103,7 +103,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: appCss,
       },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap",
+      },
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
     ],
   }),
@@ -118,7 +121,11 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
-        <script dangerouslySetInnerHTML={{ __html: `try{var t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.classList.add("dark")}catch(e){}` }} />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.classList.add("dark")}catch(e){}`,
+          }}
+        />
       </head>
       <body>
         {children}
@@ -143,7 +150,9 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <div className="min-h-screen font-sans">
         <Header />
-        <main className="mx-auto max-w-6xl px-6 py-8"><Outlet /></main>
+        <main className="mx-auto max-w-6xl px-6 py-8">
+          <Outlet />
+        </main>
         <Footer />
       </div>
       <Toaster />
@@ -156,35 +165,63 @@ function Header() {
   const nav = useNavigate();
   const { data: me } = useQuery(q.me());
   const signOut = async () => {
-    await queryClient.cancelQueries(); queryClient.clear();
+    await queryClient.cancelQueries();
+    queryClient.clear();
     await supabase.auth.signOut();
     nav({ to: "/auth", replace: true });
   };
   const active = { className: "bg-muted text-foreground" };
-  const navLink = "rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground";
+  const navLink =
+    "rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground";
   const quiet = "rounded-md border px-3 py-1.5 text-sm hover:bg-muted";
-  const primary = "rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground hover:bg-primary/90";
+  const primary =
+    "rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground hover:bg-primary/90";
   return (
     <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 sm:gap-x-4 sm:px-6">
-        <Link to="/" className="shrink-0"><Logo /></Link>
-        <span className="ml-auto sm:order-3"><ThemeToggle /></span>
+        <Link to="/" className="shrink-0">
+          <Logo />
+        </Link>
+        <span className="ml-auto sm:order-3">
+          <ThemeToggle />
+        </span>
         <span aria-hidden="true" className="basis-full sm:hidden" />
         <nav className="order-3 flex items-center gap-1 sm:order-2 sm:ml-auto">
-          {me?.role === "candidate" && <Link to="/candidate" activeProps={active} className={navLink}><span className="hidden sm:inline">Check my resume</span><span className="sm:hidden">Resume</span></Link>}
-          {!me && <Link to="/check" activeProps={active} className={navLink}><span className="hidden sm:inline">Resume check</span><span className="sm:hidden">Resume</span></Link>}
-          <Link to="/pass" activeProps={active} className={navLink}>{me ? "My pass" : "Pricing"}</Link>
+          {me?.role === "candidate" && (
+            <Link to="/candidate" activeProps={active} className={navLink}>
+              <span className="hidden sm:inline">Check my resume</span>
+              <span className="sm:hidden">Resume</span>
+            </Link>
+          )}
+          {!me && (
+            <Link to="/check" activeProps={active} className={navLink}>
+              <span className="hidden sm:inline">Resume check</span>
+              <span className="sm:hidden">Resume</span>
+            </Link>
+          )}
+          <Link to="/pass" activeProps={active} className={navLink}>
+            {me ? "My pass" : "Pricing"}
+          </Link>
         </nav>
         <div className="order-4 flex items-center gap-1.5 sm:border-l sm:pl-3 sm:gap-2">
           {me ? (
             <>
-              <Link to="/account" className={navLink}><span className="hidden sm:inline">{me.name || me.email} · </span>Account</Link>
-              <button onClick={signOut} className={quiet}>Sign out</button>
+              <Link to="/account" className={navLink}>
+                <span className="hidden sm:inline">{me.name || me.email} · </span>Account
+              </Link>
+              <button onClick={signOut} className={quiet}>
+                Sign out
+              </button>
             </>
           ) : (
             <>
-              <Link to="/auth" search={{ mode: "signin" }} className={quiet}>Sign in</Link>
-              <Link to="/auth" search={{ mode: "signup" }} className={primary}><span className="hidden sm:inline">Sign up free</span><span className="sm:hidden">Sign up</span></Link>
+              <Link to="/auth" search={{ mode: "signin" }} className={quiet}>
+                Sign in
+              </Link>
+              <Link to="/auth" search={{ mode: "signup" }} className={primary}>
+                <span className="hidden sm:inline">Sign up free</span>
+                <span className="sm:hidden">Sign up</span>
+              </Link>
             </>
           )}
         </div>

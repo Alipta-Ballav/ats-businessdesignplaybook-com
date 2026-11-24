@@ -8,17 +8,29 @@ export function razorpayEnv() {
   return { lovableKey, connectionKey, keyId };
 }
 
-export async function razorpay<T = any>(path: string, init: { method?: string; body?: unknown } = {}): Promise<T> {
+export async function razorpay<T>(
+  path: string,
+  init: { method?: string; body?: unknown } = {},
+): Promise<T> {
   const { lovableKey, connectionKey } = razorpayEnv();
   const res = await fetch(`${GATEWAY_URL}/${path}`, {
     method: init.method ?? "GET",
-    headers: { Authorization: `Bearer ${lovableKey}`, "X-Connection-Api-Key": connectionKey, "Content-Type": "application/json" },
+    headers: {
+      Authorization: `Bearer ${lovableKey}`,
+      "X-Connection-Api-Key": connectionKey,
+      "Content-Type": "application/json",
+    },
     ...(init.body ? { body: JSON.stringify(init.body) } : {}),
   });
   if (!res.ok) {
     const text = await res.text();
     console.error(`Razorpay ${path} failed [${res.status}]: ${text}`);
-    let msg = text; try { msg = JSON.parse(text)?.error?.description ?? text; } catch { /* keep text */ }
+    let msg = text;
+    try {
+      msg = JSON.parse(text)?.error?.description ?? text;
+    } catch {
+      /* keep text */
+    }
     throw new Error(`Payment provider error: ${msg}`);
   }
   return res.json() as Promise<T>;
@@ -27,48 +39,99 @@ export async function razorpay<T = any>(path: string, init: { method?: string; b
 /** The only code that marks a payment completed. Reads Razorpay's order; grants credits once. */
 export async function confirmPaymentRow(paymentId: string): Promise<"completed" | "pending"> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data: p } = await supabaseAdmin.from("payments").select("*").eq("id", paymentId).maybeSingle();
+  const { data: p } = await supabaseAdmin
+    .from("payments")
+    .select("*")
+    .eq("id", paymentId)
+    .maybeSingle();
   if (!p || !p.gateway_order_id) return "pending";
   if (p.status === "completed") return "completed";
-  const order = await razorpay<{ status: string; amount_paid: number }>(`orders/${p.gateway_order_id}`);
+  const order = await razorpay<{ status: string; amount_paid: number }>(
+    `orders/${p.gateway_order_id}`,
+  );
   let rzpPaymentId: string | null = null;
   let paid = order.status === "paid" && order.amount_paid === p.amount;
   if (!paid && order.status === "attempted") {
-    const list = await razorpay<{ items: { id: string; status: string; amount: number }[] }>(`orders/${p.gateway_order_id}/payments`);
+    const list = await razorpay<{ items: { id: string; status: string; amount: number }[] }>(
+      `orders/${p.gateway_order_id}/payments`,
+    );
     const auth = list.items.find((i) => i.status === "authorized");
     if (auth) {
-      const cap = await razorpay<{ status: string; amount: number }>(`payments/${auth.id}/capture`, { method: "POST", body: { amount: p.amount, currency: p.currency } });
-      paid = cap.status === "captured" && cap.amount === p.amount; rzpPaymentId = auth.id;
+      const cap = await razorpay<{ status: string; amount: number }>(
+        `payments/${auth.id}/capture`,
+        { method: "POST", body: { amount: p.amount, currency: p.currency } },
+      );
+      paid = cap.status === "captured" && cap.amount === p.amount;
+      rzpPaymentId = auth.id;
     }
   }
   if (!paid) return "pending";
   if (!rzpPaymentId) {
-    const list = await razorpay<{ items: { id: string; status: string }[] }>(`orders/${p.gateway_order_id}/payments`);
+    const list = await razorpay<{ items: { id: string; status: string }[] }>(
+      `orders/${p.gateway_order_id}/payments`,
+    );
     rzpPaymentId = list.items.find((i) => i.status === "captured")?.id ?? null;
   }
-  const { data: changed, error } = await supabaseAdmin.from("payments")
-    .update({ status: "completed", paid_at: new Date().toISOString(), gateway_payment_id: rzpPaymentId })
-    .eq("id", p.id).eq("status", "pending").select("id");
+  const { data: changed, error } = await supabaseAdmin
+    .from("payments")
+    .update({
+      status: "completed",
+      paid_at: new Date().toISOString(),
+      gateway_payment_id: rzpPaymentId,
+    })
+    .eq("id", p.id)
+    .eq("status", "pending")
+    .select("id");
   if (error) throw error;
   if (changed && changed.length && p.scans_granted > 0) {
-    const { data: c } = await supabaseAdmin.from("scan_credits").select("credits").eq("user_id", p.user_id).maybeSingle();
-    const { error: e2 } = await supabaseAdmin.from("scan_credits").upsert({ user_id: p.user_id, credits: (c?.credits ?? 0) + p.scans_granted, updated_at: new Date().toISOString() });
+    const { data: c } = await supabaseAdmin
+      .from("scan_credits")
+      .select("credits")
+      .eq("user_id", p.user_id)
+      .maybeSingle();
+    const { error: e2 } = await supabaseAdmin.from("scan_credits").upsert({
+      user_id: p.user_id,
+      credits: (c?.credits ?? 0) + p.scans_granted,
+      updated_at: new Date().toISOString(),
+    });
     if (e2) throw e2;
   }
-  if (changed && changed.length) await sendReceipt(p).catch((e) => console.error("receipt email failed", e));
+  if (changed && changed.length)
+    await sendReceipt(p).catch((e) => console.error("receipt email failed", e));
   return "completed";
 }
 
-async function sendReceipt(p: { id: string; user_id: string; amount: number; scans_granted: number }) {
+async function sendReceipt(p: {
+  id: string;
+  user_id: string;
+  amount: number;
+  scans_granted: number;
+}) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: u } = await supabaseAdmin.auth.admin.getUserById(p.user_id);
-  const email = u?.user?.email; if (!email) return;
-  const { count } = await supabaseAdmin.from("payments").select("id", { count: "exact", head: true })
-    .eq("user_id", p.user_id).eq("status", "completed").neq("id", p.id);
-  const expires = new Date(Date.now() + 30 * 864e5).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" });
+  const email = u?.user?.email;
+  if (!email) return;
+  const { count } = await supabaseAdmin
+    .from("payments")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", p.user_id)
+    .eq("status", "completed")
+    .neq("id", p.id);
+  const expires = new Date(Date.now() + 30 * 864e5).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "Asia/Kolkata",
+  });
   const { sendTemplateEmail } = await import("@/lib/email-templates/send-email");
   await sendTemplateEmail("pass-receipt", email, {
-    templateData: { name: u.user?.user_metadata?.["full_name"], renewal: (count ?? 0) > 0, amount: `₹${p.amount / 100}`, scans: p.scans_granted || 5, expires },
+    templateData: {
+      name: u.user?.user_metadata?.["full_name"],
+      renewal: (count ?? 0) > 0,
+      amount: `₹${p.amount / 100}`,
+      scans: p.scans_granted || 5,
+      expires,
+    },
     idempotencyKey: `pass-receipt-${p.id}`,
   });
 }

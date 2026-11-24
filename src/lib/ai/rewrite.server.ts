@@ -10,14 +10,34 @@ export async function rewriteBullet(input: { original: string; facts: string }):
   const apiKey = process.env["LOVABLE_API_KEY"];
   if (!apiKey) throw new Error("AI is not configured.");
   const runId = createLovableAiGatewayRunIdFetch();
-  const provider = createOpenAI({ baseURL: "https://ai.gateway.lovable.dev/v1", apiKey, headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" }, fetch: runId.fetch });
+  const provider = createOpenAI({
+    baseURL: "https://ai.gateway.lovable.dev/v1",
+    apiKey,
+    headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
+    fetch: runId.fetch,
+  });
   let streamError: unknown;
   const result = streamText({
     model: provider.responses("openai/gpt-6-astra"),
     instructions: INSTRUCTIONS,
-    messages: [{ role: "user", content: `ORIGINAL: ${input.original || "(new bullet)"}\nUSER FACTS: ${input.facts || "(none — only sharpen the original wording)"}` }],
-    onError: ({ error }) => { streamError = error; },
-    providerOptions: { openai: { forceReasoning: true, reasoningEffort: "low", reasoningSummary: "auto", store: false, include: ["reasoning.encrypted_content"] } },
+    messages: [
+      {
+        role: "user",
+        content: `ORIGINAL: ${input.original || "(new bullet)"}\nUSER FACTS: ${input.facts || "(none — only sharpen the original wording)"}`,
+      },
+    ],
+    onError: ({ error }) => {
+      streamError = error;
+    },
+    providerOptions: {
+      openai: {
+        forceReasoning: true,
+        reasoningEffort: "low",
+        reasoningSummary: "auto",
+        store: false,
+        include: ["reasoning.encrypted_content"],
+      },
+    },
   });
   try {
     const t = (await result.text).trim().replace(/^[-•*"“]+\s*|["”]+$/g, "");
@@ -27,7 +47,8 @@ export async function rewriteBullet(input: { original: string; facts: string }):
     const err = streamError ?? e;
     console.error("rewriteBullet failed", err);
     const status = (err as { statusCode?: number })?.statusCode;
-    if (status === 402) throw new Error("AI credits are used up. Add credits in Settings → Plans & credits.");
+    if (status === 402)
+      throw new Error("AI credits are used up. Add credits in Settings → Plans & credits.");
     if (status === 429) throw new Error("Too many requests right now — try again in a minute.");
     throw new Error("AI suggestion failed. You can still edit manually.");
   }

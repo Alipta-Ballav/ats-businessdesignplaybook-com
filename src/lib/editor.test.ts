@@ -10,7 +10,12 @@ describe("newFacts", () => {
     expect(newFacts("Led redesign at Google", ["Led redesign"])).toContain("Google");
   });
   it("accepts a draft built from given facts", () => {
-    expect(newFacts("Led checkout redesign, cutting churn 10%", ["Led redesign of checkout", "churn 10%"])).toEqual([]);
+    expect(
+      newFacts("Led checkout redesign, cutting churn 10%", [
+        "Led redesign of checkout",
+        "churn 10%",
+      ]),
+    ).toEqual([]);
   });
 });
 describe("diffLines", () => {
@@ -36,6 +41,8 @@ describe("revertFix", () => {
     expect(revertFix(d, { added: "A new", removed: "A old" })).toBe("A old\nB new");
   });
   it("removes an added bullet", () => {
-    expect(revertFix("x\n- added line\n- other", { added: "added line", removed: "" })).toBe("x\n- other");
+    expect(revertFix("x\n- added line\n- other", { added: "added line", removed: "" })).toBe(
+      "x\n- other",
+    );
   });
 });
