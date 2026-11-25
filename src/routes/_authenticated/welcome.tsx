@@ -40,7 +40,7 @@ function Welcome() {
       return;
     }
     const pending = sessionStorage.getItem("ft-role");
-    if (pending === "candidate" || pending === "recruiter") choose(pending);
+    if (pending) choose("candidate");
   }, [me]);
   if (isLoading || me?.role) return <p className="text-sm text-muted-foreground">Loading…</p>;
   return (

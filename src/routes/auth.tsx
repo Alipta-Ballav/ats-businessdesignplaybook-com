@@ -67,7 +67,7 @@ function AuthPage() {
   const [mode, setMode] = useState<"signin" | "signup">(
     search.mode ?? (search.as ? "signup" : "signin"),
   );
-  const [role] = useState<Role>(search.as === "recruiter" ? "recruiter" : "candidate");
+  const [role] = useState<Role>("candidate");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
