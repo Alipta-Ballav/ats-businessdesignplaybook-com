@@ -371,19 +371,21 @@ function CheckPage() {
         className={`grid gap-3 border-y py-3 sm:gap-5 sm:py-5 ${mode === "role" ? "sm:grid-cols-2" : ""}`}
       >
         <section className="min-w-0 space-y-3">
-          <div className="flex items-baseline justify-between gap-2">
+          <div className="space-y-0.5">
             <h2 className="text-sm font-semibold">Your resume</h2>
-            <span className="text-xs text-muted-foreground">
-              {mode === "profile" ? "Profile audit" : "1 of 2"}
-            </span>
+            <p className="text-xs text-muted-foreground">
+              Upload a PDF or Word file, or paste the text — scored across 8 design dimensions.
+            </p>
           </div>
           <ResumeInput value={resume} onChange={setResume} compact />
         </section>
         {mode === "role" && (
           <section className="min-w-0 space-y-3 sm:border-l sm:pl-5">
-            <div className="flex items-baseline justify-between gap-2">
-              <h2 className="text-sm font-semibold">Target job</h2>
-              <span className="text-xs text-muted-foreground">2 of 2</span>
+            <div className="space-y-0.5">
+              <h2 className="text-sm font-semibold">Target job description</h2>
+              <p className="text-xs text-muted-foreground">
+                Paste the posting you're applying to — we compare your resume against it.
+              </p>
             </div>
             <input
               aria-label="Job title"
