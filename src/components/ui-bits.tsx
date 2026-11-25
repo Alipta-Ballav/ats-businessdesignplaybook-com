@@ -1,3 +1,5 @@
+import { Info } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
@@ -10,10 +12,12 @@ export function ScoreRing({
   value,
   label,
   tone,
+  info,
 }: {
   value: number | null;
   label: string;
   tone: "jr" | "fr" | "hp" | "ink";
+  info?: { question: string; definition: string; weight?: number; items: string[] };
 }) {
   const color = { jr: "var(--jr)", fr: "var(--fr)", hp: "var(--hp)", ink: "var(--primary)" }[tone];
   const v = value ?? 0;
@@ -28,7 +32,36 @@ export function ScoreRing({
         </div>
       </div>
       <span className="text-center text-xs text-muted-foreground">
-        {label}
+        {info ? (
+          <Popover>
+            <PopoverTrigger
+              className="inline-flex items-center gap-1 underline decoration-dotted underline-offset-2 hover:text-foreground"
+              aria-label={`What is ${label}?`}
+            >
+              {label}
+              <Info className="h-3 w-3" aria-hidden />
+            </PopoverTrigger>
+            <PopoverContent className="w-72 text-left text-sm">
+              <p className="font-display text-base">{label}</p>
+              <p className="mt-1 italic text-muted-foreground">{info.question}</p>
+              <p className="mt-2">{info.definition}</p>
+              {info.weight !== undefined && (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Weight in overall score: <span className="font-mono text-foreground">{info.weight}%</span>
+                </p>
+              )}
+              <p className="mt-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">What we look for</p>
+              <ul className="mt-1 list-disc space-y-0.5 pl-4 text-xs">
+                {info.items.map((i) => (
+                  <li key={i}>{i}</li>
+                ))}
+              </ul>
+              <p className="mt-3 text-xs text-muted-foreground">Scored only from quotes found in your resume.</p>
+            </PopoverContent>
+          </Popover>
+        ) : (
+          label
+        )}
         {value === null && (
           <>
             <br />

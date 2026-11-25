@@ -10,13 +10,34 @@ import {
 } from "@/lib/scoring";
 import { Bar, Card, ScoreRing } from "@/components/ui-bits";
 
+const DIM_INFO: Record<Dimension, { question: string; definition: string }> = {
+  JR: {
+    question: "Can you do this job well from day one?",
+    definition: "Core craft, delivery and domain experience, plus measurable impact you've already shipped.",
+  },
+  FR: {
+    question: "Can you adapt as design keeps changing?",
+    definition: "AI fluency, systems thinking, research depth and how quickly you learn and frame new problems.",
+  },
+  HP: {
+    question: "Can you lead, influence and lift others?",
+    definition: "Strategy, cross-functional influence, judgement on tradeoffs, and growing the people around you.",
+  },
+};
+
 export function ScoreHeader({ job, c }: { job: Job; c: Candidate }) {
   const ev = evaluate(job, c);
+  const total = job.weights.JR + job.weights.FR + job.weights.HP || 1;
+  const info = (d: Dimension) => ({
+    ...DIM_INFO[d],
+    weight: Math.round((job.weights[d] / total) * 100),
+    items: COMPETENCIES.filter((x) => x.dim === d).map((x) => x.name),
+  });
   return (
     <div className="flex flex-wrap gap-6">
-      <ScoreRing value={ev.JR.score} label="Job Readiness" tone="jr" />
-      <ScoreRing value={ev.FR.score} label="Future Readiness" tone="fr" />
-      <ScoreRing value={ev.HP.score} label="Human Potential" tone="hp" />
+      <ScoreRing value={ev.JR.score} label="Job Readiness" tone="jr" info={info("JR")} />
+      <ScoreRing value={ev.FR.score} label="Future Readiness" tone="fr" info={info("FR")} />
+      <ScoreRing value={ev.HP.score} label="Human Potential" tone="hp" info={info("HP")} />
       <ScoreRing value={ev.composite} label={`Overall · ${ev.coverage}% coverage`} tone="ink" />
     </div>
   );
