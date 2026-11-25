@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { CheckCircle2, FileText, Loader2, Upload, X } from "lucide-react";
+import { CheckCircle2, FileText, Loader2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PrivacySeal } from "@/components/trust/Trust";
 import { classifyImages, extractDocxImages, extractPdfImages, setResumeImages } from "@/lib/resume-images";
@@ -132,26 +132,37 @@ export function ResumeInput({
             ) : value ? (
               <>
                 <CheckCircle2 className="h-6 w-6 text-success" />
-                <p className="w-full truncate text-sm font-medium" title={file ?? "Pasted resume"}>
-                  {file ?? "Pasted resume"}
+                <p
+                  className="w-full truncate text-sm font-medium"
+                  title={file ?? "Resume text entered"}
+                >
+                  {file ?? "Resume text entered"}
                 </p>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">{words} words</span>
-                  <Button size="sm" variant="ghost" onClick={() => picker.current?.click()}>
-                    Change file
-                  </Button>
+                <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+                  <span className="text-xs text-muted-foreground">
+                    {words} words · {file ? "from your file" : "typed or pasted"}
+                  </span>
+                  {file ? (
+                    <Button size="sm" variant="ghost" onClick={() => picker.current?.click()}>
+                      Replace file
+                    </Button>
+                  ) : (
+                    <Button size="sm" variant="ghost" onClick={() => setPaste(true)}>
+                      Edit text
+                    </Button>
+                  )}
                   <Button
-                    size="icon"
+                    size="sm"
                     variant="ghost"
-                    className="h-6 w-6"
-                    aria-label="Remove resume"
+                    className="text-muted-foreground"
                     onClick={() => {
                       onChange("");
                       setFile(null);
+                      setPaste(false);
                       setErr("");
                     }}
                   >
-                    <X />
+                    {file ? "Remove" : "Clear"}
                   </Button>
                 </div>
               </>
@@ -175,7 +186,7 @@ export function ResumeInput({
             onClick={() => setPaste(!paste)}
           >
             <FileText />
-            {paste ? "Back to file upload" : value ? "Review or edit text" : "Or paste resume text"}
+            {paste ? "Done editing" : "Or paste resume text instead"}
           </Button>
           {paste && <span className="text-xs text-muted-foreground">{words} words</span>}
         </div>
@@ -196,10 +207,16 @@ export function ResumeInput({
           {busy ? "Reading…" : "Upload PDF or Word"}
         </Button>
       </div>
-      {file && (
+      {value && (
         <p className="text-xs text-muted-foreground">
-          Loaded <span className="font-medium text-foreground">{file}</span> · {words} words. Review
-          the text below before checking.
+          {file ? (
+            <>
+              Loaded <span className="font-medium text-foreground">{file}</span>
+            </>
+          ) : (
+            <span className="font-medium text-foreground">Resume text entered</span>
+          )}{" "}
+          · {words} words. Review the text below before checking.
         </p>
       )}
       {err && <p className="text-xs text-destructive">{err}</p>}
