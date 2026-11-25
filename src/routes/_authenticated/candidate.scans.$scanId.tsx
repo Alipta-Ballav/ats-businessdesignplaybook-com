@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import type { Candidate } from "@/lib/scoring";
 import { JobDiagnostics } from "@/components/JobDiagnostics";
 import { LiveEditor } from "@/components/LiveEditor";
 import { FtiReport } from "@/components/FtiReport";
@@ -36,6 +38,8 @@ export const Route = createFileRoute("/_authenticated/candidate/scans/$scanId")(
 function ScanResult() {
   const { scanId } = Route.useParams();
   const { data: s, isLoading } = useQuery(q.scan(scanId));
+  const [verified, setVerified] = useState<Candidate | null>(null);
+  useEffect(() => setVerified(null), [scanId]);
   if (isLoading) return <p className="text-sm text-muted-foreground">Loading…</p>;
   if (!s)
     return (
@@ -47,7 +51,7 @@ function ScanResult() {
       </p>
     );
   const { job, cand } = scanToPair(s);
-  const ev = evaluate(job, cand);
+  const ev = evaluate(job, verified ?? cand);
   const tips = resumeTips(job, cand);
   if (!s.job_description.trim())
     return (
@@ -55,9 +59,9 @@ function ScanResult() {
         <Link to="/candidate" className="text-sm text-muted-foreground">
           ← New check
         </Link>
-        <FtiReport c={cand} />
+        <FtiReport c={verified ?? cand} />
         <BusinessPlaybook />
-        <LiveEditor job={job} cand={cand} resume={s.resume_text ?? ""} />
+        <LiveEditor job={job} cand={cand} resume={s.resume_text ?? ""} onRescored={setVerified} />
       </div>
     );
   return (
@@ -73,7 +77,7 @@ function ScanResult() {
             <StatusBadge status={ev.status} />
           </div>
         </div>
-        <ScoreHeader job={job} c={cand} />
+        <ScoreHeader job={job} c={verified ?? cand} />
       </Card>
       <BusinessPlaybook />
       <ReportTabs
@@ -83,7 +87,7 @@ function ScanResult() {
             label: "Fix & rescore",
             content: (
               <>
-                <LiveEditor job={job} cand={cand} resume={s.resume_text ?? ""} />
+                <LiveEditor job={job} cand={cand} resume={s.resume_text ?? ""} onRescored={setVerified} />
                 <Card>
                   <h2 className="mb-1 font-display text-lg">How to improve your resume</h2>
                   <p className="mb-4 text-xs text-muted-foreground">Ordered by impact.</p>
@@ -115,7 +119,7 @@ function ScanResult() {
               </>
             ),
           },
-          { id: "profile", label: "Talent profile", content: <FtiReport c={cand} /> },
+          { id: "profile", label: "Talent profile", content: <FtiReport c={verified ?? cand} /> },
           {
             id: "ats",
             label: "8 ATS engines",

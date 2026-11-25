@@ -88,6 +88,8 @@ function CheckPage() {
   const [busy, setBusy] = useState(false);
   const [mode, setMode] = useState<"profile" | "role">("profile");
   const [result, setResult] = useState<GuestScan | null>(null);
+  const [verified, setVerified] = useState<Candidate | null>(null);
+  useEffect(() => setVerified(null), [result]);
   const read = useServerFn(readResumeGuest);
   const pro = usePro();
   const [wall, setWall] = useState(false);
@@ -178,7 +180,7 @@ function CheckPage() {
 
   if (result) {
     const { job, cand } = toPair(result);
-    const ev = evaluate(job, cand);
+    const ev = evaluate(job, verified ?? cand);
     const tips = resumeTips(job, cand);
     const signup = { mode: "signup" as const, as: "candidate" as const, redirect: "/candidate" };
     if (!result.jobDescription.trim())
@@ -194,9 +196,9 @@ function CheckPage() {
           >
             ← Check again
           </button>
-          <FtiReport c={cand} />
+          <FtiReport c={verified ?? cand} />
           <BusinessPlaybook />
-          <LiveEditor job={job} cand={cand} resume={result.resume} />
+          <LiveEditor job={job} cand={cand} resume={result.resume} onRescored={setVerified} />
           <Card className="flex flex-wrap items-center justify-between gap-4 border-primary">
             <div>
               <p className="font-display text-lg">Now test your fit for a specific role</p>
@@ -236,7 +238,7 @@ function CheckPage() {
               <StatusBadge status={ev.status} />
             </div>
           </div>
-          <ScoreHeader job={job} c={cand} />
+          <ScoreHeader job={job} c={verified ?? cand} />
         </Card>
         <Card className="flex flex-wrap items-center justify-between gap-4 border-primary">
           <div>
@@ -270,7 +272,7 @@ function CheckPage() {
               label: "Fix & rescore",
               content: (
                 <>
-                  <LiveEditor job={job} cand={cand} resume={result.resume} />
+                  <LiveEditor job={job} cand={cand} resume={result.resume} onRescored={setVerified} />
                   <Card>
                     <h2 className="mb-1 font-display text-lg">What to improve</h2>
                     <p className="mb-4 text-xs text-muted-foreground">Ordered by impact.</p>
@@ -295,7 +297,7 @@ function CheckPage() {
                 </>
               ),
             },
-            { id: "profile", label: "Talent profile", content: <FtiReport c={cand} /> },
+            { id: "profile", label: "Talent profile", content: <FtiReport c={verified ?? cand} /> },
             {
               id: "ats",
               label: "8 ATS engines",

@@ -41,12 +41,14 @@ export function LiveEditor({
   resume,
   initialDraft,
   scoringLevel,
+  onRescored,
 }: {
   job: Job;
   cand: Candidate;
   resume: string;
   initialDraft?: string;
   scoringLevel?: Level;
+  onRescored?: (c: Candidate) => void;
 }) {
   const read = useServerFn(readResumeGuest);
   const ai = useServerFn(suggestRewrite);
@@ -80,6 +82,7 @@ export function LiveEditor({
   const [busy, setBusy] = useState<"" | "ai" | "score">("");
   const [wall, setWall] = useState<string | null>(null);
   const [justDone, setJustDone] = useState<string | null>(null);
+  const [lastResult, setLastResult] = useState<{ from: number; to: number; fixes: number } | null>(null);
 
   const queue = useMemo(() => buildQueue(job, official.cand, official.text), [job, official]);
   const doneIds = fixes.map((f) => f.id);
@@ -205,6 +208,8 @@ export function LiveEditor({
       const score = headlineScore(job, c, level);
       toast.success(`Score updated: ${official.score} → ${score}`);
       setOfficial({ cand: c, score, text: draft });
+      setLastResult({ from: official.score, to: score, fixes: fixes.length });
+      onRescored?.(c);
       if (allowed !== null) {
         await recordPassScan();
         setPassLeft(allowed - 1);
@@ -607,6 +612,23 @@ export function LiveEditor({
             )}
           </p>
         </div>
+        {lastResult && (
+          <div role="status" className="rounded-lg border border-primary/40 bg-background p-4 text-center">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Verified score</p>
+            <p className="mt-1 font-display text-4xl font-semibold tabular-nums">
+              {lastResult.from} <span className="text-muted-foreground">→</span> {lastResult.to}
+              <span className={`ml-2 text-base ${lastResult.to - lastResult.from >= 0 ? "text-primary" : "text-destructive"}`}>
+                ({lastResult.to - lastResult.from >= 0 ? "+" : ""}
+                {lastResult.to - lastResult.from} pts)
+              </span>
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {lastResult.fixes} change{lastResult.fixes === 1 ? "" : "s"} checked by AI
+              {passLeft !== null ? ` · ${passLeft} scan${passLeft === 1 ? "" : "s"} left in your pass` : ""}
+              {" "}· the score at the top of the page is updated too
+            </p>
+          </div>
+        )}
         <Button size="lg" className="w-full" onClick={rescore} disabled={!!busy || !stale}>
           <Sparkles />
           {!pro && <Lock />}
