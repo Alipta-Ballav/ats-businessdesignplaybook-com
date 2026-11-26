@@ -1,3 +1,4 @@
+import { PaymentPromise } from "@/components/trust/Trust";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -100,9 +101,7 @@ function PassPage() {
             {label}
           </Button>
         )}
-        <p className="text-xs text-muted-foreground">
-          Secure payment by Razorpay · UPI, card, netbanking.
-        </p>
+        <PaymentPromise />
       </div>
       {pays.length > 0 && (
         <div className="space-y-2">

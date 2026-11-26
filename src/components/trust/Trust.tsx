@@ -27,8 +27,15 @@ export function PaymentPromise() {
         <CreditCard className="h-3.5 w-3.5 text-success" />
         No subscription. No auto-debit. Ever.
       </p>
-      <p className="mt-1">
-        One-time ₹99 via UPI, GPay, PhonePe or card on Razorpay secure checkout. Your pass simply
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        {["UPI", "GPay", "PhonePe", "Paytm", "UPI QR", "Cards", "Netbanking"].map((m) => (
+          <span key={m} className="rounded-full border bg-background px-2 py-0.5 text-[11px] font-medium text-foreground">
+            {m}
+          </span>
+        ))}
+      </div>
+      <p className="mt-2">
+        One-time payment via UPI, GPay, PhonePe or card on Razorpay secure checkout. Your pass simply
         ends after 30 days.{" "}
         <Link to="/refund" className="underline">
           Refund policy
