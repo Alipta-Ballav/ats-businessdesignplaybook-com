@@ -73,7 +73,7 @@ export function ResumeWorkspace({ seed, versionId, onSessionChange, onActiveVers
       </div>
       {current
         ? <Button disabled={saving} onClick={saveChanges}><Save />{saving ? "Saving…" : "Save changes"}</Button>
-        : <Button disabled={!!me && (isPending || power === null)} onClick={() => openSave(versions.length ? "variant" : "master")}><Save />{versions.length ? "Save as role variant" : "Save master resume"}</Button>}
+        : <Button disabled={!!me && (isPending || power === null)} onClick={() => openSave(versions.length ? "variant" : "master")}><Save />{!!me && (isPending || power === null) ? "Checking your plan…" : versions.length ? "Save as role variant" : "Save master resume"}</Button>}
       {current && <Button variant="outline" disabled={power === null} onClick={() => openSave("variant")}><Copy />Save as new variant</Button>}
       <Button asChild variant="ghost"><Link to="/my-resumes"><Layers />My resumes</Link></Button>
     </div>
@@ -83,7 +83,7 @@ export function ResumeWorkspace({ seed, versionId, onSessionChange, onActiveVers
       <span className="ml-auto">{current ? (current.id === master?.id ? "Master resume" : "Role variant") : "Unsaved draft"}</span>
     </div>
     {upsell && <VariantUpsell />}
-    <ResumeNameDialog open={!!me && !!dialog} onOpenChange={(open) => { if (!open) setDialog(""); }} title={dialog === "master" ? "Save master resume" : "Save as new role variant"} sourceName={dialog === "master" ? "" : label} onSave={async (name) => {
+    <ResumeNameDialog takenNames={versions.map((version) => version.name)} open={!!me && !!dialog} onOpenChange={(open) => { if (!open) setDialog(""); }} title={dialog === "master" ? "Save master resume" : "Save as new role variant"} sourceName={dialog === "master" ? "" : label} onSave={async (name) => {
       if (!me) return;
       const active = sessions.current[selected];
       try {

@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import type { EditorSession } from "@/lib/editor-session";
 import { CalendarPlus, FileStack, Trash2, ArrowUpRight, Copy, Layers, Pencil } from "lucide-react";
 import { canCreateVariant } from "@/lib/plans";
 import { usePowerPass } from "@/lib/pro";
@@ -40,6 +41,8 @@ function MyResumes() {
   const power = usePowerPass();
   const [upsell, setUpsell] = useState(false);
   const [naming, setNaming] = useState(false);
+  // Latest in-memory editor session per saved resume, so a new variant copies what the user sees.
+  const drafts = useRef<Record<string, EditorSession>>({});
   const duplicate = () => {
     if (!current) return;
     if (power !== true && !canCreateVariant(false, versions.length)) return setUpsell(true);
@@ -48,7 +51,8 @@ function MyResumes() {
   const createVariant = async (name: string) => {
     if (!current) return;
     try {
-      const row = await saveVersion(uid, name, current.resume_text, current.candidate, current.job, current.scored_text, current.level);
+      const live = drafts.current[current.id];
+      const row = await saveVersion(uid, name, live?.draft ?? current.resume_text, live?.official.cand ?? current.candidate, current.job, live?.official.text ?? current.scored_text, current.level);
       if (!row) throw new Error("The role variant could not be saved.");
       await client.invalidateQueries({ queryKey: ["resume-versions", uid] });
       setSelected(row.id);
@@ -94,7 +98,7 @@ function MyResumes() {
   };
   return (
     <div className="space-y-8">
-      <ResumeNameDialog open={naming} onOpenChange={setNaming} title="Create role variant" sourceName={current?.name ?? ""} onSave={createVariant} />
+      <ResumeNameDialog open={naming} onOpenChange={setNaming} title="Create role variant" sourceName={current?.name ?? ""} takenNames={versions.map((v) => v.name)} onSave={createVariant} />
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-3">
           <p className="text-sm font-medium text-primary">YOUR PRIVATE DESIGN WORKSPACE</p>
@@ -275,9 +279,18 @@ function MyResumes() {
           </div>}
           {current && (
             <div className={editing ? "space-y-4" : "hidden"}>
-            <Button variant="outline" onClick={() => setEditing(false)}>View saved resumes</Button>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm">
+                Editing <b className="break-words">{current.name}</b>{" "}
+                <span className="text-xs uppercase tracking-wider text-primary">
+                  · {current.id === versions[versions.length - 1]?.id ? "Master" : "Role variant"}
+                </span>
+              </p>
+              <Button variant="outline" onClick={() => setEditing(false)}>View saved resumes</Button>
+            </div>
             <LiveEditor
               versionId={current.id}
+              onSessionChange={(session) => { drafts.current[current.id] = session; }}
               onActiveVersionChange={setSelected}
               job={current.job}
               cand={current.candidate}
