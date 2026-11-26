@@ -128,7 +128,7 @@ export function PaywallModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md md:max-w-3xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Lock className="h-4 w-4" />
@@ -139,11 +139,11 @@ export function PaywallModal({
         <p className="rounded-md bg-primary/10 px-3 py-2 text-center text-xs font-semibold text-primary">
           {LAUNCH_BANNER}
         </p>
-        <div className="grid gap-4">
+        <div className="grid gap-4 md:grid-cols-2">
           {PLANS.map((p) => (
             <div
               key={p.id}
-              className={`relative space-y-3 rounded-lg border p-5 ${p.best ? "border-primary shadow-glow" : ""}`}
+              className={`relative flex flex-col gap-3 rounded-lg border p-5 ${p.best ? "border-primary shadow-glow" : ""}`}
             >
               <div>
                 <p className="font-medium">{p.name}</p>
@@ -153,7 +153,7 @@ export function PaywallModal({
                 <span className="text-3xl font-semibold">₹{p.id === "power_60" ? p.inr : (price ?? p.inr)}</span>
                 <span className="ml-2 text-sm text-muted-foreground">/ {p.days} days</span>
               </p>
-              <ul className="space-y-1 text-sm">
+              <ul className="flex-1 space-y-1 text-sm">
                 {p.perks.map((x) => (
                   <li key={x} className="flex gap-2">
                     <Check className="h-4 w-4 text-success" />
@@ -183,7 +183,7 @@ export function PaywallModal({
         <p className="text-center text-xs text-muted-foreground">
           Secure payment by Razorpay · no auto-renewal
           <br />
-          Pay again only when you want another 30-day pass.
+          Pay again only when you want another pass.
         </p>
       </DialogContent>
     </Dialog>

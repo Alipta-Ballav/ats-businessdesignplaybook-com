@@ -199,6 +199,11 @@ function Header() {
               <span className="sm:hidden">Resume</span>
             </Link>
           )}
+          {me && (
+            <Link to="/my-resumes" activeProps={active} className={navLink}>
+              My resumes
+            </Link>
+          )}
           <Link to="/pass" activeProps={active} className={navLink}>
             {me ? "My pass" : "Pricing"}
           </Link>

@@ -36,7 +36,7 @@ export function PaymentPromise() {
       </div>
       <p className="mt-2">
         One-time payment via UPI, GPay, PhonePe or card on Razorpay secure checkout. Your pass simply
-        ends after 30 days.{" "}
+        ends after 30 or 60 days, depending on the pass you pick.{" "}
         <Link to="/refund" className="underline">
           Refund policy
         </Link>

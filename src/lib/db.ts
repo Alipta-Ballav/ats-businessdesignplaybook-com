@@ -97,7 +97,9 @@ export const q = {
           id: user.id,
           email: user.email ?? "",
           name: profile.data?.full_name ?? "",
-          role: (roles.data?.[0]?.role ?? null) as Role | null,
+          // Admin is an extra permission, not a persona: pick the persona row.
+          role: ((roles.data ?? []).map((r) => r.role).find((r) => r === "candidate" || r === "recruiter") ??
+            null) as Role | null,
         };
       },
     }),

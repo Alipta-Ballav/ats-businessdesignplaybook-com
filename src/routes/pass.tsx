@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { PaywallModal } from "@/components/PaywallModal";
 import { supabase } from "@/integrations/supabase/client";
 import { hasPaidAccess, passEndsAt, planTerms, LAUNCH_BANNER, POWER_INR } from "@/lib/plans";
-import { passAllowance, PRO_EVENT } from "@/lib/pro";
+import { passAllowance, PRO_EVENT, usePowerPass } from "@/lib/pro";
 
 export const Route = createFileRoute("/pass")({
   head: () => ({
@@ -101,6 +101,7 @@ function PassPage() {
             {label}
           </Button>
         )}
+        {signedIn && <WorkspaceLink />}
         <PaymentPromise />
       </div>
       {pays.length > 0 && (
@@ -120,8 +121,22 @@ function PassPage() {
       <PaywallModal
         open={open}
         onOpenChange={setOpen}
-        reason="One payment of ₹99 adds 5 verified scores and 30 days of access."
+        reason={`Job Hunt Pass: 5 verified scores for 30 days. Power Searcher Pass (₹${POWER_INR}): 20 scores for 60 days plus role variants.`}
       />
     </main>
+  );
+}
+
+function WorkspaceLink() {
+  const power = usePowerPass();
+  if (power === null) return null;
+  return power ? (
+    <Button asChild variant="outline" className="w-full">
+      <Link to="/my-resumes">Open Multi-Resume Workspace</Link>
+    </Button>
+  ) : (
+    <p className="text-center text-xs text-muted-foreground">
+      The Multi-Resume Workspace (role variants) comes with the ₹{POWER_INR} Power Searcher Pass.
+    </p>
   );
 }
