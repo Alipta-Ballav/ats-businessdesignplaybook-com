@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
   Check,
@@ -27,6 +27,10 @@ import { downloadResumeDocx, resumeBlocks } from "@/lib/export-docx";
 import { usePro, passAllowance, recordPassScan } from "@/lib/pro";
 import { FREE_FIXES, canApplyFix, canDownloadWord, canRescore } from "@/lib/plans";
 import { inferLevel, type Candidate, type Job, type Level } from "@/lib/scoring";
+import type { EditorSession } from "@/lib/editor-session";
+import { createRewriteCache } from "@/lib/rewrite-cache";
+import { downloadResumePdf } from "@/lib/export-pdf";
+import { inspectBullets } from "@/lib/diagnostics";
 
 type Fix = FixEntry & { title: string };
 const EXAMPLES = {
@@ -45,6 +49,8 @@ export function LiveEditor({
   initialDraft,
   scoringLevel,
   onRescored,
+  initialSession,
+  onSessionChange,
 }: {
   job: Job;
   cand: Candidate;
@@ -52,6 +58,8 @@ export function LiveEditor({
   initialDraft?: string;
   scoringLevel?: Level;
   onRescored?: (c: Candidate) => void;
+  initialSession?: EditorSession | undefined;
+  onSessionChange?: (session: EditorSession) => void;
 }) {
   const read = useServerFn(readResumeGuest);
   const ai = useServerFn(suggestRewrite);
@@ -67,22 +75,22 @@ export function LiveEditor({
   }, [pro]);
   const level = scoringLevel ?? inferLevel(cand.years, cand.role);
   const base = headlineScore(job, cand, level);
-  const [draft, setDraft] = useState(initialDraft ?? resume);
-  const [history, setHistory] = useState<{ draft: string; fixes: Fix[]; skipped: string[] }[]>([]);
+  const [draft, setDraft] = useState(initialSession?.draft ?? initialDraft ?? resume);
+  const [history, setHistory] = useState<{ draft: string; fixes: Fix[]; skipped: string[] }[]>(initialSession?.history ?? []);
   const [typing, setTyping] = useState(false);
-  const [official, setOfficial] = useState<{ cand: Candidate; score: number; text: string }>({
+  const [official, setOfficial] = useState<{ cand: Candidate; score: number; text: string }>(initialSession?.official ?? {
     cand,
     score: base,
     text: resume,
   });
-  const [fixes, setFixes] = useState<Fix[]>([]);
-  const [skipped, setSkipped] = useState<string[]>([]);
-  const [openId, setOpenId] = useState<string | null>(null);
-  const [fields, setFields] = useState(blank);
-  const [aiDraft, setAiDraft] = useState<{ text: string; sources: string[]; manualFacts: string } | null>(null);
-  const [proposal, setProposal] = useState("");
-  const [writingManually, setWritingManually] = useState(false);
-  const [placement, setPlacement] = useState("");
+  const [fixes, setFixes] = useState<Fix[]>(initialSession?.fixes ?? []);
+  const [skipped, setSkipped] = useState<string[]>(initialSession?.skipped ?? []);
+  const [openId, setOpenId] = useState<string | null>(initialSession?.openId ?? null);
+  const [fields, setFields] = useState(initialSession?.fields ?? blank);
+  const [aiDraft, setAiDraft] = useState<{ text: string; sources: string[]; manualFacts: string } | null>(initialSession?.aiDraft ?? null);
+  const [proposal, setProposal] = useState(initialSession?.proposal ?? "");
+  const [writingManually, setWritingManually] = useState(initialSession?.writingManually ?? false);
+  const [placement, setPlacement] = useState(initialSession?.placement ?? "");
   const [undoneId, setUndoneId] = useState<string | null>(null);
   const [showFacts, setShowFacts] = useState(false);
   const [busy, setBusy] = useState<"" | "ai" | "score">("");
@@ -91,6 +99,15 @@ export function LiveEditor({
   const [tier, setTier] = useState<Tier | null>(null);
   const [showAll, setShowAll] = useState(false);
   const [lastResult, setLastResult] = useState<{ from: number; to: number; fixes: number } | null>(null);
+  const rewriteCache = useRef(createRewriteCache());
+  const sessionCallback = useRef(onSessionChange);
+  sessionCallback.current = onSessionChange;
+  useEffect(() => {
+    sessionCallback.current?.({ draft, history, official, fixes, skipped, openId, fields, aiDraft, proposal, writingManually, placement });
+  }, [draft, history, official, fixes, skipped, openId, fields, aiDraft, proposal, writingManually, placement]);
+  useEffect(() => {
+    if (initialSession) onRescored?.(initialSession.official.cand);
+  }, []);
 
   const queue = useMemo(() => buildQueue(job, official.cand, official.text), [job, official]);
   const doneIds = fixes.map((f) => f.id);
@@ -162,7 +179,8 @@ export function LiveEditor({
     }
     setBusy("ai");
     try {
-      const { text } = await ai({ data: { original: active?.original ?? "", facts: suppliedFacts } });
+      const input = { original: active?.original ?? "", facts: suppliedFacts };
+      const text = await rewriteCache.current(input, async () => (await ai({ data: input })).text, !!aiDraft);
       setAiDraft({ text, sources: [active?.original ?? "", suppliedFacts], manualFacts });
       setProposal(text);
     } catch (e) {
@@ -341,9 +359,22 @@ export function LiveEditor({
       toast.error("Could not create the Word file.");
     }
   };
+  const pdf = async () => {
+    if (!canDownloadWord(pro)) {
+      setWall("Download your improved resume as a clean ATS PDF with your Job Hunt Pass.");
+      return;
+    }
+    try {
+      await downloadResumePdf(draft);
+      window.__lovableEvents?.track?.("project.resume_exported", { format: "pdf" });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not create the PDF file.");
+    }
+  };
 
   const pending = active && proposal.trim() && placementReady ? applySuggestion(draft, active, proposal, location?.insertAt) : draft;
   const flags = proposalFlags(proposal, [...(aiDraft?.sources ?? []), facts], aiDraft ? "ai" : "manual");
+  const immediateFeedback = inspectBullets(proposal || active?.original || "")[0]?.issues ?? [];
 
   const left = (
     <div className="space-y-4">
@@ -499,6 +530,8 @@ export function LiveEditor({
                     <div className="space-y-4 px-4 pb-5 pl-12">
                       {undoneId === s.id && <p role="status" className="text-xs font-medium text-primary">Undone · original text restored</p>}
                       <p className="text-xs text-muted-foreground">{s.detail}</p>
+                      {immediateFeedback.length > 0 && <div className="border-l-2 border-warning pl-2 text-xs text-muted-foreground"><p className="font-medium">Text checks · not a score</p>{immediateFeedback.map(issue => <p key={issue}>{issue}</p>)}</div>}
+                      {busy === "ai" && <p role="status" className="text-xs text-primary">{facts.trim() ? "Drafting from your original line and supplied facts…" : "Rephrasing your original line without adding facts…"}</p>}
                       {s.kind === "add" && (
                         <div className="space-y-1.5">
                           <p className="text-xs font-medium">Add this bullet to</p>
@@ -832,6 +865,9 @@ export function LiveEditor({
         Tip: click an underlined line in the resume to open its recommendation.
       </p>
       <div className="flex flex-wrap gap-2">
+        <Button size="sm" onClick={pdf}>
+          {pro ? <FileText /> : <Lock />}Download Clean ATS PDF
+        </Button>
         <Button size="sm" onClick={word}>
           {pro ? <FileText /> : <Lock />}Download Word (.docx)
         </Button>

@@ -9,7 +9,7 @@ import { q } from "@/lib/db";
 import { readResumeGuest } from "@/lib/evaluate.functions";
 import { evaluate, type Candidate, type Job } from "@/lib/scoring";
 import { resumeTips } from "@/lib/tips";
-import { clearGuestScan, saveGuestScan, type GuestScan } from "@/lib/guest-scan";
+import { clearGuestScan, loadGuestScan, saveGuestEditor, saveGuestScan, type GuestScan } from "@/lib/guest-scan";
 import { ResumeInput } from "@/components/ResumeInput";
 import { ScoreDetails, ScoreHeader } from "@/components/ScoreReport";
 import { Card, StatusBadge } from "@/components/ui-bits";
@@ -117,7 +117,14 @@ function CheckPage() {
     }
   }, [picked]);
   useEffect(() => {
-    clearGuestScan();
+    const saved = loadGuestScan();
+    if (saved && (!jobParam || saved.jobId === jobParam)) {
+      setResult(saved);
+      setResume(saved.resume);
+      setTitle(saved.jobTitle);
+      setJd(saved.jobDescription);
+      setMode(saved.jobDescription.trim() ? "role" : "profile");
+    }
   }, []);
 
   const run = async () => {
@@ -198,7 +205,7 @@ function CheckPage() {
           </button>
           <FtiReport c={verified ?? cand} />
           <BusinessPlaybook />
-          <LiveEditor job={job} cand={cand} resume={result.resume} onRescored={setVerified} />
+          <LiveEditor key={result.createdAt} job={job} cand={cand} resume={result.resume} onRescored={setVerified} initialSession={result.editor} onSessionChange={(state) => saveGuestEditor(result.createdAt, state)} />
           <Card className="flex flex-wrap items-center justify-between gap-4 border-primary">
             <div>
               <p className="font-display text-lg">Now test your fit for a specific role</p>
@@ -272,7 +279,7 @@ function CheckPage() {
               label: "Fix & rescore",
               content: (
                 <>
-                  <LiveEditor job={job} cand={cand} resume={result.resume} onRescored={setVerified} />
+                  <LiveEditor key={result.createdAt} job={job} cand={cand} resume={result.resume} onRescored={setVerified} initialSession={result.editor} onSessionChange={(state) => saveGuestEditor(result.createdAt, state)} />
                   <Card>
                     <h2 className="mb-1 font-display text-lg">What to improve</h2>
                     <p className="mb-4 text-xs text-muted-foreground">Ordered by impact.</p>

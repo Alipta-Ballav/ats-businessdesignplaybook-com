@@ -4,7 +4,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
-import { clearGuestScan, loadGuestScan } from "@/lib/guest-scan";
+import { clearGuestScan, loadGuestScan, saveGuestScan } from "@/lib/guest-scan";
+import { stageEditorHandoff } from "@/lib/editor-session";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { q, must, scanToPair } from "@/lib/db";
@@ -67,9 +68,13 @@ function CandidateHome() {
     const g = loadGuestScan();
     if (!me || !g || imported.current) return;
     imported.current = true;
+    saveGuestScan(g);
+    const id = g.id;
+    if (!id) { imported.current = false; return; }
     supabase
       .from("scans")
       .insert({
+        id,
         user_id: me.id,
         job_id: g.jobId,
         job_title: g.jobTitle,
@@ -80,12 +85,20 @@ function CandidateHome() {
       })
       .select("id")
       .single()
-      .then(({ data, error }) => {
+      .then(async ({ data, error }) => {
+        if (error?.code === "23505") {
+          const existing = await supabase.from("scans").select("id").eq("id", id).eq("user_id", me.id).single();
+          data = existing.data;
+          error = existing.error;
+        }
         if (error || !data) {
+          imported.current = false;
           toast.error("Couldn't save your earlier report");
           return;
         }
+        if (g.editor) stageEditorHandoff(data.id, g.editor);
         clearGuestScan();
+        void qc.invalidateQueries({ queryKey: ["scans"] });
         toast.success("Your report was saved to your account");
         nav({ to: "/candidate/scans/$scanId", params: { scanId: data.id } });
       });

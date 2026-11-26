@@ -1,4 +1,8 @@
 # Roadmap
+- [x] Phase 1: preserve guest reports, active edits and undo through sign-in without requiring registration before scans
+- [x] Phase 1: clean selectable-text A4 PDF download alongside Word, with pagination regression checks
+- [x] Phase 1: exact-input session rewrite cache and immediate grounded feedback without changing models or scoring
+- [x] Phase 1: regression tests and signed-in handoff/export verification (real guest scan, reload, account import, undo, paid PDF download and mobile layout)
 - [x] Fix manual Critical bullets and matching facts actions; signed-in saved job report verified new metrics apply to a role and undo restores the original; 98 regression tests pass.
 - [x] Clarify AI facts action, allow choosing bullet placement, and verify undo restores text and applied state (signed-in desktop/mobile checks; 95 tests passed)
 - [x] Assign admin access to the requested owner account without removing candidate access

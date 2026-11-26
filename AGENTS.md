@@ -46,4 +46,7 @@ use the editor.
 - Weekly teardowns fetch fixed official public Ashby feeds and rotate current design-role selections weekly, quoting only posting text — avoids scraping LinkedIn or inventing employer criteria.
 - Resume health reminders are user-downloaded recurring calendar events, not automated emails — keeps delivery explicitly opt-in without an email service.
 - Resume preview and Word export share presentation-only blocks and A4 geometry; preserve source-line indices and raw evidence text so reflow cannot change scoring or editing targets.
+- Clean PDF export uses shared resume blocks, embedded fonts and fixed A4 pagination with selectable text; it is a text-first ATS layout, not a replica of uploaded graphics.
+- Guest editor state lives only inside the expiring guest report and a same-tab account-import handoff; use stable scan IDs for retry-safe imports and never autosave signed-in drafts or overwrite originals.
+- Rewrite caching is per-editor and keyed on exact original text and facts; explicit regeneration bypasses it so evidence never leaks between users or different inputs.
 - Resume insertion uses explicit source-line locations; undo snapshots include draft and applied-fix state, and per-fix reversals retain exact before/after text to preserve unrelated edits.

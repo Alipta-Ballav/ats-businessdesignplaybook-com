@@ -14,6 +14,7 @@ import { AtsSimulator } from "@/components/AtsSimulator";
 import { AtsTarget } from "@/components/AtsTarget";
 import { BusinessPlaybook } from "@/components/BusinessPlaybook";
 import { ReportTabs } from "@/components/ReportTabs";
+import { clearEditorHandoff, loadEditorHandoff } from "@/lib/editor-session";
 
 export const Route = createFileRoute("/_authenticated/candidate/scans/$scanId")({
   head: () => ({
@@ -37,6 +38,7 @@ export const Route = createFileRoute("/_authenticated/candidate/scans/$scanId")(
 
 function ScanResult() {
   const { scanId } = Route.useParams();
+  const [handoff] = useState(() => loadEditorHandoff(scanId));
   const { data: s, isLoading } = useQuery(q.scan(scanId));
   const [verified, setVerified] = useState<Candidate | null>(null);
   useEffect(() => setVerified(null), [scanId]);
@@ -61,7 +63,7 @@ function ScanResult() {
         </Link>
         <FtiReport c={verified ?? cand} />
         <BusinessPlaybook />
-        <LiveEditor job={job} cand={cand} resume={s.resume_text ?? ""} onRescored={setVerified} />
+        <LiveEditor key={scanId} job={job} cand={cand} resume={s.resume_text ?? ""} onRescored={setVerified} initialSession={handoff} onSessionChange={() => clearEditorHandoff()} />
       </div>
     );
   return (
@@ -87,7 +89,7 @@ function ScanResult() {
             label: "Fix & rescore",
             content: (
               <>
-                <LiveEditor job={job} cand={cand} resume={s.resume_text ?? ""} onRescored={setVerified} />
+                <LiveEditor key={scanId} job={job} cand={cand} resume={s.resume_text ?? ""} onRescored={setVerified} initialSession={handoff} onSessionChange={() => clearEditorHandoff()} />
                 <Card>
                   <h2 className="mb-1 font-display text-lg">How to improve your resume</h2>
                   <p className="mb-4 text-xs text-muted-foreground">Ordered by impact.</p>
