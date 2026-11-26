@@ -59,10 +59,24 @@ export function SaveResumeVersion({
   };
   return (
     <div className="space-y-2">
-      <Button size="sm" variant="outline" onClick={() => setOpen(!open)}>
-        <Save />
-        {saved?.length ? "Save as role variant" : "Save master resume"}
-      </Button>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm text-muted-foreground">
+          {saved?.length
+            ? `You have ${saved.length} saved resume${saved.length > 1 ? "s" : ""}. Save this version as a new role variant.`
+            : "Step 1: save this as your master resume. Then create role variants from My resumes."}
+        </p>
+        <div className="flex gap-2">
+          <Button size="sm" onClick={() => setOpen(!open)}>
+            <Save />
+            {saved?.length ? "Save as role variant" : "Save master resume"}
+          </Button>
+          {!!saved?.length && (
+            <Button asChild size="sm" variant="outline">
+              <Link to="/my-resumes">My resumes</Link>
+            </Button>
+          )}
+        </div>
+      </div>
       {open &&
         (me && !allowed ? (
           <VariantUpsell />

@@ -109,12 +109,28 @@ function MyResumes() {
             One master resume plus tailored role variants, each with its own target job and score.
           </p>
         </div>
-        <Button asChild>
-          <Link to="/check">
-            New resume check <ArrowUpRight />
-          </Link>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          {current && (
+            <Button onClick={duplicate}>
+              {power ? <Copy /> : <Layers />}
+              Create role variant
+            </Button>
+          )}
+          <Button asChild variant="outline">
+            <Link to="/check">
+              New resume check <ArrowUpRight />
+            </Link>
+          </Button>
+        </div>
       </header>
+      {current && (
+        <ol className="grid gap-3 rounded-lg border bg-card p-4 text-sm sm:grid-cols-3">
+          <li><b>1. Master resume</b><span className="block text-muted-foreground">Your first saved resume is your master. It is never overwritten.</span></li>
+          <li><b>2. Create role variant</b><span className="block text-muted-foreground">Pick a resume on the left, then press "Create role variant" to copy it.</span></li>
+          <li><b>3. Tailor and score</b><span className="block text-muted-foreground">Open the variant, press "Edit a new revision", and match it to a job.</span></li>
+        </ol>
+      )}
+      {upsell && <VariantUpsell />}
       <section className="flex flex-wrap items-center justify-between gap-4 border-y py-5">
         <div>
           <h2 className="text-base">Your quarterly check-in</h2>
@@ -162,6 +178,9 @@ function MyResumes() {
                   >
                     <span>
                       <span className="block break-words font-medium">{v.name}</span>
+                      <span className="mt-1 block text-[10px] uppercase tracking-wider text-primary">
+                        {v.id === versions[versions.length - 1]?.id ? "Master" : "Role variant"}
+                      </span>
                       <span className="mt-1 block text-xs text-muted-foreground">
                         {new Date(v.created_at).toLocaleDateString()} ·{" "}
                         {versionScore(v) === null
@@ -266,7 +285,6 @@ function MyResumes() {
                     Duplicate as role variant
                   </Button>
                 </div>
-                {upsell && <VariantUpsell />}
                 {!editing && (
                   <ResumePreview original={current.scored_text} draft={current.resume_text} />
                 )}

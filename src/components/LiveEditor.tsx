@@ -876,13 +876,6 @@ export function LiveEditor({
           Copy
         </Button>
       </div>
-      <SaveResumeVersion
-        resume={draft}
-        candidate={official.cand}
-        job={job}
-        scoredText={official.text}
-        level={level}
-      />
     </div>
   );
 
@@ -898,6 +891,15 @@ export function LiveEditor({
         <p className="text-sm text-muted-foreground">
           Work through the priority queue on the left — each fix is spotlighted in your resume on the right. Undo any step.
         </p>
+      </div>
+      <div className="rounded-lg border bg-card p-3">
+        <SaveResumeVersion
+          resume={draft}
+          candidate={official.cand}
+          job={job}
+          scoredText={official.text}
+          level={level}
+        />
       </div>
       <div className="hidden items-start gap-6 md:grid md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
         {left}
