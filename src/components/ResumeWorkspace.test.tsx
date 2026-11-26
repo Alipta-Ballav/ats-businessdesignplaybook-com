@@ -61,9 +61,9 @@ describe("Resume workspace", () => {
     expect(mocks.update).toHaveBeenCalledOnce();
     expect(mocks.back).not.toHaveBeenCalled();
   });
-  it("exits same-page editing through My resumes without saving", () => {
+  it("exits same-page editing through Back to resumes without saving", () => {
     render(<Harness onBackToList={mocks.back} />);
-    fireEvent.click(screen.getByRole("button", { name: "My resumes" }));
+    fireEvent.click(screen.getByRole("button", { name: "Back to resumes" }));
     expect(mocks.back).toHaveBeenCalledOnce();
     expect(mocks.update).not.toHaveBeenCalled();
   });

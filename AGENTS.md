@@ -54,3 +54,4 @@ use the editor.
 - ResumeWorkspace wraps every LiveEditor with a shared active-resume selector and keeps each variant’s draft/undo session only in React memory; "Save changes" updates only the active saved resume and new variants are inserts, so switching never overwrites a master or another variant.
 - Editor step numbers use numberSteps on filtered display order and chronological fix history, never source queue indices — keeps badges consecutive across tabs, skips and undo.
 - Editor list navigation uses an explicit exit callback within My resumes; save-and-return exits only after a successful in-place save — same-route links must not leave edit mode stuck or hide failed saves.
+- My resumes groups the existing oldest master separately from variants, defaults to document preview, and discloses comparison and secondary actions on demand; focused editing keeps the editor mounted and uses one back control to preserve draft sessions.

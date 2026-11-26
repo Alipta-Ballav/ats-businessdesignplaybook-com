@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Copy, Save, Layers, Target } from "lucide-react";
+import { Copy, Save, Layers, Target, ArrowLeft, MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ResumeNameDialog } from "@/components/ResumeNameDialog";
 import { VariantUpsell } from "@/components/VariantUpsell";
@@ -67,6 +68,7 @@ export function ResumeWorkspace({ seed, versionId, onSessionChange, onActiveVers
     setDialog(mode);
   };
   const toolbar = <div className="space-y-3 border-y py-4">
+    {onBackToList && <Button variant="ghost" className="px-0" disabled={saving} onClick={onBackToList}><ArrowLeft />Back to resumes</Button>}
     <div className="flex flex-wrap items-end gap-3">
       <div className="min-w-0 flex-1 basis-60 space-y-1.5">
         <p className="text-xs font-medium text-muted-foreground">Active resume</p>
@@ -82,10 +84,11 @@ export function ResumeWorkspace({ seed, versionId, onSessionChange, onActiveVers
         ? <Button disabled={saving} onClick={() => void saveChanges()}><Save />{saving ? "Saving…" : "Save changes"}</Button>
         : <Button disabled={!!me && (isPending || power === null)} onClick={() => openSave(versions.length ? "variant" : "master")}><Save />{!!me && (isPending || power === null) ? "Checking your plan…" : versions.length ? "Save as role variant" : "Save master resume"}</Button>}
       {current && <Button variant="outline" disabled={saving} onClick={() => void saveChanges(true)}><Save />Save & back to list</Button>}
-      {current && <Button variant="outline" disabled={power === null} onClick={() => openSave("variant")}><Copy />Save as new variant</Button>}
-      {onBackToList
-        ? <Button variant="ghost" disabled={saving} onClick={onBackToList}><Layers />My resumes</Button>
-        : <Button asChild variant="ghost"><Link to="/my-resumes"><Layers />My resumes</Link></Button>}
+      {current && (onBackToList ? <DropdownMenu>
+        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" disabled={saving} aria-label="Resume actions" title="Resume actions"><MoreHorizontal /></Button></DropdownMenuTrigger>
+        <DropdownMenuContent align="end"><DropdownMenuItem disabled={power === null} onSelect={() => openSave("variant")}><Copy />Save as new variant</DropdownMenuItem></DropdownMenuContent>
+      </DropdownMenu> : <Button variant="outline" disabled={power === null} onClick={() => openSave("variant")}><Copy />Save as new variant</Button>)}
+      {!onBackToList && <Button asChild variant="ghost"><Link to="/my-resumes"><Layers />My resumes</Link></Button>}
     </div>
     <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
       <Target className="h-4 w-4" />

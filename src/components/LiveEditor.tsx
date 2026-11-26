@@ -59,12 +59,12 @@ type LiveEditorProps = {
 export function LiveEditor(props: LiveEditorProps) {
   return <ResumeWorkspace seed={props} versionId={props.versionId} onSessionChange={props.onSessionChange} onActiveVersionChange={props.onActiveVersionChange} onBackToList={props.onBackToList}>
     {({ editorKey, toolbar, isOriginal, ...active }) => <EditorContent
-      key={editorKey} {...active} toolbar={toolbar}
+      key={editorKey} {...active} toolbar={toolbar} onBackToList={props.onBackToList}
       onRescored={isOriginal ? props.onRescored : undefined}
     />}
   </ResumeWorkspace>;
 }
-function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescored, initialSession, onSessionChange, toolbar }: LiveEditorProps & { toolbar: ReactNode }) {
+function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescored, initialSession, onSessionChange, onBackToList, toolbar }: LiveEditorProps & { toolbar: ReactNode }) {
   const read = useServerFn(readResumeGuest);
   const ai = useServerFn(suggestRewrite);
   const pro = usePro();
@@ -909,7 +909,7 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
 
   return (
     <section className="space-y-4">
-      <div>
+      {!onBackToList && <div>
         <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
           Live editor · {job.description.trim() ? "job match score" : "generic resume score"}
         </p>
@@ -919,7 +919,7 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
         <p className="text-sm text-muted-foreground">
           Work through the priority queue on the left — each fix is spotlighted in your resume on the right. Undo any step.
         </p>
-      </div>
+      </div>}
       {toolbar}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-3">
         <p className="text-sm font-medium">{job.description.trim() ? "Role Fit score" : "Future Talent Index"}</p>
