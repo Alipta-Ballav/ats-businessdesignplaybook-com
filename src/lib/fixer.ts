@@ -9,6 +9,7 @@ import {
 } from "./scoring";
 import { inspectBullets } from "./diagnostics";
 import { resumeTips } from "./tips";
+import { resumeBlocks } from "./export-docx";
 
 export type Suggestion = {
   id: string;
@@ -68,26 +69,56 @@ export function buildQueue(job: Job, c: Candidate, resume: string): Suggestion[]
     .sort((a, b) => rank[a.tier ?? "polish"] - rank[b.tier ?? "polish"]);
 }
 
-/** Replace the original line with the revision, or append a new bullet under an "Additional evidence" section. Never invents text. */
+/** Source-line insertion points; display reflow must never change editing coordinates. */
+export function insertionLocations(resume: string): { id: string; label: string; insertAt: number }[] {
+  const blocks = resumeBlocks(resume);
+  const lines = resume.split("\n");
+  return blocks.flatMap((block, i) => {
+    const start = block.lineIndices[0];
+    if (start === undefined || block.kind === "name") return [];
+    if (block.kind === "heading" || block.kind === "role") {
+      const next = blocks.slice(i + 1).find((b) => b.kind === "heading" || b.kind === "role");
+      let end = next?.lineIndices[0] ?? lines.length;
+      while (end > start + 1 && !lines[end - 1]?.trim()) end--;
+      return [{ id: `section:${start}`, label: `Under ${block.text}`, insertAt: end }];
+    }
+    const last = block.lineIndices.at(-1);
+    return last === undefined ? [] : [{ id: `line:${start}`, label: `After: ${block.text}`, insertAt: last + 1 }];
+  });
+}
+
+/** Replace a source line or insert at the user's chosen source-line boundary. */
 export function applySuggestion(
   resume: string,
   s: Pick<Suggestion, "kind" | "original">,
   text: string,
+  insertAt?: number,
 ): string {
   const t = cleanLine(text);
   if (!t) return resume;
   if (s.kind === "rewrite" && s.original) {
+    const original = s.original;
     const lines = resume.split("\n");
-    const i = lines.findIndex((l) => l.includes(s.original!));
-    if (i >= 0) {
+    const i = lines.findIndex((l) => l.includes(original));
+    const line = lines[i];
+    if (i >= 0 && line !== undefined) {
       // Keep the line's indentation + bullet marker so Word/preview keep it as a bullet.
-      const prefix = lines[i]!.match(/^\s*(?:[-•*▪●–]|\d+[.)])?\s*/)?.[0] ?? "";
+      const prefix = line.match(/^\s*(?:[-•*▪●–]|\d+[.)])?\s*/)?.[0] ?? "";
       lines[i] =
-        lines[i]!.trim().replace(/^(?:[-•*▪●–]|\d+[.)])\s+/, "") === s.original
+        line.trim().replace(/^(?:[-•*▪●–]|\d+[.)])\s+/, "") === original
           ? prefix + t
-          : lines[i]!.replace(s.original, t);
+          : line.replace(original, t);
       return lines.join("\n");
     }
+    return resume;
+  }
+  if (insertAt !== undefined) {
+    const lines = resume.split("\n");
+    if (!Number.isInteger(insertAt) || insertAt < 0 || insertAt > lines.length) return resume;
+    const previous = lines.slice(0, insertAt).reverse().find((l) => /^\s*[-•*▪●–]\s+/.test(l));
+    const marker = previous?.match(/^(\s*[-•*▪●–]\s+)/)?.[1] ?? "- ";
+    lines.splice(insertAt, 0, `${marker}${t}`);
+    return lines.join("\n");
   }
   const base = resume.replace(/\s+$/, "");
   return base.includes(`\n${ADDED_HEADING}\n`)

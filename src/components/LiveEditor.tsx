@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui-bits";
 import { ResumePreview } from "@/components/ResumePreview";
@@ -20,7 +21,7 @@ import { PaywallModal } from "@/components/PaywallModal";
 import { SaveResumeVersion } from "@/components/SaveResumeVersion";
 import { readResumeGuest } from "@/lib/evaluate.functions";
 import { suggestRewrite } from "@/lib/rewrite.functions";
-import { applySuggestion, buildQueue, cleanLine, headlineScore, TIERS, type Suggestion, type Tier } from "@/lib/fixer";
+import { applySuggestion, buildQueue, cleanLine, headlineScore, insertionLocations, TIERS, type Suggestion, type Tier } from "@/lib/fixer";
 import { estimateCandidate, fixesUsed, newFacts, revertFix, type FixEntry } from "@/lib/editor";
 import { downloadResumeDocx } from "@/lib/export-docx";
 import { usePro, passAllowance, recordPassScan } from "@/lib/pro";
@@ -67,7 +68,7 @@ export function LiveEditor({
   const level = scoringLevel ?? inferLevel(cand.years, cand.role);
   const base = headlineScore(job, cand, level);
   const [draft, setDraft] = useState(initialDraft ?? resume);
-  const [history, setHistory] = useState<string[]>([]);
+  const [history, setHistory] = useState<{ draft: string; fixes: Fix[]; skipped: string[] }[]>([]);
   const [typing, setTyping] = useState(false);
   const [official, setOfficial] = useState<{ cand: Candidate; score: number; text: string }>({
     cand,
@@ -80,6 +81,9 @@ export function LiveEditor({
   const [fields, setFields] = useState(blank);
   const [aiDraft, setAiDraft] = useState<{ text: string; flags: string[] } | null>(null);
   const [proposal, setProposal] = useState("");
+  const [writingManually, setWritingManually] = useState(false);
+  const [placement, setPlacement] = useState("");
+  const [undoneId, setUndoneId] = useState<string | null>(null);
   const [showFacts, setShowFacts] = useState(false);
   const [busy, setBusy] = useState<"" | "ai" | "score">("");
   const [wall, setWall] = useState<string | null>(null);
@@ -112,15 +116,19 @@ export function LiveEditor({
   const estimate = headlineScore(job, estimateCandidate(official.cand, draft), level);
   const stale = draft !== official.text;
   const delta = official.score - base;
+  const locations = useMemo(() => insertionLocations(draft), [draft]);
+  const location = locations.find((l) => l.id === placement);
+  const placementReady = active?.kind !== "add" || !!location || placement === "additional";
+  const aiLabel = proposal.trim() ? "Try again" : active?.original ? "Improve this line with AI" : "Write a new bullet with AI";
 
   const commit = (next: string) => {
-    setHistory((h) => [...h, draft]);
+    setHistory((h) => [...h, { draft, fixes, skipped }]);
     setDraft(next);
     setTyping(false);
   };
   const onType = (v: string) => {
     if (!typing) {
-      setHistory((h) => [...h, draft]);
+      setHistory((h) => [...h, { draft, fixes, skipped }]);
       setTyping(true);
     }
     setDraft(v);
@@ -129,6 +137,9 @@ export function LiveEditor({
     setFields(blank);
     setAiDraft(null);
     setProposal("");
+    setWritingManually(false);
+    setPlacement("");
+    setUndoneId(null);
   };
   const facts = [fields.action, fields.constraint, fields.outcome, fields.text]
     .filter(Boolean)
@@ -156,6 +167,10 @@ export function LiveEditor({
 
   const apply = (text: string, source: "manual" | "ai") => {
     if (!active) return;
+    if (!placementReady) {
+      toast.error("Choose where to add this bullet first.");
+      return;
+    }
     if (!canApplyFix(fixesUsed(fixes), pro)) {
       window.__lovableEvents?.track?.("project.paywall_shown", { trigger: "fix" });
       setWall(
@@ -163,7 +178,7 @@ export function LiveEditor({
       );
       return;
     }
-    const next = applySuggestion(draft, active, text);
+    const next = applySuggestion(draft, active, text, location?.insertAt);
     if (next === draft) {
       toast.error("Write or draft the improved line first.");
       return;
@@ -176,6 +191,7 @@ export function LiveEditor({
         source,
         title: active.title,
         added: cleanLine(text),
+        edit: { before: draft, after: next, cleanupHeading: placement === "additional" && !resume.split("\n").some((line) => line.trim() === "Additional evidence") },
         removed:
           active.kind === "rewrite" && active.original && draft.includes(active.original)
             ? active.original
@@ -244,18 +260,49 @@ export function LiveEditor({
     const prev = history[history.length - 1];
     if (prev === undefined) return;
     setHistory(history.slice(0, -1));
-    setDraft(prev);
+    setDraft(prev.draft);
+    setFixes(prev.fixes);
+    setSkipped(prev.skipped);
     setTyping(false);
     setJustDone(null);
+    reset();
+    const reverted = fixes.find((f) => !prev.fixes.some((p) => p.id === f.id));
+    if (reverted) reopen(reverted);
     toast.success("Last change undone");
-    setFixes(fixes.filter((f) => prev.includes(f.removed ? f.added : `- ${f.added}`)));
+  };
+  const reopen = (f: Fix) => {
+    const suggestion = queue.find((s) => s.id === f.id);
+    if (suggestion) {
+      setTier(tierOf(suggestion));
+      setShowAll(true);
+      setOpenId(f.id);
+    }
+    setUndoneId(f.id);
   };
   const undoFix = (f: Fix) => {
+    const next = revertFix(draft, f);
+    if (next === draft) {
+      toast.error("This text has changed since it was applied. Use Undo last to restore the previous version.");
+      return;
+    }
     setJustDone(null);
-    commit(revertFix(draft, f));
+    commit(next);
     setFixes(fixes.filter((x) => x !== f));
+    reset();
+    reopen(f);
     toast.success("Change undone");
   };
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target;
+      if (target instanceof HTMLElement && target.closest("input, textarea, [contenteditable='true']")) return;
+      if (e.defaultPrevented || e.shiftKey || !(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== "z" || !history.length || busy) return;
+      e.preventDefault();
+      undo();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
   const resetAll = () => {
     if (!window.confirm("Reset to your original CV? All changes will be removed.")) return;
     commit(resume);
@@ -284,7 +331,7 @@ export function LiveEditor({
     }
   };
 
-  const pending = active && proposal.trim() ? applySuggestion(draft, active, proposal) : draft;
+  const pending = active && proposal.trim() && placementReady ? applySuggestion(draft, active, proposal, location?.insertAt) : draft;
   const flags = proposal.trim() ? newFacts(proposal, [active?.original ?? "", facts]) : [];
 
   const left = (
@@ -439,7 +486,22 @@ export function LiveEditor({
                   </button>
                   {isActive && (
                     <div className="space-y-4 px-4 pb-5 pl-12">
+                      {undoneId === s.id && <p role="status" className="text-xs font-medium text-primary">Undone · original text restored</p>}
                       <p className="text-xs text-muted-foreground">{s.detail}</p>
+                      {s.kind === "add" && (
+                        <div className="space-y-1.5">
+                          <p className="text-xs font-medium">Add this bullet to</p>
+                          <Select value={placement} onValueChange={setPlacement}>
+                            <SelectTrigger aria-label="Add this bullet to" className="max-w-full [&>span]:truncate">
+                              <SelectValue placeholder="Choose a role, section, or line" />
+                            </SelectTrigger>
+                            <SelectContent className="max-w-[min(90vw,32rem)]">
+                              {locations.map((l) => <SelectItem key={l.id} value={l.id} className="break-words whitespace-normal">{l.label}</SelectItem>)}
+                              <SelectItem value="additional">New Additional evidence section</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
                       {s.original && (
                         <div
                           className={`rounded-md border p-3 ${proposal.trim() ? "border-destructive/30 bg-destructive/5" : "bg-muted/40"}`}
@@ -454,19 +516,15 @@ export function LiveEditor({
                           </p>
                         </div>
                       )}
-                      {!proposal.trim() ? (
+                      {!proposal.trim() && !writingManually ? (
                         <div className="space-y-2">
                           <Button className="w-full" onClick={askAi} disabled={busy === "ai"}>
                             <Wand2 />
-                            {busy === "ai"
-                              ? "Writing…"
-                              : s.original
-                                ? "Improve this line with AI"
-                                : "Write a new bullet with AI"}
+                            {busy === "ai" ? "Writing…" : aiLabel}
                           </Button>
                           <button
                             className="w-full text-center text-xs text-muted-foreground hover:text-foreground hover:underline"
-                            onClick={() => setProposal(s.original ?? " ")}
+                            onClick={() => { setWritingManually(true); setProposal(s.original ?? ""); }}
                           >
                             or write it myself
                           </button>
@@ -477,6 +535,7 @@ export function LiveEditor({
                             After · edit freely · preview updates on the right
                           </p>
                           <textarea
+                            aria-label="Suggested resume bullet"
                             autoFocus
                             rows={3}
                             className="w-full rounded-md border-2 border-success/50 bg-success/5 p-3 text-sm focus:border-success focus:outline-none"
@@ -491,7 +550,7 @@ export function LiveEditor({
                           )}
                           <div className="flex flex-wrap items-center gap-2">
                             <Button
-                              disabled={!proposal.trim() || flags.length > 0}
+                              disabled={!proposal.trim() || flags.length > 0 || !placementReady || !!busy}
                               onClick={() => apply(proposal, aiDraft ? "ai" : "manual")}
                             >
                               <Check />
@@ -499,12 +558,13 @@ export function LiveEditor({
                             </Button>
                             <Button variant="outline" onClick={askAi} disabled={busy === "ai"}>
                               <Wand2 />
-                              {busy === "ai" ? "Writing…" : "Try again"}
+                              {busy === "ai" ? "Writing…" : aiLabel}
                             </Button>
                             <Button
                               variant="ghost"
                               onClick={() => {
                                 setProposal("");
+                                setWritingManually(false);
                                 setAiDraft(null);
                               }}
                             >
@@ -516,8 +576,7 @@ export function LiveEditor({
                       {!s.original && (
                         <p className="rounded-md bg-muted/40 p-3 text-xs">
                           Your resume has no line for this yet. Answer one question below with
-                          something true, then let AI write a new bullet — it's added under
-                          “Additional evidence”.
+                          something true, then choose the role, section, or line where it belongs.
                         </p>
                       )}
                       <details
@@ -549,8 +608,11 @@ export function LiveEditor({
                             </label>
                           ))}
                           <p className="text-muted-foreground">
-                            Then press “Try again” — AI will use only these facts.
+                            {proposal.trim() ? "Regenerate using your facts" : "Generate using your facts"} — AI uses your original line and the facts you provide.
                           </p>
+                          <Button variant="outline" className="w-full h-auto whitespace-normal" onClick={askAi} disabled={!!busy || (!facts.trim() && !s.original)}>
+                            <Wand2 />{busy === "ai" ? "Writing…" : aiLabel}
+                          </Button>
                         </div>
                       </details>
                       <button
@@ -599,7 +661,7 @@ export function LiveEditor({
         )}
       </Card>
 
-      {(fixes.length > 0 || skipped.length > 0) && (
+      {(history.length > 0 || fixes.length > 0 || skipped.length > 0) && (
         <Card className="space-y-1 p-4">
           <div className="mb-2 flex items-center justify-between">
             <h3 className="text-sm font-semibold">

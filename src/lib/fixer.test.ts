@@ -1,7 +1,22 @@
 import { describe, expect, it } from "vitest";
-import { applySuggestion, ADDED_HEADING } from "./fixer";
+import { applySuggestion, ADDED_HEADING, insertionLocations } from "./fixer";
 
 describe("applySuggestion", () => {
+  it("inserts under the selected role without creating Additional evidence", () => {
+    const resume = "Alex\nExperience\nDesigner | Acme | 2022 – Present\n• Built checkout\n\nDesigner | Beta | 2019 – 2022\n• Ran research\n\nSkills\nFigma";
+    const location = insertionLocations(resume).find((l) => l.label === "Under Designer | Acme | 2022 – Present");
+    if (!location) throw new Error("Missing role location");
+    expect(applySuggestion(resume, { kind: "add" }, "Validated checkout", location.insertAt)).toBe("Alex\nExperience\nDesigner | Acme | 2022 – Present\n• Built checkout\n• Validated checkout\n\nDesigner | Beta | 2019 – 2022\n• Ran research\n\nSkills\nFigma");
+  });
+  it("inserts after a whole wrapped bullet, not inside its continuation", () => {
+    const resume = "Alex\nExperience\n- Built checkout with\nengineering support\n- Ran research";
+    const location = insertionLocations(resume).find((l) => l.id === "line:2");
+    if (!location) throw new Error("Missing line location");
+    expect(applySuggestion(resume, { kind: "add" }, "Validated checkout", location.insertAt)).toBe("Alex\nExperience\n- Built checkout with\nengineering support\n- Validated checkout\n- Ran research");
+  });
+  it("does not append a rewrite when its original line has been removed", () => {
+    expect(applySuggestion("Alex\nSkills\nFigma", { kind: "rewrite", original: "Removed bullet" }, "Replacement")).toBe("Alex\nSkills\nFigma");
+  });
   it("replaces the original line with the revised bullet", () => {
     expect(
       applySuggestion(
@@ -54,11 +69,13 @@ describe("applySuggestion keeps bullet formatting", () => {
 import { buildQueue } from "./fixer";
 import { SEED_CANDIDATES, SEED_JOBS } from "./seed";
 describe("priority queue", () => {
-  const job = SEED_JOBS[0]!;
-  const q = buildQueue(job, { ...SEED_CANDIDATES[0]!, mandatory: {} } as never, "- Worked on designs.\n- Helped the team.");
+  const job = SEED_JOBS[0];
+  const candidate = SEED_CANDIDATES[0];
+  if (!job || !candidate) throw new Error("Missing test fixtures");
+  const q = buildQueue(job, { ...candidate, mandatory: {} }, "- Worked on designs.\n- Helped the team.");
   const rank = { critical: 0, impact: 1, polish: 2 } as const;
   it("puts critical job must-haves before impact and polish items", () => {
-    const order = q.map((s) => rank[s.tier!]);
+    const order = q.map((s) => rank[s.tier ?? "polish"]);
     expect(order).toEqual([...order].sort((a, b) => a - b));
   });
   it("marks missing job requirements as critical", () => {

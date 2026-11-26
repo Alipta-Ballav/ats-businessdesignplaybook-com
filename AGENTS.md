@@ -45,3 +45,4 @@ use the editor.
 - Weekly teardowns fetch fixed official public Ashby feeds and rotate current design-role selections weekly, quoting only posting text — avoids scraping LinkedIn or inventing employer criteria.
 - Resume health reminders are user-downloaded recurring calendar events, not automated emails — keeps delivery explicitly opt-in without an email service.
 - Resume preview and Word export share presentation-only blocks and A4 geometry; preserve source-line indices and raw evidence text so reflow cannot change scoring or editing targets.
+- Resume insertion uses explicit source-line locations; undo snapshots include draft and applied-fix state, and per-fix reversals retain exact before/after text to preserve unrelated edits.

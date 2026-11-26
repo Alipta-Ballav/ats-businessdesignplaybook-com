@@ -1,4 +1,5 @@
 # Roadmap
+- [x] Clarify AI facts action, allow choosing bullet placement, and verify undo restores text and applied state (signed-in desktop/mobile checks; 95 tests passed)
 - [x] Assign admin access to the requested owner account without removing candidate access
 - [x] Fix and verify edited-resume preview and Word alignment (signed-in edit/download, desktop/mobile preview, LibreOffice document opening, regression tests)
 - [x] Apply ₹99 prepaid 30-day Job Hunt Pass across checkout, access checks and pricing copy
