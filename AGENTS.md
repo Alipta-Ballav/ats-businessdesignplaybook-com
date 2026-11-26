@@ -40,6 +40,7 @@ use the editor.
 - Razorpay payments: server creates orders from PLANS and only confirmPaymentRow (razorpay.server.ts) marks payments completed by re-reading the order; webhook never trusts its body — the key secret stays in the gateway, so this read is the proof of payment.
 - Paid entitlement uses the shared hasPaidAccess rule on verified payment rows in both browser and AI handlers, never session-storage flags; distinct plan IDs preserve prior purchase terms and allow prepaid expiry without schema changes.
 - AI bullet rewrites (rewrite.functions.ts, free for all; paywall is on rescore + Word) must pass newFacts() in editor.ts before applying — AI may rephrase but never add facts.
+- Manual recommendation drafts are user-supplied evidence, not AI output; ground AI drafts against captured generation inputs and current supplied facts so manual metrics are not blocked and AI cannot invent them.
 - Career workspace saves immutable, owner-scoped resume snapshots and bookmarks through browser RLS; unrescored drafts have no verified score, and comparisons require identical level and job settings — prevents misleading progress and overwriting originals.
 - Promotion audits reuse the deterministic eight-dimension weights and quote evidence; they never claim employer promotion readiness — resume evidence cannot establish a promotion decision.
 - Weekly teardowns fetch fixed official public Ashby feeds and rotate current design-role selections weekly, quoting only posting text — avoids scraping LinkedIn or inventing employer criteria.

@@ -1,4 +1,5 @@
 # Roadmap
+- [x] Fix manual Critical bullets and matching facts actions; signed-in saved job report verified new metrics apply to a role and undo restores the original; 98 regression tests pass.
 - [x] Clarify AI facts action, allow choosing bullet placement, and verify undo restores text and applied state (signed-in desktop/mobile checks; 95 tests passed)
 - [x] Assign admin access to the requested owner account without removing candidate access
 - [x] Fix and verify edited-resume preview and Word alignment (signed-in edit/download, desktop/mobile preview, LibreOffice document opening, regression tests)

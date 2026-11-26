@@ -46,6 +46,11 @@ export function newFacts(draft: string, sources: string[]): string[] {
   return [...out];
 }
 
+/** Manual writing is user-supplied evidence; only AI drafts need grounding checks. */
+export function proposalFlags(draft: string, sources: string[], source: "manual" | "ai"): string[] {
+  return source === "ai" ? newFacts(draft, sources) : [];
+}
+
 export type LineDiff = { text: string; changed: boolean };
 /** Marks lines of the draft that are not present in the original resume. */
 export function diffLines(original: string, draft: string): LineDiff[] {

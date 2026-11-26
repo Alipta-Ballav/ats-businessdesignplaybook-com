@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { diffLines, fixesUsed, newFacts } from "./editor";
+import { diffLines, fixesUsed, newFacts, proposalFlags } from "./editor";
 import { canApplyFix } from "./plans";
 
 describe("newFacts", () => {
@@ -16,6 +16,17 @@ describe("newFacts", () => {
         "churn 10%",
       ]),
     ).toEqual([]);
+  });
+});
+describe("proposal grounding", () => {
+  it("allows user-written evidence with new numbers and company names", () => {
+    expect(proposalFlags("Led research at Google, improving conversion 30%", [], "manual")).toEqual([]);
+  });
+  it("still blocks unsupported facts in AI drafts", () => {
+    expect(proposalFlags("Led research at Google, improving conversion 30%", ["Led research"], "ai")).toEqual(["30", "Google"]);
+  });
+  it("allows AI to rephrase facts supplied in a manual draft", () => {
+    expect(proposalFlags("Improved conversion 30% at Google through research", ["Led research at Google, improving conversion 30%"], "ai")).toEqual([]);
   });
 });
 describe("diffLines", () => {

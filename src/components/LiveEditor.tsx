@@ -22,8 +22,8 @@ import { SaveResumeVersion } from "@/components/SaveResumeVersion";
 import { readResumeGuest } from "@/lib/evaluate.functions";
 import { suggestRewrite } from "@/lib/rewrite.functions";
 import { applySuggestion, buildQueue, cleanLine, headlineScore, insertionLocations, TIERS, type Suggestion, type Tier } from "@/lib/fixer";
-import { estimateCandidate, fixesUsed, newFacts, revertFix, type FixEntry } from "@/lib/editor";
-import { downloadResumeDocx } from "@/lib/export-docx";
+import { estimateCandidate, fixesUsed, proposalFlags, revertFix, type FixEntry } from "@/lib/editor";
+import { downloadResumeDocx, resumeBlocks } from "@/lib/export-docx";
 import { usePro, passAllowance, recordPassScan } from "@/lib/pro";
 import { FREE_FIXES, canApplyFix, canDownloadWord, canRescore } from "@/lib/plans";
 import { inferLevel, type Candidate, type Job, type Level } from "@/lib/scoring";
@@ -79,7 +79,7 @@ export function LiveEditor({
   const [skipped, setSkipped] = useState<string[]>([]);
   const [openId, setOpenId] = useState<string | null>(null);
   const [fields, setFields] = useState(blank);
-  const [aiDraft, setAiDraft] = useState<{ text: string; flags: string[] } | null>(null);
+  const [aiDraft, setAiDraft] = useState<{ text: string; sources: string[]; manualFacts: string } | null>(null);
   const [proposal, setProposal] = useState("");
   const [writingManually, setWritingManually] = useState(false);
   const [placement, setPlacement] = useState("");
@@ -117,9 +117,14 @@ export function LiveEditor({
   const stale = draft !== official.text;
   const delta = official.score - base;
   const locations = useMemo(() => insertionLocations(draft), [draft]);
-  const location = locations.find((l) => l.id === placement);
-  const placementReady = active?.kind !== "add" || !!location || placement === "additional";
-  const aiLabel = proposal.trim() ? "Try again" : active?.original ? "Improve this line with AI" : "Write a new bullet with AI";
+  const firstRole = resumeBlocks(draft).find((block) => block.kind === "role")?.lineIndices[0];
+  const defaultPlacement = locations.find((l) => l.id === `section:${firstRole}`)?.id
+    ?? locations.find((l) => l.id.startsWith("section:"))?.id ?? locations[0]?.id ?? "additional";
+  const selectedPlacement = placement || defaultPlacement;
+  const location = locations.find((l) => l.id === selectedPlacement);
+  const placementReady = active?.kind !== "add" || !!location || selectedPlacement === "additional";
+  const aiLabel = aiDraft ? "Regenerate with AI" : active?.original ? "Improve this line with AI" : "Write a new bullet with AI";
+  const factsLabel = aiDraft ? "Regenerate using your facts" : "Generate using your facts";
 
   const commit = (next: string) => {
     setHistory((h) => [...h, { draft, fixes, skipped }]);
@@ -146,7 +151,9 @@ export function LiveEditor({
     .join("; ");
 
   const askAi = async () => {
-    if (!facts.trim() && !active?.original) {
+    const manualFacts = aiDraft?.manualFacts ?? (writingManually ? proposal : "");
+    const suppliedFacts = [facts, manualFacts].filter(Boolean).join("; ");
+    if (!suppliedFacts.trim() && !active?.original) {
       setShowFacts(true);
       toast.error(
         "Fill in at least one question below — AI writes the new bullet only from your facts.",
@@ -155,8 +162,8 @@ export function LiveEditor({
     }
     setBusy("ai");
     try {
-      const { text } = await ai({ data: { original: active?.original ?? "", facts } });
-      setAiDraft({ text, flags: [] });
+      const { text } = await ai({ data: { original: active?.original ?? "", facts: suppliedFacts } });
+      setAiDraft({ text, sources: [active?.original ?? "", suppliedFacts], manualFacts });
       setProposal(text);
     } catch (e) {
       const m = (e as Error).message || "";
@@ -167,6 +174,10 @@ export function LiveEditor({
 
   const apply = (text: string, source: "manual" | "ai") => {
     if (!active) return;
+    if (proposalFlags(text, [...(aiDraft?.sources ?? []), facts], source).length) {
+      toast.error("Remove unsupported AI details or add them as true facts first.");
+      return;
+    }
     if (!placementReady) {
       toast.error("Choose where to add this bullet first.");
       return;
@@ -191,7 +202,7 @@ export function LiveEditor({
         source,
         title: active.title,
         added: cleanLine(text),
-        edit: { before: draft, after: next, cleanupHeading: placement === "additional" && !resume.split("\n").some((line) => line.trim() === "Additional evidence") },
+        edit: { before: draft, after: next, cleanupHeading: selectedPlacement === "additional" && !resume.split("\n").some((line) => line.trim() === "Additional evidence") },
         removed:
           active.kind === "rewrite" && active.original && draft.includes(active.original)
             ? active.original
@@ -332,7 +343,7 @@ export function LiveEditor({
   };
 
   const pending = active && proposal.trim() && placementReady ? applySuggestion(draft, active, proposal, location?.insertAt) : draft;
-  const flags = proposal.trim() ? newFacts(proposal, [active?.original ?? "", facts]) : [];
+  const flags = proposalFlags(proposal, [...(aiDraft?.sources ?? []), facts], aiDraft ? "ai" : "manual");
 
   const left = (
     <div className="space-y-4">
@@ -491,7 +502,7 @@ export function LiveEditor({
                       {s.kind === "add" && (
                         <div className="space-y-1.5">
                           <p className="text-xs font-medium">Add this bullet to</p>
-                          <Select value={placement} onValueChange={setPlacement}>
+                          <Select value={selectedPlacement} onValueChange={setPlacement}>
                             <SelectTrigger aria-label="Add this bullet to" className="max-w-full [&>span]:truncate">
                               <SelectValue placeholder="Choose a role, section, or line" />
                             </SelectTrigger>
@@ -500,6 +511,7 @@ export function LiveEditor({
                               <SelectItem value="additional">New Additional evidence section</SelectItem>
                             </SelectContent>
                           </Select>
+                          {!placementReady && <p role="status" className="text-xs text-destructive">Choose where this bullet belongs before applying it.</p>}
                         </div>
                       )}
                       {s.original && (
@@ -522,12 +534,12 @@ export function LiveEditor({
                             <Wand2 />
                             {busy === "ai" ? "Writing…" : aiLabel}
                           </Button>
-                          <button
+                          <Button variant="ghost"
                             className="w-full text-center text-xs text-muted-foreground hover:text-foreground hover:underline"
-                            onClick={() => { setWritingManually(true); setProposal(s.original ?? ""); }}
+                            onClick={() => { setWritingManually(true); setAiDraft(null); setProposal(s.original ?? ""); }}
                           >
                             or write it myself
-                          </button>
+                          </Button>
                         </div>
                       ) : (
                         <div className="space-y-2">
@@ -575,8 +587,7 @@ export function LiveEditor({
                       )}
                       {!s.original && (
                         <p className="rounded-md bg-muted/40 p-3 text-xs">
-                          Your resume has no line for this yet. Answer one question below with
-                          something true, then choose the role, section, or line where it belongs.
+                          Your resume has no line for this yet. Write your own bullet, or provide true facts for AI.
                         </p>
                       )}
                       <details
@@ -608,10 +619,10 @@ export function LiveEditor({
                             </label>
                           ))}
                           <p className="text-muted-foreground">
-                            {proposal.trim() ? "Regenerate using your facts" : "Generate using your facts"} — AI uses your original line and the facts you provide.
+                            {aiDraft ? "AI uses your original line and the facts you provide." : "AI uses your original line, your manual draft, and the facts you provide."}
                           </p>
-                          <Button variant="outline" className="w-full h-auto whitespace-normal" onClick={askAi} disabled={!!busy || (!facts.trim() && !s.original)}>
-                            <Wand2 />{busy === "ai" ? "Writing…" : aiLabel}
+                          <Button variant="outline" className="w-full h-auto whitespace-normal" onClick={askAi} disabled={!!busy || (!facts.trim() && !s.original && !(writingManually && proposal.trim()))}>
+                            <Wand2 />{busy === "ai" ? "Writing…" : factsLabel}
                           </Button>
                         </div>
                       </details>
