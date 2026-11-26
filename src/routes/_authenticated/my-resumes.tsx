@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { CalendarPlus, FileStack, Trash2, ArrowUpRight, Copy, Layers } from "lucide-react";
+import { CalendarPlus, FileStack, Trash2, ArrowUpRight, Copy, Layers, Pencil } from "lucide-react";
 import { canCreateVariant } from "@/lib/plans";
 import { usePowerPass } from "@/lib/pro";
 import { VariantUpsell } from "@/components/VariantUpsell";
@@ -105,7 +105,13 @@ function MyResumes() {
         </div>
         <div className="flex flex-wrap gap-2">
           {current && !editing && (
-            <Button onClick={duplicate} disabled={power === null}>
+            <Button onClick={() => setEditing(true)}>
+              <Pencil />
+              Edit resume
+            </Button>
+          )}
+          {current && !editing && (
+            <Button variant="outline" onClick={duplicate} disabled={power === null}>
               {power ? <Copy /> : <Layers />}
               Create role variant
             </Button>
@@ -147,7 +153,7 @@ function MyResumes() {
                     className="h-auto min-w-0 flex-1 justify-start whitespace-normal p-4 text-left"
                     onClick={() => {
                       setSelected(v.id);
-                      setEditing(true);
+                      setEditing(false);
                       setComparison("");
                     }}
                   >
@@ -252,8 +258,9 @@ function MyResumes() {
                   </div>
                 )}
                 <div className="flex flex-wrap gap-2">
-                  <Button variant="outline" onClick={() => setEditing(!editing)}>
-                    {editing ? "View saved resume" : "Edit resume"}
+                  <Button onClick={() => setEditing(true)}>
+                    <Pencil />
+                    Edit resume
                   </Button>
                   <Button variant="outline" onClick={duplicate} disabled={power === null}>
                     {power ? <Copy /> : <Layers />}
