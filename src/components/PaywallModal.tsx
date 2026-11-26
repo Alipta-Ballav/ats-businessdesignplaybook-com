@@ -163,7 +163,7 @@ export function PaywallModal({
               </ul>
               {signedIn === false ? (
                 <Button asChild className="w-full">
-                  <Link to="/auth" search={{ mode: "signup", as: "candidate", redirect: "/check" }}>
+                  <Link to="/auth" search={{ mode: "signup", as: "candidate", redirect: "/candidate" }}>
                     Sign in to pay ₹{price ?? p.inr}
                   </Link>
                 </Button>
