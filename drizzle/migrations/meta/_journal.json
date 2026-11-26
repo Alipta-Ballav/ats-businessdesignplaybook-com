@@ -43,6 +43,13 @@
       "when": 1795618464977,
       "tag": "0005_restrict_self_role_choice",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795704802550,
+      "tag": "0006_migration",
+      "breakpoints": true
     }
   ]
 }

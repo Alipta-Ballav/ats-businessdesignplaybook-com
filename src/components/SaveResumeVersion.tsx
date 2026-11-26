@@ -5,7 +5,10 @@ import { Save } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { q } from "@/lib/db";
-import { saveVersion } from "@/lib/career/db";
+import { careerQueries, saveVersion } from "@/lib/career/db";
+import { canCreateVariant } from "@/lib/plans";
+import { usePowerPass } from "@/lib/pro";
+import { VariantUpsell } from "@/components/VariantUpsell";
 import { inferLevel, type Candidate, type Job, type Level } from "@/lib/scoring";
 export function SaveResumeVersion({
   resume,
@@ -22,6 +25,9 @@ export function SaveResumeVersion({
 }) {
   const { data: me } = useQuery(q.me());
   const client = useQueryClient();
+  const power = usePowerPass();
+  const { data: saved } = useQuery({ ...careerQueries.versions(me?.id ?? ""), enabled: !!me });
+  const allowed = power === null || canCreateVariant(power, saved?.length ?? 0);
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
@@ -55,17 +61,19 @@ export function SaveResumeVersion({
     <div className="space-y-2">
       <Button size="sm" variant="outline" onClick={() => setOpen(!open)}>
         <Save />
-        Save version
+        {saved?.length ? "Save as role variant" : "Save master resume"}
       </Button>
       {open &&
-        (me ? (
+        (me && !allowed ? (
+          <VariantUpsell />
+        ) : me ? (
           <div className="space-y-2 border-t pt-3">
             <label className="block text-sm">
-              Version name
+              {saved?.length ? "Variant name" : "Version name"}
               <input
                 maxLength={120}
                 className="mt-1 w-full rounded-md border bg-background px-3 py-2"
-                placeholder="e.g. Staff designer · platform roles"
+                placeholder="e.g. FinTech Senior PD · Design Systems Lead"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />

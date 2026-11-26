@@ -1,7 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { CalendarPlus, FileStack, Trash2, ArrowUpRight } from "lucide-react";
+import { CalendarPlus, FileStack, Trash2, ArrowUpRight, Copy, Layers } from "lucide-react";
+import { canCreateVariant } from "@/lib/plans";
+import { usePowerPass } from "@/lib/pro";
+import { VariantUpsell } from "@/components/VariantUpsell";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { CareerNav } from "@/components/CareerNav";
@@ -9,13 +12,13 @@ import { ResumePreview } from "@/components/ResumePreview";
 import { LiveEditor } from "@/components/LiveEditor";
 import { q, must } from "@/lib/db";
 import { supabase } from "@/integrations/supabase/client";
-import { careerQueries } from "@/lib/career/db";
+import { careerQueries, saveVersion } from "@/lib/career/db";
 import { comparisonKey, reminderCalendar, versionScore } from "@/lib/career/logic";
 import { careerHead } from "@/lib/career/meta";
 export const Route = createFileRoute("/_authenticated/my-resumes")({
   head: () =>
     careerHead(
-      "My design resume versions",
+      "Multi-resume workspace · role variants",
       "Your private resume timeline, comparable score progression, and quarterly resume health reminders.",
     ),
   loader: async ({ context }) => {
@@ -34,6 +37,31 @@ function MyResumes() {
   const [editing, setEditing] = useState(false);
   const [comparison, setComparison] = useState("");
   const [deleting, setDeleting] = useState("");
+  const power = usePowerPass();
+  const [upsell, setUpsell] = useState(false);
+  const duplicate = async () => {
+    if (!current) return;
+    if (power === false && !canCreateVariant(false, versions.length)) return setUpsell(true);
+    const name = window.prompt("Name this role variant", `${current.name} · variant`)?.trim();
+    if (!name) return;
+    try {
+      const row = await saveVersion(
+        uid,
+        name,
+        current.resume_text,
+        current.candidate,
+        current.job,
+        current.scored_text,
+        current.level,
+      );
+      await client.invalidateQueries({ queryKey: ["resume-versions", uid] });
+      if (row) setSelected(row.id);
+      setEditing(true);
+      toast.success("Role variant created — your master copy is unchanged");
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  };
   const current = versions.find((v) => v.id === selected) ?? versions[0];
   const comparable = current
     ? [...versions]
@@ -78,7 +106,7 @@ function MyResumes() {
           <p className="text-sm font-medium text-primary">YOUR PRIVATE DESIGN WORKSPACE</p>
           <h1 className="text-4xl">Your work. A stronger story.</h1>
           <p className="text-muted-foreground">
-            Named revisions, preserved originals, and progress you can actually compare.
+            One master resume plus tailored role variants, each with its own target job and score.
           </p>
         </div>
         <Button asChild>
@@ -115,7 +143,8 @@ function MyResumes() {
           <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
             <aside className="space-y-2">
               <h2 className="mb-4 text-sm font-medium">
-                {versions.length} saved version{versions.length !== 1 && "s"}
+                {versions.length} resume{versions.length !== 1 && "s"} ·{" "}
+                {power ? "Power Searcher workspace" : "1 master resume on your plan"}
               </h2>
               {versions.map((v) => (
                 <div
@@ -228,9 +257,16 @@ function MyResumes() {
                     ))}
                   </div>
                 )}
-                <Button variant="outline" onClick={() => setEditing(!editing)}>
-                  {editing ? "Close editor" : "Edit a new revision"}
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="outline" onClick={() => setEditing(!editing)}>
+                    {editing ? "Close editor" : "Edit a new revision"}
+                  </Button>
+                  <Button variant="outline" onClick={duplicate}>
+                    {power ? <Copy /> : <Layers />}
+                    Duplicate as role variant
+                  </Button>
+                </div>
+                {upsell && <VariantUpsell />}
                 {!editing && (
                   <ResumePreview original={current.scored_text} draft={current.resume_text} />
                 )}

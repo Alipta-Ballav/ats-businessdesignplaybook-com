@@ -115,3 +115,12 @@ export function passScansLeft(scansSincePass: number, activePasses: number | str
     : PASS_SCANS * activePasses;
   return Math.max(0, total - scansSincePass);
 }
+
+/** Free and Job Hunt users keep one master resume; role variants need an active Power Searcher Pass (also enforced in the database). */
+export const MASTER_RESUMES = 1;
+export function hasPowerAccess(payments: AccessPayment[], now = Date.now()) {
+  return payments.some((p) => p.plan === "power_60" && hasPaidAccess(p, now));
+}
+export function canCreateVariant(power: boolean, saved: number) {
+  return power || saved < MASTER_RESUMES;
+}

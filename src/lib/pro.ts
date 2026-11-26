@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { hasPaidAccess, passScansLeft } from "@/lib/plans";
+import { hasPaidAccess, hasPowerAccess, passScansLeft } from "@/lib/plans";
 
 /** A paid scan unlocks every Pro feature for the report it produced (this browser tab). */
 const UNLOCK_KEY = "ft-report-unlocked";
@@ -114,4 +114,28 @@ export async function recordPassScan() {
   const { data: s } = await supabase.auth.getSession();
   const uid = s.session?.user.id;
   if (uid) await supabase.from("pass_scans").insert({ user_id: uid });
+}
+
+/** Power Searcher entitlement (admins included) for the Multi-Resume Workspace. */
+export function usePowerPass(): boolean | null {
+  const [power, setPower] = useState<boolean | null>(null);
+  useEffect(() => {
+    let live = true;
+    void (async () => {
+      const { data: s } = await supabase.auth.getSession();
+      const uid = s.session?.user.id;
+      if (!uid) return live && setPower(false);
+      if (await isAdmin()) return live && setPower(true);
+      const { data } = await supabase
+        .from("payments")
+        .select("plan, amount, status, paid_at")
+        .eq("user_id", uid)
+        .eq("status", "completed");
+      if (live) setPower(hasPowerAccess(data ?? []));
+    })();
+    return () => {
+      live = false;
+    };
+  }, []);
+  return power;
 }

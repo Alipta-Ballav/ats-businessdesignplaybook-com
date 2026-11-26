@@ -513,6 +513,7 @@ function Landing() {
             <ul className="mt-5 space-y-2 text-sm">
               {[
                 `${POWER_SCANS} verified scores in ${POWER_DAYS} days (new resumes or after edits)`,
+                "Multi-resume workspace: unlimited role variants",
                 "Tailor and rescore for many job posts",
                 "Download ATS-clean Word (.docx) and PDF",
                 "Custom ATS tuning",
@@ -568,6 +569,7 @@ function Landing() {
                 ["AI help to rewrite lines", "Yes", "Yes", "Yes"],
                 ["Download your resume as Word and PDF", "No", "Yes", "Yes"],
                 ["Custom ATS tuning", "No", "Yes", "Yes"],
+                ["Multi-resume workspace (role variants)", "No", "1 master resume", "Unlimited variants"],
                 ["Charged again automatically", "Never", "Never", "Never"],
               ].map(([b, f, p, w]) => (
                 <tr key={b} className="border-b last:border-0">
