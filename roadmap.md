@@ -1,4 +1,6 @@
 # Roadmap
+- [x] Assign admin access to the requested owner account without removing candidate access
+- [x] Fix and verify edited-resume preview and Word alignment (signed-in edit/download, desktop/mobile preview, LibreOffice document opening, regression tests)
 - [x] Apply ₹99 prepaid 30-day Job Hunt Pass across checkout, access checks and pricing copy
 - [x] Simplify resume upload so the primary action stays visible above the fold
 - [x] Test pass expiry, payment amount and upload flow (Razorpay checkout opened; no real payment submitted)

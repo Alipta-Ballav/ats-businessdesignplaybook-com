@@ -44,3 +44,4 @@ use the editor.
 - Promotion audits reuse the deterministic eight-dimension weights and quote evidence; they never claim employer promotion readiness — resume evidence cannot establish a promotion decision.
 - Weekly teardowns fetch fixed official public Ashby feeds and rotate current design-role selections weekly, quoting only posting text — avoids scraping LinkedIn or inventing employer criteria.
 - Resume health reminders are user-downloaded recurring calendar events, not automated emails — keeps delivery explicitly opt-in without an email service.
+- Resume preview and Word export share presentation-only blocks and A4 geometry; preserve source-line indices and raw evidence text so reflow cannot change scoring or editing targets.

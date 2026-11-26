@@ -24,11 +24,23 @@ import {
 } from "@/lib/resume-images";
 
 const NONE = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" };
-const NO_BORDERS = { top: NONE, bottom: NONE, left: NONE, right: NONE, insideHorizontal: NONE, insideVertical: NONE };
-const CONTENT_W = 10224; // page width minus margins, in twentieths of a point
+const NO_BORDERS = {
+  top: NONE,
+  bottom: NONE,
+  left: NONE,
+  right: NONE,
+  insideHorizontal: NONE,
+  insideVertical: NONE,
+};
+export const RESUME_PAGE = { width: 11906, height: 16838, margin: 1080, contentWidth: 9746 };
+const CONTENT_W = RESUME_PAGE.contentWidth; // A4 minus two 0.75-inch margins, in twips
 const picture = (img: ResumeImage, maxW: number, maxH: number) => {
   const f = fitBox(img.w, img.h, maxW, maxH);
-  return new ImageRun({ type: "png", data: dataUrlBytes(img.src), transformation: { width: f.w, height: f.h } });
+  return new ImageRun({
+    type: "png",
+    data: dataUrlBytes(img.src),
+    transformation: { width: f.w, height: f.h },
+  });
 };
 
 export const BULLET = /^\s*([-•*▪●–]|\d+[.)])\s+/;
@@ -62,6 +74,7 @@ const runs = (t: string, o: { bold?: boolean; size?: number; color?: string } = 
     (r) =>
       new TextRun({
         text: r.text,
+        font: "Calibri",
         bold: !!(o.bold || r.bold),
         italics: !!r.italic,
         ...(o.size ? { size: o.size } : {}),
@@ -80,21 +93,82 @@ export const isRoleLine = (l: string) => {
     !BULLET.test(t) &&
     t.length <= 120 &&
     !/[.;]$/.test(t) &&
-    /((19|20)\d{2}|present|current)/i.test(t) &&
+    /\b((19|20)\d{2}|present|current)\b/i.test(t) &&
+    !/@|https?:\/\/|www\.|linkedin\.com|\+\d[\d\s()-]{7,}/i.test(t) &&
     /[|–—·,-]/.test(t)
   );
 };
 
+export type ResumeBlock = {
+  kind: "name" | "heading" | "role" | "bullet" | "paragraph";
+  text: string;
+  lineIndices: number[];
+};
+
+/** Reflow only for presentation; never change the stored text used for evidence/scoring. */
+export function resumeBlocks(text: string): ResumeBlock[] {
+  const blocks: ResumeBlock[] = [];
+  let header = true;
+  let separated = true;
+  text
+    .replace(/\r/g, "")
+    .split("\n")
+    .forEach((raw, i) => {
+      const t = raw.trim();
+      if (!t) {
+        separated = true;
+        return;
+      }
+      const p = plain(t);
+      const kind: ResumeBlock["kind"] =
+        blocks.length === 0
+          ? "name"
+          : isHeading(p)
+            ? "heading"
+            : isRoleLine(p)
+              ? "role"
+              : BULLET.test(t)
+                ? "bullet"
+                : "paragraph";
+      if (kind === "heading" || kind === "role" || kind === "bullet") header = false;
+      const prev = blocks.at(-1);
+      const labelled = /^[\p{L}][\p{L} &/,-]{1,35}:\s/u.test(p);
+      const contact = /@|https?:\/\/|www\.|\+\d[\d\s()-]{7,}/i.test(p);
+      const continuation =
+        kind === "paragraph" &&
+        !header &&
+        !separated &&
+        prev &&
+        ((prev.kind === "bullet" &&
+          (!labelled || /^case study:/i.test(p)) &&
+          (!/[.!?]$/.test(prev.text) || /^[a-z]/.test(p) || /^case study:/i.test(p))) ||
+          (!labelled &&
+            !contact &&
+            prev.kind === "paragraph" &&
+            (/^[a-z]/.test(p) || !/[.!?]$/.test(prev.text))));
+      if (continuation && prev) {
+        // Keep hyphenated words/URLs contiguous, otherwise restore the missing space.
+        prev.text += /-$/.test(prev.text) ? t : ` ${t}`;
+        prev.lineIndices.push(i);
+      } else {
+        blocks.push({
+          kind,
+          text: kind === "bullet" ? t.replace(BULLET, "") : t,
+          lineIndices: [i],
+        });
+      }
+      separated = false;
+    });
+  return blocks;
+}
+
 /** Turns plain resume text into an ATS-safe single-column Word document: name, section rules, real bullets. */
 export function resumeToDocx(text: string, images?: ResumeImages): Document {
-  const lines = text.replace(/\r/g, "").split("\n");
-  const first = lines.findIndex((l) => l.trim());
+  const blocks = resumeBlocks(text);
   const kids: Paragraph[] = [];
   let headerEnd = -1; // number of paragraphs before the first section heading
-  lines.forEach((raw, i) => {
-    const l = raw.trim();
-    if (!l) return;
-    if (i === first) {
+  blocks.forEach(({ text: l, kind }) => {
+    if (kind === "name") {
       kids.push(
         new Paragraph({
           alignment: AlignmentType.LEFT,
@@ -104,7 +178,7 @@ export function resumeToDocx(text: string, images?: ResumeImages): Document {
       );
       return;
     }
-    if (isHeading(plain(l))) {
+    if (kind === "heading") {
       if (headerEnd < 0) headerEnd = kids.length;
       kids.push(
         new Paragraph({
@@ -112,13 +186,19 @@ export function resumeToDocx(text: string, images?: ResumeImages): Document {
           spacing: { before: 240, after: 80 },
           border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: "1F2A44", space: 2 } },
           children: [
-            new TextRun({ text: plain(l).toUpperCase(), bold: true, size: 22, color: "1F2A44" }),
+            new TextRun({
+              text: plain(l).toUpperCase(),
+              font: "Calibri",
+              bold: true,
+              size: 22,
+              color: "1F2A44",
+            }),
           ],
         }),
       );
       return;
     }
-    if (isRoleLine(plain(l))) {
+    if (kind === "role") {
       kids.push(
         new Paragraph({
           keepNext: true,
@@ -128,12 +208,14 @@ export function resumeToDocx(text: string, images?: ResumeImages): Document {
       );
       return;
     }
-    if (BULLET.test(l)) {
+    if (kind === "bullet") {
       kids.push(
         new Paragraph({
           numbering: { reference: "b", level: 0 },
+          indent: { left: 360, hanging: 240 },
+          widowControl: true,
           spacing: { after: 40 },
-          children: runs(l.replace(BULLET, "")),
+          children: runs(l),
         }),
       );
       return;
@@ -143,7 +225,7 @@ export function resumeToDocx(text: string, images?: ResumeImages): Document {
   const on = images?.on !== false;
   const body: (Paragraph | Table)[] = [...kids];
   if (on && images?.headshot) {
-    // Borderless fixed-width table: text left, photo right. Inline image, never floating, so nothing reflows.
+    // Fixed-width columns and inline images constrain reflow across document readers.
     const n = headerEnd < 0 ? Math.min(1, kids.length) : headerEnd;
     const photoW = 1800;
     body.splice(
@@ -153,6 +235,7 @@ export function resumeToDocx(text: string, images?: ResumeImages): Document {
         width: { size: CONTENT_W, type: WidthType.DXA },
         columnWidths: [CONTENT_W - photoW, photoW],
         layout: "fixed",
+        margins: { top: 0, bottom: 0, left: 0, right: 0 },
         borders: NO_BORDERS,
         rows: [
           new TableRow({
@@ -186,7 +269,15 @@ export function resumeToDocx(text: string, images?: ResumeImages): Document {
         keepNext: true,
         spacing: { before: 240, after: 80 },
         border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: "1F2A44", space: 2 } },
-        children: [new TextRun({ text: "PORTFOLIO VISUALS", bold: true, size: 22, color: "1F2A44" })],
+        children: [
+          new TextRun({
+            text: "PORTFOLIO VISUALS",
+            font: "Calibri",
+            bold: true,
+            size: 22,
+            color: "1F2A44",
+          }),
+        ],
       }),
     );
     const half = CONTENT_W / 2;
@@ -217,13 +308,21 @@ export function resumeToDocx(text: string, images?: ResumeImages): Document {
         width: { size: CONTENT_W, type: WidthType.DXA },
         columnWidths: [half, half],
         layout: "fixed",
+        margins: { top: 0, bottom: 0, left: 0, right: 0 },
         borders: NO_BORDERS,
         rows,
       }),
     );
   }
   return new Document({
-    styles: { default: { document: { run: { font: "Calibri", size: 21 } } } },
+    styles: {
+      default: {
+        document: {
+          run: { font: "Calibri", size: 22 },
+          paragraph: { alignment: AlignmentType.LEFT, spacing: { line: 324, after: 60 } },
+        },
+      },
+    },
     numbering: {
       config: [
         {
@@ -244,8 +343,13 @@ export function resumeToDocx(text: string, images?: ResumeImages): Document {
       {
         properties: {
           page: {
-            size: { width: 12240, height: 15840 },
-            margin: { top: 1008, right: 1008, bottom: 1008, left: 1008 },
+            size: { width: RESUME_PAGE.width, height: RESUME_PAGE.height },
+            margin: {
+              top: RESUME_PAGE.margin,
+              right: RESUME_PAGE.margin,
+              bottom: RESUME_PAGE.margin,
+              left: RESUME_PAGE.margin,
+            },
           },
         },
         children: body,
