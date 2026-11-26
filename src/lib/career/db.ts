@@ -55,3 +55,18 @@ export async function saveVersion(
       .single(),
   );
 }
+export async function updateVersion(
+  id: string,
+  resume: string,
+  candidate: Candidate,
+  scoredText: string,
+) {
+  return must(
+    await supabase
+      .from("resume_versions")
+      .update({ resume_text: resume, candidate: candidate as unknown as Json, scored_text: scoredText })
+      .eq("id", id)
+      .select("id")
+      .single(),
+  );
+}

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ResumeNameDialog } from "@/components/ResumeNameDialog";
 import { VariantUpsell } from "@/components/VariantUpsell";
-import { careerQueries, saveVersion } from "@/lib/career/db";
+import { careerQueries, saveVersion, updateVersion } from "@/lib/career/db";
 import { q } from "@/lib/db";
 import { usePowerPass } from "@/lib/pro";
 import { canCreateVariant } from "@/lib/plans";
@@ -29,7 +29,8 @@ export function ResumeWorkspace({ seed, versionId, onSessionChange, onActiveVers
   const [selected, setSelected] = useState(versionId ?? "current");
   useEffect(() => { if (versionId) setSelected(versionId); }, [versionId]);
   const sessions = useRef<Record<string, EditorSession>>({});
-  const [dialog, setDialog] = useState<"" | "master" | "variant" | "revision">("");
+  const [dialog, setDialog] = useState<"" | "master" | "variant">("");
+  const [saving, setSaving] = useState(false);
   const [upsell, setUpsell] = useState(false);
   const current = versions.find((version) => version.id === selected);
   const value: WorkspaceSeed = current ? {
@@ -42,7 +43,18 @@ export function ResumeWorkspace({ seed, versionId, onSessionChange, onActiveVers
     sessions.current[selected] = session;
     if (selected === "current" || selected === versionId) onSessionChange?.(session);
   };
-  const openSave = (mode: "master" | "variant" | "revision") => {
+  const saveChanges = async () => {
+    if (!me || !current) return;
+    const active = sessions.current[selected];
+    setSaving(true);
+    try {
+      await updateVersion(current.id, active?.draft ?? current.resume_text, active?.official.cand ?? current.candidate, active?.official.text ?? current.scored_text);
+      await client.invalidateQueries({ queryKey: ["resume-versions", me.id] });
+      toast.success(`Saved changes to “${current.name}”`);
+    } catch (error) { toast.error((error as Error).message || "Changes could not be saved. Try again."); }
+    setSaving(false);
+  };
+  const openSave = (mode: "master" | "variant") => {
     if (me && !canCreateVariant(power === true, versions.length)) { setUpsell(true); return; }
     setUpsell(false);
     setDialog(mode);
@@ -59,8 +71,10 @@ export function ResumeWorkspace({ seed, versionId, onSessionChange, onActiveVers
           </SelectContent>
         </Select>
       </div>
-      <Button disabled={!!me && (isPending || power === null)} onClick={() => openSave(versions.length ? "revision" : "master")}><Save />{versions.length ? "Save new revision" : "Save master resume"}</Button>
-      {!!versions.length && <Button variant="outline" disabled={power === null} onClick={() => openSave("variant")}><Copy />Create role variant</Button>}
+      {current
+        ? <Button disabled={saving} onClick={saveChanges}><Save />{saving ? "Saving…" : "Save changes"}</Button>
+        : <Button disabled={!!me && (isPending || power === null)} onClick={() => openSave(versions.length ? "variant" : "master")}><Save />{versions.length ? "Save as role variant" : "Save master resume"}</Button>}
+      {current && <Button variant="outline" disabled={power === null} onClick={() => openSave("variant")}><Copy />Save as new variant</Button>}
       <Button asChild variant="ghost"><Link to="/my-resumes"><Layers />My resumes</Link></Button>
     </div>
     <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
@@ -69,7 +83,7 @@ export function ResumeWorkspace({ seed, versionId, onSessionChange, onActiveVers
       <span className="ml-auto">{current ? (current.id === master?.id ? "Master resume" : "Role variant") : "Unsaved draft"}</span>
     </div>
     {upsell && <VariantUpsell />}
-    <ResumeNameDialog open={!!me && !!dialog} onOpenChange={(open) => { if (!open) setDialog(""); }} title={dialog === "master" ? "Save master resume" : dialog === "revision" ? "Save new revision" : "Create role variant"} sourceName={dialog === "master" ? "" : label} onSave={async (name) => {
+    <ResumeNameDialog open={!!me && !!dialog} onOpenChange={(open) => { if (!open) setDialog(""); }} title={dialog === "master" ? "Save master resume" : "Save as new role variant"} sourceName={dialog === "master" ? "" : label} onSave={async (name) => {
       if (!me) return;
       const active = sessions.current[selected];
       try {
@@ -79,7 +93,7 @@ export function ResumeWorkspace({ seed, versionId, onSessionChange, onActiveVers
         await client.invalidateQueries({ queryKey: ["resume-versions", me.id] });
         setSelected(row.id);
         onActiveVersionChange?.(row.id);
-        toast.success(dialog === "master" ? "Master resume saved" : "New resume saved — original unchanged");
+        toast.success(dialog === "master" ? "Master resume saved" : `New role variant saved — ${label} unchanged`);
       } catch (error) { toast.error((error as Error).message); throw error; }
     }} />
     {!me && dialog && <div className="flex flex-wrap items-center gap-2 text-sm">Sign in to keep your resumes.<Button asChild size="sm"><Link to="/auth" search={{ mode: "signup", as: "candidate", redirect: "/candidate" }}>Sign in to save</Link></Button></div>}

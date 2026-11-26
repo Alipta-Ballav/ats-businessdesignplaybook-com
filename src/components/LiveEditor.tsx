@@ -596,11 +596,14 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
                             rows={3}
                             className="w-full rounded-md border-2 border-success/50 bg-success/5 p-3 text-sm focus:border-success focus:outline-none"
                             value={proposal}
-                            onChange={(e) => setProposal(e.target.value)}
+                            onChange={(e) => {
+                              setProposal(e.target.value);
+                              if (aiDraft && e.target.value !== aiDraft.text) { setAiDraft(null); setWritingManually(true); }
+                            }}
                           />
-                          {s.original && sameLine(proposal, s.original) && (
-                            <p role="status" className="text-xs text-muted-foreground">
-                              This is still your original line. Change the wording or add a real result before applying.
+                          {s.original && unchanged(proposal, s.original) && (
+                            <p className="text-xs text-muted-foreground">
+                              Edit the line above, then apply it.
                             </p>
                           )}
                           {flags.length > 0 && (
@@ -611,7 +614,7 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
                           )}
                           <div className="flex flex-wrap items-center gap-2">
                             <Button
-                              disabled={!proposal.trim() || (!!s.original && sameLine(proposal, s.original)) || flags.length > 0 || !placementReady || !!busy}
+                              disabled={!proposal.trim() || (!!s.original && unchanged(proposal, s.original)) || flags.length > 0 || !placementReady || !!busy}
                               onClick={() => apply(proposal, aiDraft ? "ai" : "manual")}
                             >
                               <Check />
@@ -942,5 +945,10 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
 
 function sameLine(a: string, b: string) {
   const n = (t: string) => t.toLowerCase().replace(/^[\s•\-*]+/, "").replace(/[^a-z0-9%]+/g, " ").trim();
+  return n(a) === n(b);
+}
+
+function unchanged(a: string, b: string) {
+  const n = (t: string) => t.replace(/\s+/g, " ").trim();
   return n(a) === n(b);
 }

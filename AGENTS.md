@@ -41,7 +41,7 @@ use the editor.
 - Paid entitlement uses the shared hasPaidAccess rule on verified payment rows in both browser and AI handlers, never session-storage flags; distinct plan IDs preserve prior purchase terms and allow prepaid expiry without schema changes.
 - AI bullet rewrites (rewrite.functions.ts, free for all; paywall is on rescore + Word) must pass newFacts() in editor.ts before applying — AI may rephrase but never add facts.
 - Manual recommendation drafts are user-supplied evidence, not AI output; ground AI drafts against captured generation inputs and current supplied facts so manual metrics are not blocked and AI cannot invent them.
-- Career workspace saves immutable, owner-scoped resume snapshots and bookmarks through browser RLS; unrescored drafts have no verified score, and comparisons require identical level and job settings — prevents misleading progress and overwriting originals.
+- Career workspace saves owner-scoped resumes and bookmarks through browser RLS; only the open resume's text, candidate and scored text are updated in place; unrescored drafts have no verified score, and comparisons require identical level and job settings — prevents misleading progress and overwriting originals.
 - Promotion audits reuse the deterministic eight-dimension weights and quote evidence; they never claim employer promotion readiness — resume evidence cannot establish a promotion decision.
 - Weekly teardowns fetch fixed official public Ashby feeds and rotate current design-role selections weekly, quoting only posting text — avoids scraping LinkedIn or inventing employer criteria.
 - Resume health reminders are user-downloaded recurring calendar events, not automated emails — keeps delivery explicitly opt-in without an email service.
@@ -51,4 +51,4 @@ use the editor.
 - Rewrite caching is per-editor and keyed on exact original text and facts; explicit regeneration bypasses it so evidence never leaks between users or different inputs.
 - Resume insertion uses explicit source-line locations; undo snapshots include draft and applied-fix state, and per-fix reversals retain exact before/after text to preserve unrelated edits.
 
-- ResumeWorkspace wraps every LiveEditor with a shared active-resume selector and keeps each variant’s draft/undo session only in React memory; explicit saves create immutable snapshots so switching never overwrites a master or another variant.
+- ResumeWorkspace wraps every LiveEditor with a shared active-resume selector and keeps each variant’s draft/undo session only in React memory; "Save changes" updates only the active saved resume and new variants are inserts, so switching never overwrites a master or another variant.

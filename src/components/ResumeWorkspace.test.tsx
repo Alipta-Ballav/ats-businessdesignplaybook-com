@@ -5,13 +5,13 @@ import { ResumeWorkspace, type WorkspaceSeed } from "./ResumeWorkspace";
 import type { EditorSession } from "@/lib/editor-session";
 import type { ResumeVersion } from "@/lib/career/db";
 
-const mocks = vi.hoisted(() => ({ versions: [] as ResumeVersion[], power: true, save: vi.fn(), invalidate: vi.fn() }));
+const mocks = vi.hoisted(() => ({ versions: [] as ResumeVersion[], power: true, save: vi.fn(), update: vi.fn(), invalidate: vi.fn() }));
 vi.mock("@tanstack/react-query", () => ({
   useQuery: (options: { queryKey: string[] }) => ({ data: options.queryKey[0] === "resume-versions" ? mocks.versions : { id: "owner" }, isPending: false }),
   useQueryClient: () => ({ invalidateQueries: mocks.invalidate }),
 }));
 vi.mock("@/lib/db", () => ({ q: { me: () => ({ queryKey: ["me"] }) } }));
-vi.mock("@/lib/career/db", () => ({ careerQueries: { versions: () => ({ queryKey: ["resume-versions"] }) }, saveVersion: (...args: unknown[]) => mocks.save(...args) }));
+vi.mock("@/lib/career/db", () => ({ careerQueries: { versions: () => ({ queryKey: ["resume-versions"] }) }, saveVersion: (...args: unknown[]) => mocks.save(...args), updateVersion: (...args: unknown[]) => mocks.update(...args) }));
 vi.mock("@/lib/pro", () => ({ usePowerPass: () => mocks.power }));
 vi.mock("@tanstack/react-router", () => ({ Link: ({ children }: { children: ReactNode }) => <span>{children}</span> }));
 vi.mock("@/components/VariantUpsell", () => ({ VariantUpsell: () => <div>Upgrade required</div> }));
@@ -36,7 +36,7 @@ function Harness() {
   </ResumeWorkspace>;
 }
 beforeEach(() => {
-  cleanup(); mocks.power = true; mocks.save.mockReset(); mocks.invalidate.mockReset();
+  cleanup(); mocks.power = true; mocks.save.mockReset(); mocks.update.mockReset(); mocks.update.mockResolvedValue({ id: "master" }); mocks.invalidate.mockReset();
   mocks.save.mockResolvedValue({ id: "copy" }); mocks.invalidate.mockResolvedValue(undefined);
   mocks.versions = [
     { id: "variant", name: "Variant", resume_text: "Variant original", scored_text: "Variant original", candidate, job: { ...job, title: "FinTech designer", description: "Build payment experiences" }, level: "Senior Product Designer", user_id: "owner", created_at: "2026-11-26" },
@@ -60,15 +60,23 @@ describe("Resume workspace", () => {
   it("copies the active edited draft without changing the saved master or claiming a rescore", async () => {
     render(<Harness />);
     fireEvent.change(screen.getByLabelText("Draft text"), { target: { value: "New user supplied evidence" } });
-    fireEvent.click(screen.getByRole("button", { name: "Create role variant" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save as new variant" }));
     fireEvent.click(screen.getByRole("button", { name: "Confirm copy" }));
     await waitFor(() => expect(mocks.save).toHaveBeenCalledWith("owner", "FinTech variant", "New user supplied evidence", candidate, job, "Master original", "Senior Product Designer"));
     expect(mocks.versions.find((version) => version.id === "master")?.resume_text).toBe("Master original");
   });
+  it("saves edits back to the open resume without creating a copy", async () => {
+    mocks.power = false;
+    render(<Harness />);
+    fireEvent.change(screen.getByLabelText("Draft text"), { target: { value: "Master saved edit" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+    await waitFor(() => expect(mocks.update).toHaveBeenCalledWith("master", "Master saved edit", candidate, "Master original"));
+    expect(mocks.save).not.toHaveBeenCalled();
+  });
   it("does not create a second resume without Power Searcher", () => {
     mocks.power = false;
     render(<Harness />);
-    fireEvent.click(screen.getByRole("button", { name: "Create role variant" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save as new variant" }));
     expect(mocks.save).not.toHaveBeenCalled();
     expect(screen.queryByRole("button", { name: "Confirm copy" })).toBeNull();
     expect(screen.getByText("Upgrade required")).toBeInTheDocument();
