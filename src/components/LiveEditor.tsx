@@ -113,7 +113,8 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
 
   const queue = useMemo(() => buildQueue(job, official.cand, official.text), [job, official]);
   const doneIds = fixes.map((f) => f.id);
-  const open = queue.filter((s) => !doneIds.includes(s.id) && !skipped.includes(s.id));
+  // A saved draft may already have rewritten a line from the scored text; hide fixes whose line is gone.
+  const open = queue.filter((s) => !doneIds.includes(s.id) && !skipped.includes(s.id) && (s.kind !== "rewrite" || !s.original || draft.includes(s.original)));
   const tierOf = (s: Suggestion) => s.tier ?? "polish";
   const counts = Object.fromEntries(
     TIERS.map((t) => [t.id, open.filter((s) => tierOf(s) === t.id).length]),
@@ -211,7 +212,7 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
     }
     const next = applySuggestion(draft, active, text, location?.insertAt);
     if (next === draft) {
-      toast.error("Write or draft the improved line first.");
+      toast.error(active.kind === "rewrite" && active.original && !draft.includes(active.original) ? "This line was already changed in your draft. Edit it in the full resume text instead." : "Write or draft the improved line first.");
       return;
     }
     commit(next);
