@@ -184,6 +184,14 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
     try {
       const input = { original: active?.original ?? "", facts: suppliedFacts };
       const text = await rewriteCache.current(input, async () => (await ai({ data: input })).text, !!aiDraft);
+      if (active?.original && sameLine(text, active.original)) {
+        setShowFacts(true);
+        toast("AI can't make this line stronger without new facts.", {
+          description: "Add what you did, what made it hard, or what changed below, then generate again.",
+        });
+        setBusy("");
+        return;
+      }
       setAiDraft({ text, sources: [active?.original ?? "", suppliedFacts], manualFacts });
       setProposal(text);
     } catch (e) {
@@ -590,6 +598,11 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
                             value={proposal}
                             onChange={(e) => setProposal(e.target.value)}
                           />
+                          {s.original && sameLine(proposal, s.original) && (
+                            <p role="status" className="text-xs text-muted-foreground">
+                              This is still your original line. Change the wording or add a real result before applying.
+                            </p>
+                          )}
                           {flags.length > 0 && (
                             <p className="text-xs text-destructive">
                               “{flags.join("”, “")}” isn't in your resume. Remove it, or add it
@@ -598,7 +611,7 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
                           )}
                           <div className="flex flex-wrap items-center gap-2">
                             <Button
-                              disabled={!proposal.trim() || flags.length > 0 || !placementReady || !!busy}
+                              disabled={!proposal.trim() || (!!s.original && sameLine(proposal, s.original)) || flags.length > 0 || !placementReady || !!busy}
                               onClick={() => apply(proposal, aiDraft ? "ai" : "manual")}
                             >
                               <Check />
@@ -823,6 +836,11 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
               {passLeft !== null ? ` · ${passLeft} scan${passLeft === 1 ? "" : "s"} left in your pass` : ""}
               {" "}· the score at the top of the page is updated too
             </p>
+            {lastResult.to === lastResult.from && (
+              <p className="mt-2 text-xs text-muted-foreground">
+                Score didn't move because no new measurable results or job requirements were found. Add real numbers or outcomes to gain points.
+              </p>
+            )}
           </div>
         )}
         <Button size="lg" className="w-full" onClick={rescore} disabled={!!busy || !stale}>
@@ -920,4 +938,9 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
       <PaywallModal open={!!wall} onOpenChange={(o) => !o && setWall(null)} reason={wall ?? ""} />
     </section>
   );
+}
+
+function sameLine(a: string, b: string) {
+  const n = (t: string) => t.toLowerCase().replace(/^[\s•\-*]+/, "").replace(/[^a-z0-9%]+/g, " ").trim();
+  return n(a) === n(b);
 }
