@@ -1,14 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowRight, CheckCircle2, Gauge, Quote, Wand2 } from "lucide-react";
+import { ArrowRight, CheckCircle2, Gauge, Quote, Wand2, Layers, BookOpen, FileText, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TrustPillars } from "@/components/trust/Trust";
 import { ATS_SYSTEMS, FTI_DIMENSIONS, LEVELS, LEVEL_WEIGHTS, LEVEL_EXAMPLES } from "@/lib/scoring";
-import { LAUNCH_BANNER, POWER_INR, POWER_DAYS, POWER_SCANS, PASS_DAYS, PASS_SCANS } from "@/lib/plans";
+import { LAUNCH_BANNER, POWER_INR, POWER_DAYS, POWER_SCANS, PASS_DAYS, PASS_SCANS, LAUNCH_INR, REGULAR_INR } from "@/lib/plans";
 
-const TITLE = "Trusted UX Design ATS Checker — FutureTalent AI";
+const TITLE = "Designer ATS & Multi-Resume Workspace — FutureTalent AI";
 const DESC =
-  "The design ATS score you can trust: no AI training on your resume, no auto-debit. Get a free, explainable ATS score for your design resume. Every point is tied to a verbatim quote, calibrated across 8 ATS engines: Workday, Greenhouse, Ashby, Taleo, iCIMS, SuccessFactors, Lever and BambooHR.";
+  "ATS checks for UX/product designers and design leaders. Get evidence-based scores, match a job description, improve resume bullets, and manage tailored resumes with Power Searcher.";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -51,9 +51,9 @@ const compare = [
     "8 engines simulated separately — Workday, Greenhouse, Ashby, Taleo, iCIMS, SuccessFactors, Lever, BambooHR",
   ],
   ["Fixes", '"Add more metrics"', "Rewrite a bullet with your real numbers, rescore live"],
-  ["Export", "Broken layouts", "ATS-safe single-column Word file"],
-  ["Price", "$29–49 / month", "1 free scan, then ₹99 for 30 days · no auto-renewal"],
-  ["Your data", "May train their AI", "Never stored or used for AI training"],
+  ["Export", "Broken layouts", "Clean Word and selectable-text PDF exports"],
+  ["Price", "Often recurring", `1 free scan · ${LAUNCH_BANNER} · Power Searcher ₹${POWER_INR}`],
+  ["Your data", "Policies vary", "Private saved resumes in your account; delete them when you choose"],
 ];
 
 const examples = [
@@ -268,30 +268,29 @@ function Landing() {
     learning: 78,
   };
   return (
-    <div className="full-bleed -mt-8 space-y-20 pb-16">
-      <section className="bg-hero px-6 pt-20">
+    <div className="full-bleed -mt-8 space-y-12 pb-16">
+      <section className="bg-hero px-6 pt-8 md:pt-12">
         <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[1.1fr_1fr]">
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             <span className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs text-muted-foreground">
               <span className="relative flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
               </span>
-              Built only for Product & UX designers
+              For UX / Product Designers & Design Leaders
             </span>
-            <h1 className="text-5xl leading-[1.05] md:text-6xl">
-              Audit your UX resume <span className="text-gradient">in 60 seconds.</span>
+            <h1 className="text-4xl leading-[1.1] md:text-5xl">
+              The ATS workspace <span className="text-gradient">for designers.</span>
             </h1>
-            <p className="max-w-xl text-lg text-muted-foreground">
-              See exactly what Workday, Greenhouse and 6 other ATS engines read — scored like a
-              Design Director would. Every point backed by your own words. No AI training. No
-              subscription.
+            <p className="max-w-xl text-base text-muted-foreground md:text-lg">
+              Check your design resume, match it to a job, and improve your bullets using your own facts.
+              Keep a master resume and tailored role variants with Power Searcher.
             </p>
-            <ul className="flex flex-wrap gap-2">
+            <ul className="hidden flex-wrap gap-2 sm:flex">
               {[
-                ["100%", "Scores backed by your own words"],
-                ["0", "Resumes used for AI training"],
-                ["₹0", "Auto-debit, ever"],
+                ["8", "Design dimensions"],
+                ["AI", "Fact-grounded rewrites"],
+                ["PDF", "& Word exports with a pass"],
               ].map(([n, t]) => (
                 <li
                   key={t}
@@ -305,13 +304,11 @@ function Landing() {
             <div className="flex flex-wrap items-center gap-3">
               <Button asChild size="lg" className="bg-gradient-primary shadow-glow">
                 <Link to="/check" search={{ job: undefined }}>
-                  Try your free audit <ArrowRight />
+                  Check my resume <ArrowRight />
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link to="/check" search={{ job: undefined }}>
-                  Score against a job
-                </Link>
+                <Link to="/pass">Explore passes</Link>
               </Button>
             </div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border bg-card px-4 py-3 text-sm shadow-sheet">
@@ -322,10 +319,10 @@ function Landing() {
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="rounded bg-primary/10 px-1.5 py-0.5 font-mono text-xs font-semibold text-primary">
-                  ₹99
+                  Paid passes
                 </span>
                 <span className="text-muted-foreground">
-                  to rescore edits & download Word · 30 days · no auto-debit
+                  to verify edits & export · no auto-renewal
                 </span>
               </span>
             </div>
@@ -402,28 +399,29 @@ function Landing() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-6">
-        <ol className="grid gap-4 md:grid-cols-3">
+      <section className="mx-auto max-w-6xl px-6" aria-labelledby="offerings-title">
+        <p className="text-sm font-medium text-primary">From your first check to your next application</p>
+        <h2 id="offerings-title" className="mt-2 text-3xl">One design career. Multiple opportunities.</h2>
+        <div className="mt-8 grid gap-x-8 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
           {[
-            ["1", "Drop your resume", "PDF or Word. Read in seconds."],
-            ["2", "See your 8-dimension score", "Find which ATS engine knocks you out, and why."],
-            [
-              "3",
-              "Fix weak bullets",
-              "AI turns task-based bullets into measurable business impact.",
-            ],
-          ].map(([n, t, d]) => (
-            <li key={n} className="flex gap-3 rounded-xl border bg-card p-4">
-              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-gradient-primary font-mono text-sm text-primary-foreground">
-                {n}
-              </span>
-              <div>
-                <p className="font-medium">{t}</p>
-                <p className="text-sm text-muted-foreground">{d}</p>
-              </div>
-            </li>
+            { icon: Target, title: "Check & match", tag: "First audit free", text: "An eight-dimension design score, evidence from your resume, and ATS simulations. Add a job description for a separate Role Fit score." },
+            { icon: Wand2, title: "Improve & export", tag: "AI edits free · exports with a pass", text: "Fix priority gaps with your own facts, undo edits, then verify your final score and download clean Word or PDF files with a pass." },
+            { icon: Layers, title: "Save & tailor resumes", tag: `Power Searcher · ₹${POWER_INR}`, text: "Save your master resume. Create named copies for different roles, switch between them, and keep each target job separate." },
+            { icon: BookOpen, title: "Build your career story", tag: "Designer career resources", text: "Explore design bullet examples, evidence gaps for your next seniority level, and weekly breakdowns of public design job postings." },
+          ].map(({ icon: Icon, title, tag, text }) => (
+            <div key={title} className="border-t-2 border-primary/30 pt-5">
+              <Icon className="h-6 w-6 text-primary" />
+              <h3 className="mt-4 text-xl">{title}</h3>
+              <p className="mt-2 text-xs font-medium text-primary">{tag}</p>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{text}</p>
+            </div>
           ))}
-        </ol>
+        </div>
+        <div className="mt-8 flex flex-wrap items-center gap-3 border-y py-4 text-sm">
+          <FileText className="h-5 w-5 text-primary" />
+          <span>One master resume with an account. Multiple role variants with an active Power Searcher Pass.</span>
+          <Button asChild variant="link" className="px-0"><Link to="/my-resumes">My resumes <ArrowRight /></Link></Button>
+        </div>
       </section>
 
       <TrustPillars />
@@ -468,7 +466,7 @@ function Landing() {
               </span>
             </div>
             <p className="mt-1 font-mono text-4xl">
-              ₹99 <span className="text-lg text-muted-foreground line-through">₹149</span>{" "}
+              ₹{LAUNCH_INR} <span className="text-lg text-muted-foreground line-through">₹{REGULAR_INR}</span>{" "}
               <span className="text-sm text-muted-foreground">one-time</span>
             </p>
             <p className="mt-1 text-xs font-semibold text-primary">{LAUNCH_BANNER}</p>
@@ -501,7 +499,7 @@ function Landing() {
                 {POWER_DAYS}-Day Power Searcher Pass
               </p>
               <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
-                Most scores
+                Multiple role variants
               </span>
             </div>
             <p className="mt-1 font-mono text-4xl">
@@ -513,7 +511,7 @@ function Landing() {
             <ul className="mt-5 space-y-2 text-sm">
               {[
                 `${POWER_SCANS} verified scores in ${POWER_DAYS} days (new resumes or after edits)`,
-                "Multi-resume workspace: unlimited role variants",
+                "Master resume + named role variants",
                 "Tailor and rescore for many job posts",
                 "Download ATS-clean Word (.docx) and PDF",
                 "Custom ATS tuning",
@@ -550,7 +548,7 @@ function Landing() {
               <tr className="border-b text-left text-xs text-muted-foreground">
                 <th className="px-6 py-2 font-medium">What you can do</th>
                 <th className="px-4 py-2 font-medium">Free</th>
-                <th className="px-4 py-2 font-medium text-primary">Job Hunt · ₹99</th>
+                <th className="px-4 py-2 font-medium text-primary">Job Hunt · ₹{LAUNCH_INR} launch</th>
                 <th className="px-4 py-2 font-medium text-primary">
                   Power Searcher · ₹{POWER_INR}
                 </th>
@@ -569,7 +567,9 @@ function Landing() {
                 ["AI help to rewrite lines", "Yes", "Yes", "Yes"],
                 ["Download your resume as Word and PDF", "No", "Yes", "Yes"],
                 ["Custom ATS tuning", "No", "Yes", "Yes"],
-                ["Multi-resume workspace (role variants)", "No", "1 master resume", "Unlimited variants"],
+                ["Save a master resume (account required)", "Yes", "Yes", "Yes"],
+                ["Create & switch role variants", "No", "No", "Yes · while pass is active"],
+                ["Bullet examples & career resources", "Yes", "Yes", "Yes"],
                 ["Charged again automatically", "Never", "Never", "Never"],
               ].map(([b, f, p, w]) => (
                 <tr key={b} className="border-b last:border-0">

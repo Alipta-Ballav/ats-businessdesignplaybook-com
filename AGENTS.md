@@ -50,3 +50,5 @@ use the editor.
 - Guest editor state lives only inside the expiring guest report and a same-tab account-import handoff; use stable scan IDs for retry-safe imports and never autosave signed-in drafts or overwrite originals.
 - Rewrite caching is per-editor and keyed on exact original text and facts; explicit regeneration bypasses it so evidence never leaks between users or different inputs.
 - Resume insertion uses explicit source-line locations; undo snapshots include draft and applied-fix state, and per-fix reversals retain exact before/after text to preserve unrelated edits.
+
+- ResumeWorkspace wraps every LiveEditor with a shared active-resume selector and keeps each variant’s draft/undo session only in React memory; explicit saves create immutable snapshots so switching never overwrites a master or another variant.

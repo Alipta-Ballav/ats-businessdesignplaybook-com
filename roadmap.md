@@ -1,4 +1,7 @@
 # Roadmap
+- [x] Clarify homepage designer offering, features, and pass differences
+- [x] Add active resume switching, master saving, and safe role-variant creation
+- [x] Verify signed-in resume workflow and desktop/mobile layout (temporary variant created/read back/deleted, separate edits and undo preserved; 115 tests pass)
 - [x] Phase 1: preserve guest reports, active edits and undo through sign-in without requiring registration before scans
 - [x] Phase 1: clean selectable-text A4 PDF download alongside Word, with pagination regression checks
 - [x] Phase 1: exact-input session rewrite cache and immediate grounded feedback without changing models or scoring

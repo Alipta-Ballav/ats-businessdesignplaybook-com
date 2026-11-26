@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
   Check,
@@ -18,7 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui-bits";
 import { ResumePreview } from "@/components/ResumePreview";
 import { PaywallModal } from "@/components/PaywallModal";
-import { SaveResumeVersion } from "@/components/SaveResumeVersion";
+import { ResumeWorkspace } from "@/components/ResumeWorkspace";
 import { readResumeGuest } from "@/lib/evaluate.functions";
 import { suggestRewrite } from "@/lib/rewrite.functions";
 import { applySuggestion, buildQueue, cleanLine, headlineScore, insertionLocations, TIERS, type Suggestion, type Tier } from "@/lib/fixer";
@@ -42,25 +42,27 @@ const blank = { action: "", constraint: "", outcome: "", text: "" };
 /** Guide score for a strong match; shown as a goal, never claimed as an employer cutoff. */
 const TARGET = 75;
 
-export function LiveEditor({
-  job,
-  cand,
-  resume,
-  initialDraft,
-  scoringLevel,
-  onRescored,
-  initialSession,
-  onSessionChange,
-}: {
+type LiveEditorProps = {
   job: Job;
   cand: Candidate;
   resume: string;
   initialDraft?: string;
   scoringLevel?: Level;
-  onRescored?: (c: Candidate) => void;
+  onRescored?: ((c: Candidate) => void) | undefined;
   initialSession?: EditorSession | undefined;
-  onSessionChange?: (session: EditorSession) => void;
-}) {
+  onSessionChange?: ((session: EditorSession) => void) | undefined;
+  versionId?: string | undefined;
+  onActiveVersionChange?: ((id: string) => void) | undefined;
+};
+export function LiveEditor(props: LiveEditorProps) {
+  return <ResumeWorkspace seed={props} versionId={props.versionId} onSessionChange={props.onSessionChange} onActiveVersionChange={props.onActiveVersionChange}>
+    {({ editorKey, toolbar, isOriginal, ...active }) => <EditorContent
+      key={editorKey} {...active} toolbar={toolbar}
+      onRescored={isOriginal ? props.onRescored : undefined}
+    />}
+  </ResumeWorkspace>;
+}
+function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescored, initialSession, onSessionChange, toolbar }: LiveEditorProps & { toolbar: ReactNode }) {
   const read = useServerFn(readResumeGuest);
   const ai = useServerFn(suggestRewrite);
   const pro = usePro();
@@ -780,6 +782,7 @@ export function LiveEditor({
         </summary>
         <textarea
           rows={14}
+          aria-label="Full resume text"
           className="w-full border-t bg-background p-3 font-mono text-xs leading-relaxed focus:outline-none"
           value={draft}
           onChange={(e) => onType(e.target.value)}
@@ -892,14 +895,10 @@ export function LiveEditor({
           Work through the priority queue on the left — each fix is spotlighted in your resume on the right. Undo any step.
         </p>
       </div>
-      <div className="rounded-lg border bg-card p-3">
-        <SaveResumeVersion
-          resume={draft}
-          candidate={official.cand}
-          job={job}
-          scoredText={official.text}
-          level={level}
-        />
+      {toolbar}
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-3">
+        <p className="text-sm font-medium">{job.description.trim() ? "Role Fit score" : "Future Talent Index"}</p>
+        <p className="font-mono text-xl">{official.score}<span className="text-xs text-muted-foreground"> / 100 · {stale ? "last verified · draft changed" : "verified resume"}</span></p>
       </div>
       <div className="hidden items-start gap-6 md:grid md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
         {left}

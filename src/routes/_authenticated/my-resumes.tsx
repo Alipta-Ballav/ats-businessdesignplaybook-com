@@ -7,7 +7,7 @@ import { usePowerPass } from "@/lib/pro";
 import { VariantUpsell } from "@/components/VariantUpsell";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { CareerNav } from "@/components/CareerNav";
+import { ResumeNameDialog } from "@/components/ResumeNameDialog";
 import { ResumePreview } from "@/components/ResumePreview";
 import { LiveEditor } from "@/components/LiveEditor";
 import { q, must } from "@/lib/db";
@@ -39,28 +39,22 @@ function MyResumes() {
   const [deleting, setDeleting] = useState("");
   const power = usePowerPass();
   const [upsell, setUpsell] = useState(false);
-  const duplicate = async () => {
+  const [naming, setNaming] = useState(false);
+  const duplicate = () => {
     if (!current) return;
-    if (power === false && !canCreateVariant(false, versions.length)) return setUpsell(true);
-    const name = window.prompt("Name this role variant", `${current.name} · variant`)?.trim();
-    if (!name) return;
+    if (power !== true && !canCreateVariant(false, versions.length)) return setUpsell(true);
+    setNaming(true);
+  };
+  const createVariant = async (name: string) => {
+    if (!current) return;
     try {
-      const row = await saveVersion(
-        uid,
-        name,
-        current.resume_text,
-        current.candidate,
-        current.job,
-        current.scored_text,
-        current.level,
-      );
+      const row = await saveVersion(uid, name, current.resume_text, current.candidate, current.job, current.scored_text, current.level);
+      if (!row) throw new Error("The role variant could not be saved.");
       await client.invalidateQueries({ queryKey: ["resume-versions", uid] });
-      if (row) setSelected(row.id);
+      setSelected(row.id);
       setEditing(true);
       toast.success("Role variant created — your master copy is unchanged");
-    } catch (e) {
-      toast.error((e as Error).message);
-    }
+    } catch (error) { toast.error((error as Error).message); throw error; }
   };
   const current = versions.find((v) => v.id === selected) ?? versions[0];
   const comparable = current
@@ -100,18 +94,18 @@ function MyResumes() {
   };
   return (
     <div className="space-y-8">
-      <CareerNav />
+      <ResumeNameDialog open={naming} onOpenChange={setNaming} title="Create role variant" sourceName={current?.name ?? ""} onSave={createVariant} />
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-3">
           <p className="text-sm font-medium text-primary">YOUR PRIVATE DESIGN WORKSPACE</p>
-          <h1 className="text-4xl">Your work. A stronger story.</h1>
+          <h1 className="text-4xl">My resumes</h1>
           <p className="text-muted-foreground">
             One master resume plus tailored role variants, each with its own target job and score.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          {current && (
-            <Button onClick={duplicate}>
+          {current && !editing && (
+            <Button onClick={duplicate} disabled={power === null}>
               {power ? <Copy /> : <Layers />}
               Create role variant
             </Button>
@@ -123,32 +117,13 @@ function MyResumes() {
           </Button>
         </div>
       </header>
-      {current && (
-        <ol className="grid gap-3 rounded-lg border bg-card p-4 text-sm sm:grid-cols-3">
-          <li><b>1. Master resume</b><span className="block text-muted-foreground">Your first saved resume is your master. It is never overwritten.</span></li>
-          <li><b>2. Create role variant</b><span className="block text-muted-foreground">Pick a resume on the left, then press "Create role variant" to copy it.</span></li>
-          <li><b>3. Tailor and score</b><span className="block text-muted-foreground">Open the variant, press "Edit a new revision", and match it to a job.</span></li>
-        </ol>
-      )}
       {upsell && <VariantUpsell />}
-      <section className="flex flex-wrap items-center justify-between gap-4 border-y py-5">
-        <div>
-          <h2 className="text-base">Your quarterly check-in</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            An optional calendar reminder every 90 days. No email subscription.
-          </p>
-        </div>
-        <Button variant="outline" onClick={reminder}>
-          <CalendarPlus />
-          Add quarterly reminder
-        </Button>
-      </section>
       {!versions.length ? (
         <div className="py-16 text-center">
           <FileStack className="mx-auto h-10 w-10 text-muted-foreground" />
-          <h2 className="mt-4 text-2xl">Your first version is a starting point.</h2>
+          <h2 className="mt-4 text-2xl">Your master resume starts here.</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Save a named version from your resume report or live editor.
+            Check your resume, then save your master from the editor.
           </p>
           <Button asChild className="mt-6">
             <Link to="/candidate">Open my resume checks</Link>
@@ -156,7 +131,7 @@ function MyResumes() {
         </div>
       ) : (
         <>
-          <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
+          {!editing && <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
             <aside className="space-y-2">
               <h2 className="mb-4 text-sm font-medium">
                 {versions.length} resume{versions.length !== 1 && "s"} ·{" "}
@@ -172,7 +147,7 @@ function MyResumes() {
                     className="h-auto min-w-0 flex-1 justify-start whitespace-normal p-4 text-left"
                     onClick={() => {
                       setSelected(v.id);
-                      setEditing(false);
+                      setEditing(true);
                       setComparison("");
                     }}
                   >
@@ -278,9 +253,9 @@ function MyResumes() {
                 )}
                 <div className="flex flex-wrap gap-2">
                   <Button variant="outline" onClick={() => setEditing(!editing)}>
-                    {editing ? "Close editor" : "Edit a new revision"}
+                    {editing ? "View saved resume" : "Edit resume"}
                   </Button>
-                  <Button variant="outline" onClick={duplicate}>
+                  <Button variant="outline" onClick={duplicate} disabled={power === null}>
                     {power ? <Copy /> : <Layers />}
                     Duplicate as role variant
                   </Button>
@@ -290,19 +265,35 @@ function MyResumes() {
                 )}
               </section>
             )}
-          </div>
-          {editing && current && (
+          </div>}
+          {current && (
+            <div className={editing ? "space-y-4" : "hidden"}>
+            <Button variant="outline" onClick={() => setEditing(false)}>View saved resumes</Button>
             <LiveEditor
-              key={current.id}
+              versionId={current.id}
+              onActiveVersionChange={setSelected}
               job={current.job}
               cand={current.candidate}
               resume={current.scored_text}
               initialDraft={current.resume_text}
               scoringLevel={current.level}
             />
+            </div>
           )}
         </>
       )}
+      <section className="flex flex-wrap items-center justify-between gap-4 border-y py-5">
+        <div>
+          <h2 className="text-base">Your quarterly check-in</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            An optional calendar reminder every 90 days. No email subscription.
+          </p>
+        </div>
+        <Button variant="outline" onClick={reminder}>
+          <CalendarPlus />
+          Add quarterly reminder
+        </Button>
+      </section>
     </div>
   );
 }
