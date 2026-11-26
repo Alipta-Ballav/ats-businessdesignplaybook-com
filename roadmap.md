@@ -1,4 +1,5 @@
 # Roadmap
+- [x] Correct per-tab queue badges, chronological completed steps, and pass-limit messaging; signed-in tab switching, expansion, apply, skip, restore and undo verified without saving changes; 119 tests pass
 - [x] Clarify homepage designer offering, features, and pass differences
 - [x] Add active resume switching, master saving, and safe role-variant creation
 - [x] Verify signed-in resume workflow and desktop/mobile layout (temporary variant created/read back/deleted, separate edits and undo preserved; 115 tests pass)

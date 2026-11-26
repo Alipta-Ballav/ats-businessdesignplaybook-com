@@ -52,3 +52,4 @@ use the editor.
 - Resume insertion uses explicit source-line locations; undo snapshots include draft and applied-fix state, and per-fix reversals retain exact before/after text to preserve unrelated edits.
 
 - ResumeWorkspace wraps every LiveEditor with a shared active-resume selector and keeps each variant’s draft/undo session only in React memory; "Save changes" updates only the active saved resume and new variants are inserts, so switching never overwrites a master or another variant.
+- Editor step numbers use numberSteps on filtered display order and chronological fix history, never source queue indices — keeps badges consecutive across tabs, skips and undo.

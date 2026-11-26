@@ -24,8 +24,9 @@ import { suggestRewrite } from "@/lib/rewrite.functions";
 import { applySuggestion, buildQueue, cleanLine, headlineScore, insertionLocations, TIERS, type Suggestion, type Tier } from "@/lib/fixer";
 import { estimateCandidate, fixesUsed, proposalFlags, revertFix, type FixEntry } from "@/lib/editor";
 import { downloadResumeDocx, resumeBlocks } from "@/lib/export-docx";
-import { usePro, passAllowance, recordPassScan } from "@/lib/pro";
-import { FREE_FIXES, canApplyFix, canDownloadWord, canRescore } from "@/lib/plans";
+import { usePro, usePowerPass, passAllowance, recordPassScan } from "@/lib/pro";
+import { FREE_FIXES, PLANS, planTerms, canApplyFix, canDownloadWord, canRescore } from "@/lib/plans";
+import { numberSteps } from "@/lib/queue-steps";
 import { inferLevel, type Candidate, type Job, type Level } from "@/lib/scoring";
 import type { EditorSession } from "@/lib/editor-session";
 import { createRewriteCache } from "@/lib/rewrite-cache";
@@ -66,6 +67,11 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
   const read = useServerFn(readResumeGuest);
   const ai = useServerFn(suggestRewrite);
   const pro = usePro();
+  const power = usePowerPass();
+  const renewalPlan = power ? "power_60" : "job_hunt_30";
+  const renewalTerms = planTerms(renewalPlan);
+  const renewalPrice = power ? PLANS.find((plan) => plan.id === renewalPlan)?.inr : undefined;
+  const renewalOffer = `${power ? "Power Searcher" : "Job Hunt"} Pass${renewalPrice === undefined ? "" : ` · ₹${renewalPrice}`} · ${renewalTerms.scans} verified scores for ${renewalTerms.days} days`;
   const [passLeft, setPassLeft] = useState<number | null>(null);
   useEffect(() => {
     if (pro) passAllowance().then(setPassLeft);
@@ -251,7 +257,7 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
     if (!canRescore(pro)) {
       window.__lovableEvents?.track?.("project.paywall_shown", { trigger: "rescore" });
       setWall(
-        "Your estimated score is free. The ₹99 Job Hunt Pass unlocks your official AI-verified rescore and Word downloads for 30 days.",
+        "Your estimated score is free. Choose a Job Hunt or Power Searcher Pass to unlock AI-verified rescoring and Word downloads.",
       );
       return;
     }
@@ -259,7 +265,7 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
     setPassLeft(allowed);
     if (allowed === 0) {
       setWall(
-        "You've used all 5 scans in your pass. Renew for ₹99 to add 5 more verified scores and 30 days of access.",
+        `You've used all verified scans in your active passes. Renew your ${renewalOffer}.`,
       );
       return;
     }
@@ -479,15 +485,14 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
           )
         )}
         <ul className="divide-y">
-          {queue
+          {numberSteps(queue
             .filter(
               (q) =>
                 !skipped.includes(q.id) &&
                 tierOf(q) === tab &&
                 (doneIds.includes(q.id) || visibleOpen.includes(q)),
-            )
-            .map((s) => {
-              const n = queue.indexOf(s);
+            ))
+            .map(({ item: s, step }) => {
               const f = fixes.find((x) => x.id === s.id);
               if (f)
                 return (
@@ -500,7 +505,7 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
                     </span>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">
-                        <span className="mr-1 text-muted-foreground">{n + 1}.</span>
+                        <span className="mr-1 text-muted-foreground">{step}.</span>
                         {s.title}
                       </p>
                       <p className="text-xs text-success">
@@ -528,7 +533,7 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
                     <span
                       className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full text-[10px] font-semibold ${isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
                     >
-                      {n + 1}
+                      {step}
                     </span>
                     <div className="min-w-0">
                       <p className="text-sm font-medium">{s.title}</p>
@@ -746,18 +751,15 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
               </Button>
             </div>
           </div>
-          {fixes.map((f, i) => (
+          {numberSteps(fixes).map(({ item: f, step }) => (
             <div
-              key={i}
+              key={f.id}
               className="flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted/60"
             >
               <span className="flex min-w-0 items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 shrink-0 text-success" />
                 <span className="truncate">
-                  {(() => {
-                    const q = queue.findIndex((x) => x.id === f.id);
-                    return q >= 0 ? `${q + 1}. ` : "";
-                  })()}
+                  {step}.{" "}
                   {f.title}
                 </span>
                 <span className="shrink-0 rounded bg-muted px-1 text-[10px] uppercase text-muted-foreground">
@@ -857,7 +859,7 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
                 : passLeft === 0
                   ? "Verify final score · 0 scans left"
                   : `Verify final score · uses 1 of ${passLeft} left`
-              : "Verify final score · ₹99 pass"}
+              : "Verify final score · choose a pass"}
         </Button>
         {pro && passLeft === 0 && (
           <p className="mt-2 text-center text-xs text-muted-foreground">
@@ -868,7 +870,7 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
               rel="noopener"
               className="font-semibold text-primary underline underline-offset-2"
             >
-              Renew pass · ₹99 for 5 more scans
+              Renew {renewalOffer}
             </a>
           </p>
         )}
