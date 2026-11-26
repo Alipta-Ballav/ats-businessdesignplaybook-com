@@ -4,6 +4,7 @@ import { ArrowRight, CheckCircle2, Gauge, Quote, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TrustPillars } from "@/components/trust/Trust";
 import { ATS_SYSTEMS, FTI_DIMENSIONS, LEVELS, LEVEL_WEIGHTS, LEVEL_EXAMPLES } from "@/lib/scoring";
+import { LAUNCH_BANNER, POWER_INR, POWER_DAYS, POWER_SCANS, PASS_DAYS, PASS_SCANS } from "@/lib/plans";
 
 const TITLE = "Trusted UX Design ATS Checker — FutureTalent AI";
 const DESC =
@@ -430,7 +431,11 @@ function Landing() {
       <section className="mx-auto max-w-5xl px-6">
         <p className="text-center text-sm font-medium text-primary">Honest pricing</p>
         <h2 className="mt-2 text-center text-3xl md:text-4xl">Know what's free before you start</h2>
-        <div className="mt-10 grid gap-5 md:grid-cols-2">
+        <p className="mx-auto mt-3 max-w-2xl text-center text-sm text-muted-foreground">
+          One free audit, no account. Paid passes are one-time — each ends on its own date and never
+          charges you again.
+        </p>
+        <div className="mt-10 grid items-start gap-5 md:grid-cols-3">
           <div className="rounded-2xl border bg-card p-6">
             <p className="text-sm text-muted-foreground">Free audit</p>
             <p className="mt-1 font-mono text-4xl">₹0</p>
@@ -449,6 +454,11 @@ function Landing() {
               ))}
             </ul>
             <p className="mt-5 text-xs text-muted-foreground">No account or card needed.</p>
+            <Button asChild variant="outline" className="mt-4 w-full">
+              <Link to="/check" search={{ job: undefined }}>
+                Start free audit
+              </Link>
+            </Button>
           </div>
           <div className="rounded-2xl border-2 border-primary bg-card p-6 shadow-glow">
             <div className="flex items-center justify-between">
@@ -461,14 +471,13 @@ function Landing() {
               ₹99 <span className="text-lg text-muted-foreground line-through">₹149</span>{" "}
               <span className="text-sm text-muted-foreground">one-time</span>
             </p>
-            <p className="mt-1 text-xs font-semibold text-primary">
-              Launch offer: ₹99 for the first 50 users (then ₹149)
-            </p>
+            <p className="mt-1 text-xs font-semibold text-primary">{LAUNCH_BANNER}</p>
             <ul className="mt-5 space-y-2 text-sm">
               {[
-                "5 verified scores in 30 days (new resumes or after edits)",
-                "Download ATS-clean Word (.docx)",
+                `${PASS_SCANS} verified scores in ${PASS_DAYS} days (new resumes or after edits)`,
+                "Download ATS-clean Word (.docx) and PDF",
                 "Free live estimated score while you edit",
+                "Custom ATS tuning",
                 "UPI or card · no auto-renewal, ever",
               ].map((t) => (
                 <li key={t} className="flex gap-2">
@@ -478,43 +487,99 @@ function Landing() {
               ))}
             </ul>
             <p className="mt-5 text-xs text-muted-foreground">
-              You'll only be asked to pay when you rescore, download Word or run a 2nd scan.
+              You'll only be asked to pay when you rescore, download or run a 2nd scan.
             </p>
+            <Button asChild className="mt-4 w-full bg-gradient-primary shadow-glow">
+              <Link to="/pass">
+                Get the pass <ArrowRight />
+              </Link>
+            </Button>
+          </div>
+          <div className="rounded-2xl border bg-card p-6">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                {POWER_DAYS}-Day Power Searcher Pass
+              </p>
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
+                Most scores
+              </span>
+            </div>
+            <p className="mt-1 font-mono text-4xl">
+              ₹{POWER_INR} <span className="text-sm text-muted-foreground">one-time</span>
+            </p>
+            <p className="mt-1 text-xs font-semibold text-primary">
+              {POWER_SCANS} verified scores · {POWER_DAYS} days · no auto-renewal
+            </p>
+            <ul className="mt-5 space-y-2 text-sm">
+              {[
+                `${POWER_SCANS} verified scores in ${POWER_DAYS} days (new resumes or after edits)`,
+                "Tailor and rescore for many job posts",
+                "Download ATS-clean Word (.docx) and PDF",
+                "Custom ATS tuning",
+                "UPI or card · no auto-renewal, ever",
+              ].map((t) => (
+                <li key={t} className="flex gap-2">
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
+                  {t}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-5 text-xs text-muted-foreground">
+              For designers applying to several companies at once. Passes stack: buy again and your
+              remaining scores add up.
+            </p>
+            <Button asChild variant="outline" className="mt-4 w-full">
+              <Link to="/pass">
+                Get the pass <ArrowRight />
+              </Link>
+            </Button>
           </div>
         </div>
         <div className="mt-10 overflow-hidden rounded-2xl border bg-card">
           <div className="border-b bg-muted/40 px-6 py-4">
-            <h3 className="text-lg font-semibold">Free vs ₹99 pass, side by side</h3>
+            <h3 className="text-lg font-semibold">Free and paid passes, side by side</h3>
             <p className="text-sm text-muted-foreground">
-              Start free. Pay ₹99 once only if you want more. The pass ends after 30 days and never
+              Start free. Pay once only if you want more. Each pass ends on its own date and never
               charges you again.
             </p>
           </div>
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr className="border-b text-left text-xs text-muted-foreground">
                 <th className="px-6 py-2 font-medium">What you can do</th>
                 <th className="px-4 py-2 font-medium">Free</th>
-                <th className="px-4 py-2 font-medium text-primary">With ₹99 pass</th>
+                <th className="px-4 py-2 font-medium text-primary">Job Hunt · ₹99</th>
+                <th className="px-4 py-2 font-medium text-primary">
+                  Power Searcher · ₹{POWER_INR}
+                </th>
               </tr>
             </thead>
             <tbody>
               {[
-                ["First resume score", "1 free", "Included"],
-                ["Verified scores (new resume or after edits)", "No", "5 in 30 days"],
-                ["Live estimated score while editing", "Yes", "Yes"],
-                ["AI help to rewrite lines", "Yes", "Yes"],
-                ["Download your resume as Word", "No", "Yes"],
-                ["Charged again automatically", "Never", "Never"],
-              ].map(([b, f, p]) => (
+                ["First resume score", "1 free", "Included", "Included"],
+                [
+                  "Verified scores (new resume or after edits)",
+                  "No",
+                  `${PASS_SCANS} in ${PASS_DAYS} days`,
+                  `${POWER_SCANS} in ${POWER_DAYS} days`,
+                ],
+                ["Live estimated score while editing", "Yes", "Yes", "Yes"],
+                ["AI help to rewrite lines", "Yes", "Yes", "Yes"],
+                ["Download your resume as Word and PDF", "No", "Yes", "Yes"],
+                ["Custom ATS tuning", "No", "Yes", "Yes"],
+                ["Charged again automatically", "Never", "Never", "Never"],
+              ].map(([b, f, p, w]) => (
                 <tr key={b} className="border-b last:border-0">
                   <td className="px-6 py-3">{b}</td>
                   <td className="px-4 py-3 text-muted-foreground">{f}</td>
                   <td className="px-4 py-3 font-medium">{p}</td>
+                  <td className="px-4 py-3 font-medium">{w}</td>
                 </tr>
               ))}
             </tbody>
           </table>
+          </div>
         </div>
         <div className="mt-8 text-center">
           <Button asChild size="lg" className="bg-gradient-primary shadow-glow">
