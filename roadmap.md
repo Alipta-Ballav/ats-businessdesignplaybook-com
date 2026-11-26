@@ -1,4 +1,5 @@
 # Roadmap
+- [x] Add clear back-to-list navigation and save-and-return; signed-in save/reload and both exits verified, failed saves retain the editor in regression tests; 9 tests pass, mobile has no overflow.
 - [x] Correct per-tab queue badges, chronological completed steps, and pass-limit messaging; signed-in tab switching, expansion, apply, skip, restore and undo verified without saving changes; 119 tests pass
 - [x] Clarify homepage designer offering, features, and pass differences
 - [x] Add active resume switching, master saving, and safe role-variant creation

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Copy, Save, Layers, Target } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -15,16 +15,22 @@ import { inferLevel, type Candidate, type Job, type Level } from "@/lib/scoring"
 import type { EditorSession } from "@/lib/editor-session";
 
 export type WorkspaceSeed = { resume: string; cand: Candidate; job: Job; initialDraft?: string; scoringLevel?: Level; initialSession?: EditorSession | undefined };
-export function ResumeWorkspace({ seed, versionId, onSessionChange, onActiveVersionChange, children }: {
+export function ResumeWorkspace({ seed, versionId, onSessionChange, onActiveVersionChange, onBackToList, children }: {
   seed: WorkspaceSeed;
   versionId?: string | undefined;
   onSessionChange?: ((session: EditorSession) => void) | undefined;
   onActiveVersionChange?: ((id: string) => void) | undefined;
+  onBackToList?: (() => void) | undefined;
   children: (value: WorkspaceSeed & { editorKey: string; onSessionChange: (session: EditorSession) => void; toolbar: ReactNode; isOriginal: boolean }) => ReactNode;
 }) {
   const { data: me } = useQuery(q.me());
   const { data: versions = [], isPending } = useQuery({ ...careerQueries.versions(me?.id ?? ""), enabled: !!me });
   const client = useQueryClient();
+  const navigate = useNavigate();
+  const backToList = () => {
+    if (onBackToList) onBackToList();
+    else void navigate({ to: "/my-resumes" });
+  };
   const power = usePowerPass();
   const [selected, setSelected] = useState(versionId ?? "current");
   useEffect(() => { if (versionId) setSelected(versionId); }, [versionId]);
@@ -43,7 +49,7 @@ export function ResumeWorkspace({ seed, versionId, onSessionChange, onActiveVers
     sessions.current[selected] = session;
     if (selected === "current" || selected === versionId) onSessionChange?.(session);
   };
-  const saveChanges = async () => {
+  const saveChanges = async (returnToList = false) => {
     if (!me || !current) return;
     const active = sessions.current[selected];
     setSaving(true);
@@ -51,6 +57,7 @@ export function ResumeWorkspace({ seed, versionId, onSessionChange, onActiveVers
       await updateVersion(current.id, active?.draft ?? current.resume_text, active?.official.cand ?? current.candidate, active?.official.text ?? current.scored_text);
       await client.invalidateQueries({ queryKey: ["resume-versions", me.id] });
       toast.success(`Saved changes to “${current.name}”`);
+      if (returnToList) backToList();
     } catch (error) { toast.error((error as Error).message || "Changes could not be saved. Try again."); }
     setSaving(false);
   };
@@ -72,10 +79,13 @@ export function ResumeWorkspace({ seed, versionId, onSessionChange, onActiveVers
         </Select>
       </div>
       {current
-        ? <Button disabled={saving} onClick={saveChanges}><Save />{saving ? "Saving…" : "Save changes"}</Button>
+        ? <Button disabled={saving} onClick={() => void saveChanges()}><Save />{saving ? "Saving…" : "Save changes"}</Button>
         : <Button disabled={!!me && (isPending || power === null)} onClick={() => openSave(versions.length ? "variant" : "master")}><Save />{!!me && (isPending || power === null) ? "Checking your plan…" : versions.length ? "Save as role variant" : "Save master resume"}</Button>}
+      {current && <Button variant="outline" disabled={saving} onClick={() => void saveChanges(true)}><Save />Save & back to list</Button>}
       {current && <Button variant="outline" disabled={power === null} onClick={() => openSave("variant")}><Copy />Save as new variant</Button>}
-      <Button asChild variant="ghost"><Link to="/my-resumes"><Layers />My resumes</Link></Button>
+      {onBackToList
+        ? <Button variant="ghost" disabled={saving} onClick={onBackToList}><Layers />My resumes</Button>
+        : <Button asChild variant="ghost"><Link to="/my-resumes"><Layers />My resumes</Link></Button>}
     </div>
     <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
       <Target className="h-4 w-4" />

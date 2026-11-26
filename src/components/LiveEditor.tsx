@@ -54,9 +54,10 @@ type LiveEditorProps = {
   onSessionChange?: ((session: EditorSession) => void) | undefined;
   versionId?: string | undefined;
   onActiveVersionChange?: ((id: string) => void) | undefined;
+  onBackToList?: (() => void) | undefined;
 };
 export function LiveEditor(props: LiveEditorProps) {
-  return <ResumeWorkspace seed={props} versionId={props.versionId} onSessionChange={props.onSessionChange} onActiveVersionChange={props.onActiveVersionChange}>
+  return <ResumeWorkspace seed={props} versionId={props.versionId} onSessionChange={props.onSessionChange} onActiveVersionChange={props.onActiveVersionChange} onBackToList={props.onBackToList}>
     {({ editorKey, toolbar, isOriginal, ...active }) => <EditorContent
       key={editorKey} {...active} toolbar={toolbar}
       onRescored={isOriginal ? props.onRescored : undefined}

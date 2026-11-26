@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import type { EditorSession } from "@/lib/editor-session";
-import { CalendarPlus, FileStack, Trash2, ArrowUpRight, Copy, Layers, Pencil } from "lucide-react";
+import { CalendarPlus, FileStack, Trash2, ArrowUpRight, ArrowLeft, Copy, Layers, Pencil } from "lucide-react";
 import { canCreateVariant } from "@/lib/plans";
 import { usePowerPass } from "@/lib/pro";
 import { VariantUpsell } from "@/components/VariantUpsell";
@@ -280,18 +280,19 @@ function MyResumes() {
           {current && (
             <div className={editing ? "space-y-4" : "hidden"}>
             <div className="flex flex-wrap items-center justify-between gap-3">
+              <Button variant="outline" onClick={() => setEditing(false)}><ArrowLeft />Back to all resumes</Button>
               <p className="text-sm">
                 Editing <b className="break-words">{current.name}</b>{" "}
                 <span className="text-xs uppercase tracking-wider text-primary">
                   · {current.id === versions[versions.length - 1]?.id ? "Master" : "Role variant"}
                 </span>
               </p>
-              <Button variant="outline" onClick={() => setEditing(false)}>View saved resumes</Button>
             </div>
             <LiveEditor
               versionId={current.id}
               onSessionChange={(session) => { drafts.current[current.id] = session; }}
               onActiveVersionChange={setSelected}
+              onBackToList={() => setEditing(false)}
               job={current.job}
               cand={current.candidate}
               resume={current.scored_text}

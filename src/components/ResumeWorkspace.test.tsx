@@ -5,7 +5,7 @@ import { ResumeWorkspace, type WorkspaceSeed } from "./ResumeWorkspace";
 import type { EditorSession } from "@/lib/editor-session";
 import type { ResumeVersion } from "@/lib/career/db";
 
-const mocks = vi.hoisted(() => ({ versions: [] as ResumeVersion[], power: true, save: vi.fn(), update: vi.fn(), invalidate: vi.fn() }));
+const mocks = vi.hoisted(() => ({ versions: [] as ResumeVersion[], power: true, save: vi.fn(), update: vi.fn(), invalidate: vi.fn(), back: vi.fn(), navigate: vi.fn() }));
 vi.mock("@tanstack/react-query", () => ({
   useQuery: (options: { queryKey: string[] }) => ({ data: options.queryKey[0] === "resume-versions" ? mocks.versions : { id: "owner" }, isPending: false }),
   useQueryClient: () => ({ invalidateQueries: mocks.invalidate }),
@@ -13,7 +13,7 @@ vi.mock("@tanstack/react-query", () => ({
 vi.mock("@/lib/db", () => ({ q: { me: () => ({ queryKey: ["me"] }) } }));
 vi.mock("@/lib/career/db", () => ({ careerQueries: { versions: () => ({ queryKey: ["resume-versions"] }) }, saveVersion: (...args: unknown[]) => mocks.save(...args), updateVersion: (...args: unknown[]) => mocks.update(...args) }));
 vi.mock("@/lib/pro", () => ({ usePowerPass: () => mocks.power }));
-vi.mock("@tanstack/react-router", () => ({ Link: ({ children }: { children: ReactNode }) => <span>{children}</span> }));
+vi.mock("@tanstack/react-router", () => ({ useNavigate: () => mocks.navigate, Link: ({ children }: { children: ReactNode }) => <span>{children}</span> }));
 vi.mock("@/components/VariantUpsell", () => ({ VariantUpsell: () => <div>Upgrade required</div> }));
 vi.mock("@/components/ResumeNameDialog", () => ({ ResumeNameDialog: ({ open, onSave }: { open: boolean; onSave: (name: string) => Promise<void> }) => open ? <button onClick={() => void onSave("FinTech variant")}>Confirm copy</button> : null }));
 vi.mock("@/components/ui/select", () => ({
@@ -30,12 +30,13 @@ function Draft({ initial, onChange }: { initial: string; onChange: (value: Edito
   const [value, setValue] = useState(initial);
   return <input aria-label="Draft text" value={value} onChange={(event) => { setValue(event.target.value); onChange(session(event.target.value)); }} />;
 }
-function Harness() {
-  return <ResumeWorkspace seed={{ resume: "Master original", cand: candidate, job }} versionId="master">
+function Harness({ onBackToList }: { onBackToList?: (() => void) | undefined }) {
+  return <ResumeWorkspace seed={{ resume: "Master original", cand: candidate, job }} versionId="master" onBackToList={onBackToList}>
     {({ editorKey, toolbar, initialSession, initialDraft, resume, job: activeJob, onSessionChange }) => <div>{toolbar}<output data-testid="target">{activeJob.description}</output><Draft key={editorKey} initial={initialSession?.draft ?? initialDraft ?? resume} onChange={onSessionChange} /></div>}
   </ResumeWorkspace>;
 }
 beforeEach(() => {
+  mocks.back.mockReset(); mocks.navigate.mockReset();
   cleanup(); mocks.power = true; mocks.save.mockReset(); mocks.update.mockReset(); mocks.update.mockResolvedValue({ id: "master" }); mocks.invalidate.mockReset();
   mocks.save.mockResolvedValue({ id: "copy" }); mocks.invalidate.mockResolvedValue(undefined);
   mocks.versions = [
@@ -44,6 +45,33 @@ beforeEach(() => {
   ];
 });
 describe("Resume workspace", () => {
+  it("returns to the list only after the active resume save succeeds", async () => {
+    render(<Harness onBackToList={mocks.back} />);
+    fireEvent.change(screen.getByLabelText("Draft text"), { target: { value: "Saved before returning" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save & back to list" }));
+    await waitFor(() => expect(mocks.back).toHaveBeenCalledOnce());
+    expect(mocks.update).toHaveBeenCalledWith("master", "Saved before returning", candidate, "Master original");
+    expect(mocks.save).not.toHaveBeenCalled();
+  });
+  it("stays in the editor when saving fails", async () => {
+    mocks.update.mockRejectedValue(new Error("Save failed"));
+    render(<Harness onBackToList={mocks.back} />);
+    fireEvent.click(screen.getByRole("button", { name: "Save & back to list" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Save changes" })).toBeEnabled());
+    expect(mocks.update).toHaveBeenCalledOnce();
+    expect(mocks.back).not.toHaveBeenCalled();
+  });
+  it("exits same-page editing through My resumes without saving", () => {
+    render(<Harness onBackToList={mocks.back} />);
+    fireEvent.click(screen.getByRole("button", { name: "My resumes" }));
+    expect(mocks.back).toHaveBeenCalledOnce();
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+  it("navigates to the list after saving from another screen", async () => {
+    render(<Harness />);
+    fireEvent.click(screen.getByRole("button", { name: "Save & back to list" }));
+    await waitFor(() => expect(mocks.navigate).toHaveBeenCalledWith({ to: "/my-resumes" }));
+  });
   it("keeps master and variant drafts separate while switching their target jobs", () => {
     render(<Harness />);
     fireEvent.change(screen.getByLabelText("Draft text"), { target: { value: "Master unsaved edit" } });
