@@ -31,8 +31,9 @@ export function SaveResumeVersion({
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
+  const taken = !!saved?.some((v) => v.name.trim().toLowerCase() === name.trim().toLowerCase());
   const save = async () => {
-    if (!me || !name.trim()) return;
+    if (!me || !name.trim() || taken) return;
     setBusy(true);
     try {
       await saveVersion(
@@ -97,7 +98,12 @@ export function SaveResumeVersion({
                 Saved as a draft. Rescore before comparing its score.
               </p>
             )}
-            <Button size="sm" onClick={save} disabled={busy || !name.trim()}>
+            {taken && (
+              <p role="status" className="text-xs text-destructive">
+                You already have a resume with this name. Choose a different name.
+              </p>
+            )}
+            <Button size="sm" onClick={save} disabled={busy || !name.trim() || taken}>
               {busy ? "Saving…" : "Save to my resumes"}
             </Button>
           </div>
