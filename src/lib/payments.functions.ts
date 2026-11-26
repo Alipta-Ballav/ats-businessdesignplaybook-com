@@ -22,13 +22,13 @@ export const getPassPrice = createServerFn({ method: "GET" }).handler(async () =
 /** Creates a pending payment + Razorpay order. Price comes from the server-side plan catalog. */
 export const createCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({ plan: z.enum(["job_hunt_30"]) }).parse(d))
+  .inputValidator((d) => z.object({ plan: z.enum(["job_hunt_30", "power_60"]) }).parse(d))
   .handler(async ({ data, context }) => {
     const { razorpay, razorpayEnv } = await import("./razorpay.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const plan = PLANS.find((p) => p.id === data.plan);
     if (!plan) throw new Error("Plan not found.");
-    const amount = (await currentPassInr()) * 100;
+    const amount = (plan.id === "power_60" ? plan.inr : await currentPassInr()) * 100;
     const { data: row, error } = await supabaseAdmin
       .from("payments")
       .insert({ user_id: context.userId, plan: plan.id, amount, currency: "INR", scans_granted: 0 })

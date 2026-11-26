@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { PaywallModal } from "@/components/PaywallModal";
 import { supabase } from "@/integrations/supabase/client";
-import { hasPaidAccess, PASS_DURATION_MS, PASS_SCANS, LAUNCH_BANNER } from "@/lib/plans";
+import { hasPaidAccess, passEndsAt, planTerms, LAUNCH_BANNER, POWER_INR } from "@/lib/plans";
 import { passAllowance, PRO_EVENT } from "@/lib/pro";
 
 export const Route = createFileRoute("/pass")({
@@ -57,19 +57,19 @@ function PassPage() {
   }, []);
   const active = pays.filter((p) => hasPaidAccess(p));
   const expiry = active
-    .map((p) => Date.parse(p.paid_at!) + PASS_DURATION_MS)
+    .map((p) => passEndsAt(p))
     .sort((a, b) => b - a)[0];
   const status = !signedIn
     ? null
     : left === null
       ? "No score limit on this account"
       : active.length
-        ? `${left} of ${PASS_SCANS * active.length} scans left · expires ${new Date(expiry!).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`
+        ? `${left} of ${active.reduce((n, p) => n + planTerms(p.plan).scans, 0)} scans left · expires ${new Date(expiry!).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`
         : pays.length
           ? "Your pass has expired"
           : "You don't have a pass yet";
   const label = active.length
-    ? "Renew pass · 5 more scans"
+    ? "Renew or add a pass"
     : pays.length
       ? "Renew pass"
       : "Buy pass";
@@ -81,8 +81,8 @@ function PassPage() {
       </p>
       <div className="rounded-lg border p-6 space-y-4">
         <p className="text-sm text-muted-foreground">
-          One payment · 30 days · 5 verified scores (new resumes or rescores) · Word downloads · No
-          auto-renewal. Buying again adds 5 more scans.
+          Job Hunt Pass: 30 days · 5 verified scores. Power Searcher Pass (₹{POWER_INR}): 60 days ·
+          20 verified scores. Both include Word & PDF downloads, no auto-renewal, and stack with any active pass.
         </p>
         {status && <p className="font-medium">{status}</p>}
         {signedIn === false ? (

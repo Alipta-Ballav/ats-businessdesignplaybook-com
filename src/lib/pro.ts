@@ -108,7 +108,7 @@ export async function passAllowance(): Promise<number | null> {
     .select("id", { count: "exact", head: true })
     .eq("user_id", uid)
     .gte("created_at", since);
-  return passScansLeft(count ?? 0, active.length);
+  return passScansLeft(count ?? 0, active.map((p) => p.plan));
 }
 export async function recordPassScan() {
   const { data: s } = await supabase.auth.getSession();

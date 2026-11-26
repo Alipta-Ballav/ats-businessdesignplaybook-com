@@ -98,7 +98,7 @@ export function PaywallModal({
           if (r.status === "completed") {
             settled = true;
             notifyProChanged();
-            toast.success("Payment received. Your 30-day Job Hunt Pass is active.");
+            toast.success(plan === "power_60" ? "Payment received. Your 60-day Power Searcher Pass is active." : "Payment received. Your 30-day Job Hunt Pass is active.");
             onOpenChange(false);
             if (shouldLandOnCandidate(window.location.pathname)) void navigate({ to: "/candidate" });
           }
@@ -113,7 +113,7 @@ export function PaywallModal({
         amount: o.amount,
         currency: o.currency,
         name: "UX Design ATS Checker",
-        description: "30-Day Job Hunt Pass · no auto-renewal",
+        description: `${plan === "power_60" ? "60-Day Power Searcher Pass" : "30-Day Job Hunt Pass"} · no auto-renewal`,
         prefill: { email: s.session?.user.email ?? "" },
         handler: () => void finish(),
         modal: { ondismiss: () => void finish() },
@@ -150,8 +150,8 @@ export function PaywallModal({
                 <p className="text-xs text-muted-foreground">{p.blurb}</p>
               </div>
               <p>
-                <span className="text-3xl font-semibold">₹{price ?? p.inr}</span>
-                <span className="ml-2 text-sm text-muted-foreground">/ 30 days</span>
+                <span className="text-3xl font-semibold">₹{p.id === "power_60" ? p.inr : (price ?? p.inr)}</span>
+                <span className="ml-2 text-sm text-muted-foreground">/ {p.days} days</span>
               </p>
               <ul className="space-y-1 text-sm">
                 {p.perks.map((x) => (
@@ -164,7 +164,7 @@ export function PaywallModal({
               {signedIn === false ? (
                 <Button asChild className="w-full">
                   <Link to="/auth" search={{ mode: "signup", as: "candidate", redirect: "/candidate" }}>
-                    Sign in to pay ₹{price ?? p.inr}
+                    Sign in to pay ₹{p.id === "power_60" ? p.inr : (price ?? p.inr)}
                   </Link>
                 </Button>
               ) : (
@@ -173,7 +173,7 @@ export function PaywallModal({
                   disabled={busy || signedIn === null}
                   onClick={() => void pay(p.id)}
                 >
-                  {busy ? "Waiting for payment…" : `Pay ₹${price ?? p.inr} · UPI, card, netbanking`}
+                  {busy ? "Waiting for payment…" : `Pay ₹${p.id === "power_60" ? p.inr : (price ?? p.inr)} · UPI, card, netbanking`}
                 </Button>
               )}
             </div>
