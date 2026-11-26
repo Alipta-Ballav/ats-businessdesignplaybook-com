@@ -17,7 +17,15 @@ export type Suggestion = {
   detail: string;
   original?: string;
   playbook?: string[];
+  /** Triage group: critical = job must-haves, impact = missing evidence or outcomes, polish = wording. */
+  tier?: Tier;
 };
+export type Tier = "critical" | "impact" | "polish";
+export const TIERS: { id: Tier; label: string }[] = [
+  { id: "critical", label: "Critical" },
+  { id: "impact", label: "High impact" },
+  { id: "polish", label: "Polish" },
+];
 
 /** Business Design Playbook framing formulas: structure prompts only, the candidate supplies every fact. */
 export const BUSINESS_PLAYBOOK = [
@@ -45,14 +53,19 @@ export function buildQueue(job: Job, c: Candidate, resume: string): Suggestion[]
     title: "Make this bullet concrete",
     detail: f.issues.join(" · "),
     original: f.original,
+    tier: f.issues.some((i) => /outcome/i.test(i)) ? "impact" : "polish",
   }));
   const adds: Suggestion[] = resumeTips(job, c).map((t) => ({
     id: `a:${t.title}`,
     kind: "add",
     title: t.title,
     detail: t.detail,
+    tier: t.kind === "requirement" ? "critical" : t.kind === "missing" ? "impact" : "polish",
   }));
-  return [...rewrites, ...adds].map(withPlaybook);
+  const rank: Record<Tier, number> = { critical: 0, impact: 1, polish: 2 };
+  return [...rewrites, ...adds]
+    .map(withPlaybook)
+    .sort((a, b) => rank[a.tier ?? "polish"] - rank[b.tier ?? "polish"]);
 }
 
 /** Replace the original line with the revision, or append a new bullet under an "Additional evidence" section. Never invents text. */

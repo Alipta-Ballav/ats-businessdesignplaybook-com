@@ -50,3 +50,18 @@ describe("applySuggestion keeps bullet formatting", () => {
     );
   });
 });
+
+import { buildQueue } from "./fixer";
+import { SEED_CANDIDATES, SEED_JOBS } from "./seed";
+describe("priority queue", () => {
+  const job = SEED_JOBS[0]!;
+  const q = buildQueue(job, { ...SEED_CANDIDATES[0]!, mandatory: {} } as never, "- Worked on designs.\n- Helped the team.");
+  const rank = { critical: 0, impact: 1, polish: 2 } as const;
+  it("puts critical job must-haves before impact and polish items", () => {
+    const order = q.map((s) => rank[s.tier!]);
+    expect(order).toEqual([...order].sort((a, b) => a - b));
+  });
+  it("marks missing job requirements as critical", () => {
+    if (job.mandatory.length) expect(q[0]?.tier).toBe("critical");
+  });
+});

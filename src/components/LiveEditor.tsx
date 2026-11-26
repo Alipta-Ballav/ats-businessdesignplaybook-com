@@ -20,7 +20,7 @@ import { PaywallModal } from "@/components/PaywallModal";
 import { SaveResumeVersion } from "@/components/SaveResumeVersion";
 import { readResumeGuest } from "@/lib/evaluate.functions";
 import { suggestRewrite } from "@/lib/rewrite.functions";
-import { applySuggestion, buildQueue, cleanLine, headlineScore } from "@/lib/fixer";
+import { applySuggestion, buildQueue, cleanLine, headlineScore, TIERS, type Suggestion, type Tier } from "@/lib/fixer";
 import { estimateCandidate, fixesUsed, newFacts, revertFix, type FixEntry } from "@/lib/editor";
 import { downloadResumeDocx } from "@/lib/export-docx";
 import { usePro, passAllowance, recordPassScan } from "@/lib/pro";
@@ -34,6 +34,8 @@ const EXAMPLES = {
   outcome: "e.g. conversion rose 18% in 6 weeks",
 };
 const blank = { action: "", constraint: "", outcome: "", text: "" };
+/** Guide score for a strong match; shown as a goal, never claimed as an employer cutoff. */
+const TARGET = 75;
 
 export function LiveEditor({
   job,
@@ -82,12 +84,31 @@ export function LiveEditor({
   const [busy, setBusy] = useState<"" | "ai" | "score">("");
   const [wall, setWall] = useState<string | null>(null);
   const [justDone, setJustDone] = useState<string | null>(null);
+  const [tier, setTier] = useState<Tier | null>(null);
+  const [showAll, setShowAll] = useState(false);
   const [lastResult, setLastResult] = useState<{ from: number; to: number; fixes: number } | null>(null);
 
   const queue = useMemo(() => buildQueue(job, official.cand, official.text), [job, official]);
   const doneIds = fixes.map((f) => f.id);
   const open = queue.filter((s) => !doneIds.includes(s.id) && !skipped.includes(s.id));
-  const active = open.find((s) => s.id === openId) ?? open[0];
+  const tierOf = (s: Suggestion) => s.tier ?? "polish";
+  const counts = Object.fromEntries(
+    TIERS.map((t) => [t.id, open.filter((s) => tierOf(s) === t.id).length]),
+  ) as Record<Tier, number>;
+  const tab: Tier = tier ?? TIERS.find((t) => counts[t.id] > 0)?.id ?? "critical";
+  const tabOpen = open.filter((s) => tierOf(s) === tab);
+  const visibleOpen = showAll ? tabOpen : tabOpen.slice(0, 3);
+  const active =
+    open.find((s) => s.id === openId) ?? (openId === null ? tabOpen[0] : undefined) ?? tabOpen[0];
+  const pickLine = (line: string) => {
+    const s = open.find((q) => q.original === line);
+    if (!s) return;
+    setTier(tierOf(s));
+    if (!tabOpen.slice(0, 3).includes(s)) setShowAll(true);
+    setOpenId(s.id);
+    reset();
+    setJustDone(null);
+  };
   const estimate = headlineScore(job, estimateCandidate(official.cand, draft), level);
   const stale = draft !== official.text;
   const delta = official.score - base;
@@ -268,34 +289,79 @@ export function LiveEditor({
 
   const left = (
     <div className="space-y-4">
-      <Card className="flex items-center justify-between gap-4 p-4">
-        <div className="flex items-baseline gap-3">
-          <p className="font-display text-3xl font-semibold tabular-nums">{official.score}</p>
+      <Card className="space-y-3 p-4">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <div className="flex items-baseline gap-2">
+            <p className="font-display text-3xl font-semibold tabular-nums">{official.score}</p>
+            <p className="text-xs text-muted-foreground">
+              / 100 · target {TARGET}+ ·{" "}
+              <span className={delta >= 0 ? "text-success" : "text-destructive"}>
+                {delta >= 0 ? "+" : ""}
+                {delta} from {base}
+              </span>
+            </p>
+          </div>
           <p className="text-xs text-muted-foreground">
-            from {base} ·{" "}
-            <span className={delta >= 0 ? "text-success" : "text-destructive"}>
-              {delta >= 0 ? "+" : ""}
-              {delta}
-            </span>
-            {stale && (
+            {stale ? (
               <>
-                {" "}
-                · <b className="text-foreground">Estimated: ~{estimate}</b>
+                Estimated now <b className="text-foreground">~{estimate}</b>
               </>
+            ) : official.score >= TARGET ? (
+              <b className="text-success">Above target</b>
+            ) : (
+              <>{TARGET - official.score} pts to target</>
             )}
           </p>
         </div>
-        <span className="text-xs text-muted-foreground">
-          {fixes.length} of {total} applied
-        </span>
+        <div className="relative h-2 rounded-full bg-muted" aria-hidden>
+          <div
+            className={`absolute inset-y-0 left-0 rounded-full ${official.score >= TARGET ? "bg-success" : "bg-primary"}`}
+            style={{ width: `${official.score}%` }}
+          />
+          {stale && estimate > official.score && (
+            <div
+              className="absolute inset-y-0 rounded-r-full bg-primary/30"
+              style={{ left: `${official.score}%`, width: `${Math.min(estimate, 100) - official.score}%` }}
+            />
+          )}
+          <div className="absolute -inset-y-1 w-0.5 bg-foreground" style={{ left: `${TARGET}%` }} />
+        </div>
+        <p className="text-[11px] text-muted-foreground">
+          {counts.critical > 0
+            ? `${counts.critical} critical gap${counts.critical === 1 ? "" : "s"} from the job posting · fix these first`
+            : `${open.length} recommendation${open.length === 1 ? "" : "s"} left · ${fixes.length} applied`}
+          {" "}· target is a guide, not an employer cutoff
+        </p>
       </Card>
 
       <Card className="overflow-hidden p-0">
         <div className="flex items-center justify-between border-b px-4 py-3">
-          <h3 className="text-sm font-semibold">Recommendations</h3>
+          <h3 className="text-sm font-semibold">Priority queue</h3>
           <span className="text-xs text-muted-foreground">
             {fixes.length}/{total} done
           </span>
+        </div>
+        <div role="tablist" className="flex gap-1 border-b px-3 py-2">
+          {TIERS.map((t) => (
+            <button
+              key={t.id}
+              role="tab"
+              aria-selected={tab === t.id}
+              onClick={() => {
+                setTier(t.id);
+                setShowAll(false);
+                setOpenId(null);
+                reset();
+              }}
+              className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${tab === t.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
+            >
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${t.id === "critical" ? "bg-destructive" : t.id === "impact" ? "bg-warning" : "bg-success"}`}
+              />
+              {t.label}
+              <span className="tabular-nums opacity-80">{counts[t.id]}</span>
+            </button>
+          ))}
         </div>
         {total > 0 && (
           <div className="h-1 bg-muted">
@@ -305,14 +371,20 @@ export function LiveEditor({
             />
           </div>
         )}
-        {open.length === 0 && (
+        {open.length === 0 ? (
           <p className="p-4 text-sm text-muted-foreground">All done. Rescore below to find more.</p>
+        ) : (
+          tabOpen.length === 0 && (
+            <p className="p-4 text-sm text-muted-foreground">Nothing left here. Pick another tab.</p>
+          )
         )}
         <ul className="divide-y">
           {queue
             .filter(
               (q) =>
-                !skipped.includes(q.id) && (doneIds.includes(q.id) || open.slice(0, 8).includes(q)),
+                !skipped.includes(q.id) &&
+                tierOf(q) === tab &&
+                (doneIds.includes(q.id) || visibleOpen.includes(q)),
             )
             .map((s) => {
               const n = queue.indexOf(s);
@@ -369,11 +441,17 @@ export function LiveEditor({
                     <div className="space-y-4 px-4 pb-5 pl-12">
                       <p className="text-xs text-muted-foreground">{s.detail}</p>
                       {s.original && (
-                        <div className="rounded-md border bg-muted/40 p-3">
+                        <div
+                          className={`rounded-md border p-3 ${proposal.trim() ? "border-destructive/30 bg-destructive/5" : "bg-muted/40"}`}
+                        >
                           <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                            Your line now
+                            {proposal.trim() ? "Before" : "Your line now · highlighted in the preview"}
                           </p>
-                          <p className="mt-1 text-sm">{s.original}</p>
+                          <p
+                            className={`mt-1 text-sm ${proposal.trim() ? "text-muted-foreground line-through decoration-destructive/50" : ""}`}
+                          >
+                            {s.original}
+                          </p>
                         </div>
                       )}
                       {!proposal.trim() ? (
@@ -396,12 +474,12 @@ export function LiveEditor({
                       ) : (
                         <div className="space-y-2">
                           <p className="font-mono text-[10px] uppercase tracking-wider text-primary">
-                            New line · edit freely · preview updates on the right
+                            After · edit freely · preview updates on the right
                           </p>
                           <textarea
                             autoFocus
                             rows={3}
-                            className="w-full rounded-md border-2 border-primary/40 bg-background p-3 text-sm focus:border-primary focus:outline-none"
+                            className="w-full rounded-md border-2 border-success/50 bg-success/5 p-3 text-sm focus:border-success focus:outline-none"
                             value={proposal}
                             onChange={(e) => setProposal(e.target.value)}
                           />
@@ -511,6 +589,14 @@ export function LiveEditor({
               </li>
             ))}
         </ul>
+        {tabOpen.length > 3 && (
+          <button
+            className="w-full border-t px-4 py-2.5 text-xs font-medium text-primary hover:bg-muted/50"
+            onClick={() => setShowAll(!showAll)}
+          >
+            {showAll ? "Show top 3 only" : `Show ${tabOpen.length - 3} more in ${TIERS.find((t) => t.id === tab)?.label}`}
+          </button>
+        )}
       </Card>
 
       {(fixes.length > 0 || skipped.length > 0) && (
@@ -661,7 +747,17 @@ export function LiveEditor({
 
   const right = (
     <div className="space-y-3 md:sticky md:top-20 md:self-start">
-      <ResumePreview original={resume} draft={pending} withImages />
+      <ResumePreview
+        original={resume}
+        draft={pending}
+        withImages
+        focus={active?.original}
+        targets={open.flatMap((q) => (q.original ? [q.original] : []))}
+        onPick={pickLine}
+      />
+      <p className="text-[11px] text-muted-foreground">
+        Tip: click an underlined line in the resume to open its recommendation.
+      </p>
       <div className="flex flex-wrap gap-2">
         <Button size="sm" onClick={word}>
           {pro ? <FileText /> : <Lock />}Download Word (.docx)
@@ -688,10 +784,10 @@ export function LiveEditor({
           Live editor · {job.description.trim() ? "job match score" : "generic resume score"}
         </p>
         <h2 className="font-display text-2xl font-semibold tracking-tight">
-          Improve your resume, step by step
+          Fix the biggest gaps first
         </h2>
         <p className="text-sm text-muted-foreground">
-          Draft with AI, edit it, apply — the preview updates as you type. Undo any step.
+          Work through the priority queue on the left — each fix is spotlighted in your resume on the right. Undo any step.
         </p>
       </div>
       <div className="hidden items-start gap-6 md:grid md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">

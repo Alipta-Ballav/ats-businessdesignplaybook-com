@@ -1,3 +1,4 @@
+import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { BULLET, inlineRuns, isHeading, isRoleLine } from "@/lib/export-docx";
 
@@ -41,11 +42,25 @@ export function ResumePreview({
   original,
   draft,
   withImages = false,
+  focus,
+  targets = [],
+  onPick,
 }: {
   original: string;
   draft: string;
   withImages?: boolean;
+  /** Resume line to spotlight (the recommendation currently open). */
+  focus?: string | undefined;
+  /** Lines that have a recommendation; clicking one calls onPick with it. */
+  targets?: string[];
+  onPick?: (line: string) => void;
 }) {
+  const norm = (x: string) => plain(x.trim()).replace(BULLET, "").trim();
+  const match = (t: string, o: string) => {
+    const a = norm(t);
+    const b = norm(o);
+    return !!a && !!b && (a === b || a.includes(b) || b.includes(a));
+  };
   const imgs = useResumeImages();
   const showToggle = withImages && hasImages(imgs);
   const on = showToggle && imgs.on;
@@ -72,6 +87,12 @@ export function ResumePreview({
         ?.querySelector(`[data-line="${idx}"]`)
         ?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, [draft]);
+  useEffect(() => {
+    if (focus)
+      box.current
+        ?.querySelector('[data-focus="true"]')
+        ?.scrollIntoView({ block: "center", behavior: "smooth" });
+  }, [focus]);
   return (
     <div className="overflow-hidden rounded-md border bg-card shadow-sheet">
       <div className="flex items-center justify-between gap-3 border-b bg-muted/40 px-4 py-2">
@@ -139,9 +160,25 @@ export function ResumePreview({
               const render = (l: (typeof lines)[number], i: number) => {
               const t = l.text.trim();
               if (!t) return <div key={i} className="h-2" />;
-              const mark = l.changed
-                ? "bg-primary/15 border-l-4 border-primary rounded-r-sm pl-2 -ml-3 transition-colors"
-                : "";
+              const isFocus = !!focus && match(t, focus);
+              const target = onPick ? targets.find((o) => match(t, o)) : undefined;
+              const mark = `${
+                isFocus
+                  ? "bg-warning/20 ring-2 ring-warning rounded-sm pl-2 -ml-3 transition-colors"
+                  : l.changed
+                    ? "bg-primary/15 border-l-4 border-primary rounded-r-sm pl-2 -ml-3 transition-colors"
+                    : ""
+              } ${target && !isFocus ? "cursor-pointer underline decoration-warning/70 decoration-dotted underline-offset-4 hover:bg-warning/10" : ""}`;
+              const pick = target
+                ? {
+                    "data-focus": isFocus ? "true" : undefined,
+                    role: "button",
+                    tabIndex: 0,
+                    title: "Open the recommendation for this line",
+                    onClick: () => onPick?.(target),
+                    onKeyDown: (e: React.KeyboardEvent) => e.key === "Enter" && onPick?.(target),
+                  }
+                : { "data-focus": isFocus ? "true" : undefined };
               if (i === first)
                 return (
                   <h3 key={i} data-line={i} className={`mb-1 text-2xl font-bold ${mark}`}>
@@ -166,13 +203,13 @@ export function ResumePreview({
                 );
               if (BULLET.test(t))
                 return (
-                  <p key={i} data-line={i} className={`relative pl-4 ${mark}`}>
+                  <p key={i} data-line={i} {...pick} className={`relative pl-4 ${mark}`}>
                     <span className="absolute left-0">•</span>
                     <Rich t={t.replace(BULLET, "")} />
                   </p>
                 );
               return (
-                <p key={i} data-line={i} className={mark}>
+                <p key={i} data-line={i} {...pick} className={mark}>
                   <Rich t={t} />
                 </p>
               );
