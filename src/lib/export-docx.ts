@@ -14,6 +14,7 @@ import {
   TextRun,
   ExternalHyperlink,
 } from "docx";
+import { DEFAULT_STYLE, getResumeStyle, type ResumeStyle } from "@/lib/resume-style";
 import { getResumeLinks, linkSegments, type ResumeLinks } from "@/lib/resume-links";
 import {
   HEADSHOT_BOX,
@@ -72,12 +73,13 @@ export function inlineRuns(t: string): { text: string; bold?: boolean; italic?: 
   return out;
 }
 let activeLinks: ResumeLinks = {};
+let activeStyle: ResumeStyle = DEFAULT_STYLE;
 const runs = (t: string, o: { bold?: boolean; size?: number; color?: string } = {}) =>
   inlineRuns(t).flatMap((r) =>
     linkSegments(r.text, activeLinks).map((seg) => {
       const run = new TextRun({
         text: seg.text,
-        font: "Calibri",
+        font: activeStyle.font,
         bold: !!(o.bold || r.bold),
         italics: !!r.italic,
         ...(o.size ? { size: o.size } : {}),
@@ -168,8 +170,17 @@ export function resumeBlocks(text: string): ResumeBlock[] {
 }
 
 /** Turns plain resume text into an ATS-safe single-column Word document: name, section rules, real bullets. */
-export function resumeToDocx(text: string, images?: ResumeImages, links: ResumeLinks = {}): Document {
+export function resumeToDocx(text: string, images?: ResumeImages, links: ResumeLinks = {}, style?: ResumeStyle | null): Document {
   activeLinks = links;
+  const st = style ?? DEFAULT_STYLE;
+  activeStyle = st;
+  const body1 = { size: st.bodySize };
+  // "Label: details" lines and "Title | Company | Dates" lines keep the upload's bold lead-in.
+  const lead = (l: string, re: RegExp, on: boolean) => {
+    const m = on ? l.match(re) : null;
+    return m ? [...runs(m[1]!, { ...body1, bold: true }), ...runs(l.slice(m[1]!.length), body1)] : null;
+  };
+  let headerLine = 0;
   const blocks = resumeBlocks(text);
   const kids: Paragraph[] = [];
   let headerEnd = -1; // number of paragraphs before the first section heading
@@ -177,9 +188,9 @@ export function resumeToDocx(text: string, images?: ResumeImages, links: ResumeL
     if (kind === "name") {
       kids.push(
         new Paragraph({
-          alignment: AlignmentType.LEFT,
+          alignment: st.centerHeader ? AlignmentType.CENTER : AlignmentType.LEFT,
           spacing: { after: 60 },
-          children: runs(l, { bold: true, size: 36 }),
+          children: runs(l, { bold: true, size: st.nameSize }),
         }),
       );
       return;
@@ -190,14 +201,14 @@ export function resumeToDocx(text: string, images?: ResumeImages, links: ResumeL
         new Paragraph({
           keepNext: true,
           spacing: { before: 240, after: 80 },
-          border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: "1F2A44", space: 2 } },
+          border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: st.headingColor, space: 2 } },
           children: [
             new TextRun({
               text: plain(l).toUpperCase(),
-              font: "Calibri",
+              font: st.font,
               bold: true,
-              size: 22,
-              color: "1F2A44",
+              size: st.headingSize,
+              color: st.headingColor,
             }),
           ],
         }),
@@ -209,7 +220,7 @@ export function resumeToDocx(text: string, images?: ResumeImages, links: ResumeL
         new Paragraph({
           keepNext: true,
           spacing: { before: 120, after: 40 },
-          children: runs(l, { bold: true }),
+          children: lead(l, /^([^|]+?)(?=\s*\|)/, st.roleTitleBold) ?? runs(l, { ...body1, bold: true }),
         }),
       );
       return;
@@ -221,12 +232,21 @@ export function resumeToDocx(text: string, images?: ResumeImages, links: ResumeL
           indent: { left: 360, hanging: 240 },
           widowControl: true,
           spacing: { after: 40 },
-          children: runs(l),
+          children: lead(l, /^([^:]{2,40}:)\s/, st.boldLabels) ?? runs(l, body1),
         }),
       );
       return;
     }
-    kids.push(new Paragraph({ spacing: { after: 60 }, children: runs(l) }));
+    if (headerEnd < 0) {
+      const title = headerLine++ === 0 && st.titleBold;
+      kids.push(new Paragraph({
+        alignment: st.centerHeader ? AlignmentType.CENTER : AlignmentType.LEFT,
+        spacing: { after: 40 },
+        children: runs(l, title ? { bold: true, size: st.titleSize } : body1),
+      }));
+      return;
+    }
+    kids.push(new Paragraph({ spacing: { after: 60 }, children: lead(l, /^([^:]{2,40}:)\s/, st.boldLabels) ?? runs(l, body1) }));
   });
   const on = images?.on !== false;
   const body: (Paragraph | Table)[] = [...kids];
@@ -324,8 +344,8 @@ export function resumeToDocx(text: string, images?: ResumeImages, links: ResumeL
     styles: {
       default: {
         document: {
-          run: { font: "Calibri", size: 22 },
-          paragraph: { alignment: AlignmentType.LEFT, spacing: { line: 324, after: 60 } },
+          run: { font: st.font, size: st.bodySize },
+          paragraph: { alignment: AlignmentType.LEFT, spacing: { line: style ? 264 : 324, after: 60 } },
         },
       },
     },
@@ -365,7 +385,7 @@ export function resumeToDocx(text: string, images?: ResumeImages, links: ResumeL
 }
 
 export async function downloadResumeDocx(text: string, filename = "resume-revised.docx") {
-  const blob = await Packer.toBlob(resumeToDocx(text, getResumeImages(), getResumeLinks()));
+  const blob = await Packer.toBlob(resumeToDocx(text, getResumeImages(), getResumeLinks(), getResumeStyle()));
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;

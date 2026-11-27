@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { CheckCircle2, FileText, Loader2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PrivacySeal } from "@/components/trust/Trust";
+import { extractDocxStyle, htmlToResumeText, setResumeStyle } from "@/lib/resume-style";
 import { linksFromHtml, setResumeLinks, type ResumeLinks } from "@/lib/resume-links";
 import { classifyImages, extractDocxImages, extractPdfImages, setResumeImages } from "@/lib/resume-images";
 const input = "w-full rounded-md border bg-background px-3 py-2 text-sm";
@@ -45,6 +46,7 @@ async function readFile(f: File): Promise<string> {
       }
     }
     setResumeLinks(found);
+    setResumeStyle(null);
     return pages.join("\n\n");
   }
   if (name.endsWith(".docx")) {
@@ -53,14 +55,16 @@ async function readFile(f: File): Promise<string> {
     extractDocxImages(buf.slice(0))
       .then((r) => setResumeImages(classifyImages(r)))
       .catch(() => setResumeImages(null));
-    mammoth.convertToHtml({ arrayBuffer: buf.slice(0) })
-      .then((r) => setResumeLinks(linksFromHtml(r.value)))
-      .catch(() => setResumeLinks(null));
-    return (await mammoth.extractRawText({ arrayBuffer: buf })).value;
+    extractDocxStyle(buf.slice(0)).then(setResumeStyle).catch(() => setResumeStyle(null));
+    const html = (await mammoth.convertToHtml({ arrayBuffer: buf.slice(0) })).value;
+    setResumeLinks(linksFromHtml(html));
+    const text = htmlToResumeText(html);
+    return text.trim() ? text : (await mammoth.extractRawText({ arrayBuffer: buf })).value;
   }
   if (name.endsWith(".doc"))
     throw new Error("Old .doc files aren't supported. Save as .docx or PDF.");
   setResumeLinks(null);
+  setResumeStyle(null);
   return f.text();
 }
 

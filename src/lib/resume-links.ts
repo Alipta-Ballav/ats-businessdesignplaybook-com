@@ -14,7 +14,7 @@ export function useResumeLinks() {
 }
 
 export type LinkSegment = { text: string; url?: string };
-const RAW = /(https?:\/\/[^\s<>()]+[^\s<>().,;:!?'"]|www\.[^\s<>()]+[^\s<>().,;:!?'"]|[\w.+-]+@[\w-]+(?:\.[\w-]+)+|(?:linkedin\.com|behance\.net|dribbble\.com|github\.com|medium\.com)\/[^\s<>()]*[^\s<>().,;:!?'"])/gi;
+const RAW = /(https?:\/\/[^\s<>()]+[^\s<>().,;:!?'"]|www\.[^\s<>()]+[^\s<>().,;:!?'"]|[\w.+-]+@[\w-]+(?:\.[\w-]+)+|(?<![\w@.])(?:[a-z0-9-]+\.)+(?:com|online|io|design|net|org|co|in|me|dev|ai|app|xyz|site|studio|work)(?:\/[^\s<>()]*[^\s<>().,;:!?'"])?(?![\w@]))/gi;
 const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 /** Turn visible text into the address a reader opens; the visible text itself is never changed. */
