@@ -7,11 +7,11 @@ import { Button } from "@/components/ui/button";
 
 export type Lens = ArchetypeId | "level";
 const NAMES: Record<Lens, string> = {
-  level: "Level-based (recommended)", product: "Product design", research: "Research",
+  level: "Any design role (recommended)", product: "Product design", research: "Research",
   systems: "Design systems", leader: "Design leadership",
 };
 const TIERS: { id: Emphasis; label: string }[] = [
-  { id: "low", label: "Low" }, { id: "standard", label: "Standard" }, { id: "high", label: "High" },
+  { id: "low", label: "Less" }, { id: "standard", label: "Normal" }, { id: "high", label: "More" },
 ];
 
 export function WeightLens({ level, onLevel, detected, readAs, lens, onLens, emphasis, onEmphasis, weights, baseline, total }: {
@@ -31,24 +31,25 @@ export function WeightLens({ level, onLevel, detected, readAs, lens, onLens, emp
     <section aria-label="Benchmark target" className="space-y-4 border-t p-4 sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
-          <h3 className="text-base font-semibold">Benchmark target</h3>
+          <h3 className="text-base font-semibold">Who are you being compared against?</h3>
+          <p className="mt-1 text-sm text-muted-foreground">Pick the role you're applying for. This changes which skills count most — not your resume or your evidence.</p>
           <p className="mt-1 text-sm text-muted-foreground" aria-live="polite">
-            {level} · {lens === "level" ? "Level-based priorities" : NAMES[lens]}{tuned ? " · Custom weights" : ""}
+            Now: {level} · {NAMES[lens]}{tuned ? " · fine-tuned" : ""}
           </p>
         </div>
         {custom && <Button variant="ghost" className="h-10" onClick={() => { onLens("level"); onEmphasis({}); }}>
-          <RotateCcw className="size-4" />Reset weights
+          <RotateCcw className="size-4" />Reset
         </Button>}
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="min-w-0 space-y-1.5">
-          <label htmlFor={`${id}-level`} className="text-sm font-medium">Career level</label>
+          <label htmlFor={`${id}-level`} className="text-sm font-medium">Your level</label>
           <select id={`${id}-level`} className="h-10 w-full min-w-0 rounded-md border bg-background px-3 text-sm focus-visible:outline-2 focus-visible:outline-ring" value={level} onChange={(e) => onLevel(e.target.value as Level)}>
             {LEVELS.map((l) => <option key={l} value={l}>{l}{l === detected ? " (detected)" : ""}</option>)}
           </select>
         </div>
         <div className="min-w-0 space-y-1.5">
-          <label htmlFor={`${id}-focus`} className="text-sm font-medium">Role emphasis</label>
+          <label htmlFor={`${id}-focus`} className="text-sm font-medium">Type of design role</label>
           <select id={`${id}-focus`} className="h-10 w-full min-w-0 rounded-md border bg-background px-3 text-sm focus-visible:outline-2 focus-visible:outline-ring" value={lens} onChange={(e) => onLens(e.target.value as Lens)}>
             <option value="level">{NAMES.level}</option>
             {ARCHETYPES.map((a) => <option key={a.id} value={a.id}>{NAMES[a.id]}</option>)}
@@ -56,22 +57,24 @@ export function WeightLens({ level, onLevel, detected, readAs, lens, onLens, emp
         </div>
       </div>
       <div className="space-y-2 text-sm" aria-live="polite">
-        <p>{leading.map((d) => `${d.name} (${weights[d.id] ?? 0}%)`).join(" and ")} contribute most to this rubric.</p>
-        <p className="text-xs text-muted-foreground">
-          {lens === "level" ? "Priorities follow your career level." : "This role preset replaces the level-based weights."} Changing weights changes the overall score—not your resume or the eight evidence scores.
-        </p>
-        {custom && <p className="font-mono text-xs">Level default {baseline} → Your weighting {total} ({delta > 0 ? "+" : ""}{delta}) · not a resume improvement</p>}
+        {lens !== "level" && <p className="text-xs text-muted-foreground">{ARCHETYPES.find((a) => a.id === lens)?.blurb} These count more.</p>}
+        <div className="flex h-3 w-full overflow-hidden rounded-full border" aria-hidden>
+          {ordered.map((d, i) => <div key={d.id} title={`${d.name} ${weights[d.id] ?? 0}%`} className={i < 2 ? "bg-primary" : "bg-muted-foreground/30"} style={{ width: `${weights[d.id] ?? 0}%`, borderRight: "1px solid var(--background)" }} />)}
+        </div>
+        <p>For this role, <strong>{leading.map((d) => `${d.name} (${weights[d.id] ?? 0}%)`).join(" and ")}</strong> matter most.</p>
+        {custom ? <p className="text-xs">Your score for this role: <strong>{total}</strong> (was {baseline} with the standard benchmark, {delta > 0 ? "+" : ""}{delta}). Your resume didn't change — only what's being prioritised.</p>
+          : <p className="text-xs text-muted-foreground">Priorities follow your level. Changing them changes the overall score only — never your resume or the eight evidence scores.</p>}
       </div>
       <Collapsible defaultOpen={tuned}>
         <CollapsibleTrigger asChild>
           <Button variant="ghost" className="group h-10 max-w-full justify-start whitespace-normal px-0 text-left">
             <ChevronDown className="size-4 shrink-0 transition-transform group-data-[state=open]:rotate-180" />
-            {tuned ? "Custom dimension weights" : "Customize dimension weights (optional)"}
+            {tuned ? "Fine-tune what matters (adjusted)" : "Fine-tune what matters (advanced)"}
           </Button>
         </CollapsibleTrigger>
         <CollapsibleContent className="space-y-3 pt-2">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="max-w-lg text-xs text-muted-foreground">Set a dimension to matter more or less. The percentages balance automatically to 100%; your choices stay as you set them.</p>
+            <p className="max-w-lg text-xs text-muted-foreground">Only if a job post stresses something specific. Example: the post says "strong research"? Set Research to More. Percentages rebalance to 100% automatically.</p>
             {tuned && <Button variant="ghost" className="h-10" onClick={() => onEmphasis({})}><RotateCcw className="size-4" />Reset adjustments</Button>}
           </div>
           <div className="divide-y">
@@ -85,12 +88,12 @@ export function WeightLens({ level, onLevel, detected, readAs, lens, onLens, emp
           </div>
           <details className="text-xs text-muted-foreground">
             <summary className="flex min-h-10 cursor-pointer items-center">How these weights are calculated</summary>
-            <p className="py-2">High doubles a preset weight, Low halves it, and Standard keeps it. We then balance all eight to 100%. A zero-weight dimension stays at zero in that preset.</p>
+            <p className="py-2">More doubles a skill's weight, Less halves it, and Normal keeps it. We then balance all eight to 100%. A zero-weight dimension stays at zero in that preset.</p>
           </details>
         </CollapsibleContent>
       </Collapsible>
       <details className="text-xs text-muted-foreground">
-        <summary className="flex min-h-10 cursor-pointer items-center">Why this career level?</summary>
+        <summary className="flex min-h-10 cursor-pointer items-center">Why this level?</summary>
         <p className="py-2">Detected from {readAs}: {detected}. This is an estimate from your resume, not a seniority assessment.</p>
       </details>
     </section>

@@ -62,6 +62,22 @@ export function FtiReport({
           </div>
           <ScoreRing value={total} label="FTI score" tone="ink" />
         </div>
+        <section aria-label="How your score is made" className="border-t px-6 py-4">
+          <h3 className="text-sm font-semibold">How your score is made</h3>
+          <ol className="mt-3 grid gap-3 sm:grid-cols-3">
+            {[
+              ["1 · AI reads", "Finds and quotes lines from your resume. It never gives a number."],
+              ["2 · Rubric scores", "Fixed rules turn those quotes into 0–100. Same resume, same score, every time."],
+              ["3 · You pick the benchmark", "Choose which skills count most for the job you want."],
+            ].map(([t, d]) => (
+              <li key={t} className="min-w-0 rounded-md border p-3">
+                <p className="font-mono text-[11px] uppercase tracking-wider text-primary">{t}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{d}</p>
+              </li>
+            ))}
+          </ol>
+          <p className="mt-3 text-xs text-muted-foreground"><strong className="text-foreground">AI: 0% of the score</strong> — it only finds evidence. <strong className="text-foreground">Rubric: 100% of every number.</strong></p>
+        </section>
         <WeightLens
           level={level}
           onLevel={setLevel}
@@ -135,7 +151,7 @@ export function FtiReport({
                       <blockquote className="border-l-2 border-primary/50 pl-3 text-xs italic text-muted-foreground">
                         “{d.quotes[0]}”
                         <span className="mt-1 block font-mono text-[10px] not-italic uppercase tracking-wider text-primary">
-                          Verified from resume
+                          Found by AI · scored by rubric
                         </span>
                       </blockquote>
                     ) : (
