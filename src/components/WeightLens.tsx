@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { ChevronDown, RotateCcw } from "lucide-react";
 import { FTI_DIMENSIONS, LEVELS, type Level } from "@/lib/scoring";
 import { ARCHETYPES, type ArchetypeId, type Emphasis, type WeightMap } from "@/lib/weights";
@@ -5,217 +6,93 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Button } from "@/components/ui/button";
 
 export type Lens = ArchetypeId | "level";
-const SHORT: Record<string, string> = {
-  craft: "Craft",
-  research: "Research",
-  product: "Product",
-  systems: "Systems",
-  ai: "AI",
-  critical: "Critical",
-  leadership: "Leadership",
-  learning: "Learning",
+const NAMES: Record<Lens, string> = {
+  level: "Level-based (recommended)", product: "Product design", research: "Research",
+  systems: "Design systems", leader: "Design leadership",
 };
-const SHADES = [
-  "bg-primary",
-  "bg-primary/85",
-  "bg-primary/70",
-  "bg-primary/55",
-  "bg-primary/40",
-  "bg-primary/30",
-  "bg-primary/20",
-  "bg-primary/10",
-];
 const TIERS: { id: Emphasis; label: string }[] = [
-  { id: "low", label: "Low" },
-  { id: "standard", label: "Standard" },
-  { id: "high", label: "High" },
+  { id: "low", label: "Low" }, { id: "standard", label: "Standard" }, { id: "high", label: "High" },
 ];
 
-export function WeightLens({
-  level,
-  onLevel,
-  detected,
-  readAs,
-  lens,
-  onLens,
-  emphasis,
-  onEmphasis,
-  weights,
-  baseline,
-  total,
-}: {
-  level: Level;
-  onLevel: (l: Level) => void;
-  detected: Level;
-  readAs: string;
-  lens: Lens;
-  onLens: (l: Lens) => void;
+export function WeightLens({ level, onLevel, detected, readAs, lens, onLens, emphasis, onEmphasis, weights, baseline, total }: {
+  level: Level; onLevel: (l: Level) => void; detected: Level; readAs: string;
+  lens: Lens; onLens: (l: Lens) => void;
   emphasis: Partial<Record<string, Emphasis>>;
   onEmphasis: (e: Partial<Record<string, Emphasis>>) => void;
-  weights: WeightMap;
-  baseline: number;
-  total: number;
+  weights: WeightMap; baseline: number; total: number;
 }) {
+  const id = useId();
   const tuned = Object.values(emphasis).some((v) => v && v !== "standard");
   const custom = lens !== "level" || tuned;
   const delta = total - baseline;
-  const options: { id: Lens; name: string; blurb: string }[] = [
-    { id: "level", name: "Match seniority", blurb: `Standard weights for a ${level}.` },
-    ...ARCHETYPES,
-  ];
-  const current = options.find((o) => o.id === lens);
   const ordered = [...FTI_DIMENSIONS].sort((a, b) => (weights[b.id] ?? 0) - (weights[a.id] ?? 0));
-
+  const leading = ordered.slice(0, 2);
   return (
-    <section aria-label="Target role" className="space-y-4 border-t p-6">
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+    <section aria-label="Benchmark target" className="space-y-4 border-t p-4 sm:p-6">
+      <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-            Target role
-          </p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Pick the level you're aiming for, then the kind of role. Your evidence stays the same.
+          <h3 className="text-base font-semibold">Benchmark target</h3>
+          <p className="mt-1 text-sm text-muted-foreground" aria-live="polite">
+            {level} · {lens === "level" ? "Level-based priorities" : NAMES[lens]}{tuned ? " · Custom weights" : ""}
           </p>
         </div>
-        <p
-          aria-live="polite"
-          className={`shrink-0 rounded-full px-3 py-1 font-mono text-xs ${
-            !custom || delta === 0
-              ? "bg-muted text-muted-foreground"
-              : delta > 0
-                ? "bg-primary/10 text-primary"
-                : "bg-destructive/10 text-destructive"
-          }`}
-        >
-          {custom ? `${baseline} → ${total} (${delta > 0 ? "+" : ""}${delta})` : `${total} · standard weights`}
-        </p>
+        {custom && <Button variant="ghost" className="h-10" onClick={() => { onLens("level"); onEmphasis({}); }}>
+          <RotateCcw className="size-4" />Reset weights
+        </Button>}
       </div>
-
-      <div className="space-y-1.5">
-        <label htmlFor="fti-level" className="text-sm font-medium">
-          1. Seniority <span className="font-normal text-muted-foreground">— sets what's expected at that level</span>
-        </label>
-        <select
-          id="fti-level"
-          className="h-10 w-full max-w-sm rounded-md border bg-background px-3 text-sm"
-          value={level}
-          onChange={(e) => onLevel(e.target.value as Level)}
-        >
-          {LEVELS.map((l) => (
-            <option key={l} value={l}>
-              {l}
-              {l === detected ? " (detected)" : ""}
-            </option>
-          ))}
-        </select>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="min-w-0 space-y-1.5">
+          <label htmlFor={`${id}-level`} className="text-sm font-medium">Career level</label>
+          <select id={`${id}-level`} className="h-10 w-full min-w-0 rounded-md border bg-background px-3 text-sm focus-visible:outline-2 focus-visible:outline-ring" value={level} onChange={(e) => onLevel(e.target.value as Level)}>
+            {LEVELS.map((l) => <option key={l} value={l}>{l}{l === detected ? " (detected)" : ""}</option>)}
+          </select>
+        </div>
+        <div className="min-w-0 space-y-1.5">
+          <label htmlFor={`${id}-focus`} className="text-sm font-medium">Role emphasis</label>
+          <select id={`${id}-focus`} className="h-10 w-full min-w-0 rounded-md border bg-background px-3 text-sm focus-visible:outline-2 focus-visible:outline-ring" value={lens} onChange={(e) => onLens(e.target.value as Lens)}>
+            <option value="level">{NAMES.level}</option>
+            {ARCHETYPES.map((a) => <option key={a.id} value={a.id}>{NAMES[a.id]}</option>)}
+          </select>
+        </div>
+      </div>
+      <div className="space-y-2 text-sm" aria-live="polite">
+        <p>{leading.map((d) => `${d.name} (${weights[d.id] ?? 0}%)`).join(" and ")} contribute most to this rubric.</p>
         <p className="text-xs text-muted-foreground">
-          We read you as {readAs} → {detected}.
+          {lens === "level" ? "Priorities follow your career level." : "This role preset replaces the level-based weights."} Changing weights changes the overall score—not your resume or the eight evidence scores.
         </p>
+        {custom && <p className="font-mono text-xs">Level default {baseline} → Your weighting {total} ({delta > 0 ? "+" : ""}{delta}) · not a resume improvement</p>}
       </div>
-
-      <p className="text-sm font-medium">
-        2. Focus <span className="font-normal text-muted-foreground">— which dimensions count most</span>
-      </p>
-      <div role="radiogroup" aria-label="Role focus" className="-mt-2 flex flex-wrap gap-2">
-        {options.map((o) => (
-          <button
-            key={o.id}
-            type="button"
-            role="radio"
-            aria-checked={lens === o.id}
-            onClick={() => onLens(o.id)}
-            className={`h-10 rounded-full border px-4 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-ring ${
-              lens === o.id
-                ? "border-primary bg-primary text-primary-foreground"
-                : "bg-background hover:bg-muted"
-            }`}
-          >
-            {o.name}
-          </button>
-        ))}
-      </div>
-      {current && <p className="text-xs text-muted-foreground">{current.blurb}</p>}
-
-      <div>
-        <div className="flex h-3 overflow-hidden rounded-full bg-muted" aria-hidden>
-          {ordered.map((d, i) => (
-            <div
-              key={d.id}
-              title={`${d.name}: ${weights[d.id] ?? 0}%`}
-              className={`${SHADES[i] ?? "bg-primary/10"} h-full transition-[width] duration-300 motion-reduce:transition-none`}
-              style={{ width: `${weights[d.id] ?? 0}%` }}
-            />
-          ))}
-        </div>
-        <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-          {ordered.map((d, i) => (
-            <li key={d.id} className="flex items-center gap-1.5">
-              <span className={`size-2 rounded-full ${SHADES[i] ?? "bg-primary/10"}`} aria-hidden />
-              {SHORT[d.id] ?? d.name} <b className="font-mono text-foreground">{weights[d.id] ?? 0}%</b>
-            </li>
-          ))}
-        </ul>
-      </div>
-
       <Collapsible defaultOpen={tuned}>
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <CollapsibleTrigger className="group inline-flex h-10 items-center gap-1.5 text-sm font-medium">
-            Fine-tune emphasis
-            <ChevronDown className="size-4 transition-transform group-data-[state=open]:rotate-180" />
-          </CollapsibleTrigger>
-          {custom && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                onLens("level");
-                onEmphasis({});
-              }}
-            >
-              <RotateCcw className="size-3.5" /> Reset focus
-            </Button>
-          )}
-        </div>
-        <CollapsibleContent className="mt-2 max-w-2xl space-y-1">
-          <p className="pb-2 text-xs text-muted-foreground">
-            Set what matters more or less. High counts double, Low counts half; we keep the total at 100%.
-          </p>
-          {FTI_DIMENSIONS.map((d) => {
-            const cur = emphasis[d.id] ?? "standard";
-            return (
-              <div
-                key={d.id}
-                className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 py-1.5 sm:grid-cols-[minmax(0,1fr)_auto_3rem]"
-              >
-                <span className="min-w-0 truncate text-sm">{d.name}</span>
-                <div
-                  role="radiogroup"
-                  aria-label={`${d.name} emphasis`}
-                  className="col-span-2 inline-flex rounded-md border p-0.5 sm:col-span-1"
-                >
-                  {TIERS.map((t) => (
-                    <button
-                      key={t.id}
-                      type="button"
-                      role="radio"
-                      aria-checked={cur === t.id}
-                      onClick={() => onEmphasis({ ...emphasis, [d.id]: t.id })}
-                      className={`h-9 flex-1 rounded px-3 text-xs sm:flex-none ${
-                        cur === t.id ? "bg-foreground text-background" : "text-muted-foreground hover:bg-muted"
-                      }`}
-                    >
-                      {t.label}
-                    </button>
-                  ))}
-                </div>
-                <span className="row-start-1 col-start-2 text-right font-mono text-xs sm:row-auto sm:col-auto">
-                  {weights[d.id] ?? 0}%
-                </span>
+        <CollapsibleTrigger asChild>
+          <Button variant="ghost" className="group h-10 max-w-full justify-start whitespace-normal px-0 text-left">
+            <ChevronDown className="size-4 shrink-0 transition-transform group-data-[state=open]:rotate-180" />
+            {tuned ? "Custom dimension weights" : "Customize dimension weights (optional)"}
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-3 pt-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="max-w-lg text-xs text-muted-foreground">Set a dimension to matter more or less. The percentages balance automatically to 100%; your choices stay as you set them.</p>
+            {tuned && <Button variant="ghost" className="h-10" onClick={() => onEmphasis({})}><RotateCcw className="size-4" />Reset adjustments</Button>}
+          </div>
+          <div className="divide-y">
+            {FTI_DIMENSIONS.map((d) => <div key={d.id} className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 py-3 sm:grid-cols-[minmax(0,1fr)_auto_3rem]">
+              <span className="min-w-0 text-sm">{d.name}</span>
+              <div role="radiogroup" aria-label={`${d.name} emphasis`} className="col-span-2 flex rounded-md border p-0.5 sm:col-span-1">
+                {TIERS.map((t) => <Button key={t.id} variant="ghost" role="radio" aria-checked={(emphasis[d.id] ?? "standard") === t.id} onClick={() => onEmphasis({ ...emphasis, [d.id]: t.id })} className={`h-10 flex-1 rounded px-3 text-xs sm:flex-none ${(emphasis[d.id] ?? "standard") === t.id ? "bg-foreground text-background hover:bg-foreground hover:text-background" : "text-muted-foreground"}`}>{t.label}</Button>)}
               </div>
-            );
-          })}
+              <span aria-live="polite" className="col-start-2 row-start-1 text-right font-mono text-xs sm:col-auto sm:row-auto">{weights[d.id] ?? 0}%</span>
+            </div>)}
+          </div>
+          <details className="text-xs text-muted-foreground">
+            <summary className="flex min-h-10 cursor-pointer items-center">How these weights are calculated</summary>
+            <p className="py-2">High doubles a preset weight, Low halves it, and Standard keeps it. We then balance all eight to 100%. A zero-weight dimension stays at zero in that preset.</p>
+          </details>
         </CollapsibleContent>
       </Collapsible>
+      <details className="text-xs text-muted-foreground">
+        <summary className="flex min-h-10 cursor-pointer items-center">Why this career level?</summary>
+        <p className="py-2">Detected from {readAs}: {detected}. This is an estimate from your resume, not a seniority assessment.</p>
+      </details>
     </section>
   );
 }

@@ -3,6 +3,10 @@ import { futureTalentIndex, inferLevel, type Candidate, type Level } from "@/lib
 import { Card, ScoreRing } from "@/components/ui-bits";
 import { WeightLens, type Lens } from "@/components/WeightLens";
 import { applyEmphasis, baseWeights, type Emphasis } from "@/lib/weights";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
+import { useQueueNavigation } from "@/components/ReportTabs";
+import { GAP_BELOW } from "@/lib/fixer";
 
 const GROUPS: { name: string; ids: string[] }[] = [
   { name: "Craft & research", ids: ["craft", "research"] },
@@ -18,20 +22,14 @@ const band = (s: number) =>
       ? { label: "Solid", cls: "bg-secondary text-secondary-foreground", bar: "bg-foreground/60" }
       : { label: "Gap", cls: "bg-destructive/10 text-destructive", bar: "bg-destructive" };
 
-const tier = (t: number) =>
-  t >= 75
-    ? "Principal / Staff ready"
-    : t >= 60
-      ? "Senior designer level"
-      : t >= 40
-        ? "Mid-level, building depth"
-        : "Developing profile";
-
 export function FtiReport({
   c,
+  onFix,
 }: {
   c: Pick<Candidate, "competencies"> & Partial<Pick<Candidate, "years" | "role">>;
+  onFix?: () => void;
 }) {
+  const navigateQueue = useQueueNavigation();
   const detected = inferLevel(c.years ?? 0, c.role ?? "");
   const [level, setLevel] = useState<Level>(detected);
   const [lens, setLens] = useState<Lens>("level");
@@ -42,9 +40,8 @@ export function FtiReport({
   const sorted = [...dims].sort((a, b) => b.score - a.score);
   const strongest = sorted[0];
   const weak = [...dims]
-    .sort((a, b) => a.score - b.score)
-    .filter((d) => d.score < 60)
-    .slice(0, 3);
+    .filter((d) => d.score < GAP_BELOW)
+    .sort((a, b) => b.weight * (GAP_BELOW - b.score) - a.weight * (GAP_BELOW - a.score));
   const verified = dims.filter((d) => d.quotes.length > 0).length;
   const byId = Object.fromEntries(dims.map((d) => [d.id, d]));
 
@@ -57,14 +54,11 @@ export function FtiReport({
               Future Talent Index
             </p>
             <h2 className="font-display text-2xl font-semibold tracking-tight">
-              Your Product & UX design profile across 8 dimensions
+              Your resume evidence profile
             </h2>
             <p className="text-sm text-muted-foreground">
-              No job needed. Every score is backed by a line quoted from your resume.
+              Eight design dimensions, scored from the evidence in your resume—not a hiring prediction.
             </p>
-            <span className="inline-flex rounded-full border px-3 py-1 text-xs font-medium">
-              {tier(total)}
-            </span>
           </div>
           <ScoreRing value={total} label="FTI score" tone="ink" />
         </div>
@@ -81,10 +75,21 @@ export function FtiReport({
           baseline={baseline}
           total={total}
         />
-        <div className="grid grid-cols-1 divide-y border-t bg-muted/40 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+        <section aria-label="Next step" className="space-y-3 border-t p-4 sm:p-6">
+          <div>
+            <h3 className="font-semibold">{weak.length ? `${weak.length} evidence gap${weak.length === 1 ? "" : "s"} to address` : "No critical dimension gaps"}</h3>
+            <p className="mt-1 text-xs text-muted-foreground">{weak.length ? "These dimensions score below 45. Add a real example of your work, then rescore your edited resume." : "Review the remaining recommendations before exporting your resume."}</p>
+          </div>
+          {weak.length > 0 && <ul className="divide-y" aria-live="polite">
+            {weak.slice(0, 3).map((d) => <li key={d.id} className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 py-2 text-sm"><span className="min-w-0">{d.name}</span><span className="font-mono text-xs text-destructive">{d.score} · Gap</span></li>)}
+          </ul>}
+          {weak.length > 3 && <p className="text-xs text-muted-foreground">{weak.length - 3} more dimension gaps in the queue.</p>}
+          <Button className="h-10 max-w-full whitespace-normal" onClick={onFix ?? navigateQueue}>{weak.length ? "Review gaps in Priority queue" : "Review Priority queue"}<ArrowRight className="shrink-0" /></Button>
+          <p className="text-xs text-muted-foreground">Changing weights alone does not close gaps. The queue keeps its level-based order; no resume edits are applied automatically.</p>
+        </section>
+        <div className="grid grid-cols-1 divide-y border-t bg-muted/40 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
           <Stat k="Verified dimensions" v={`${verified} / 8`} />
           <Stat k="Strongest pillar" v={strongest?.name ?? "—"} />
-          <Stat k="Fix first" v={weak[0]?.name ?? "None — well rounded"} />
         </div>
       </Card>
 
@@ -138,6 +143,7 @@ export function FtiReport({
                         No evidence found. {d.tip}
                       </p>
                     )}
+                    {d.quotes[0] && d.score < 60 && <p className="text-xs text-muted-foreground">Evidence to strengthen: {d.tip}</p>}
                   </Card>
                 );
               })}
@@ -145,37 +151,6 @@ export function FtiReport({
         </section>
       ))}
 
-      {weak.length > 0 && (
-        <Card className="space-y-4">
-          <div>
-            <h3 className="font-display text-lg font-semibold">Strengthen next</h3>
-            <p className="text-xs text-muted-foreground">
-              Ranked by how much each fix lifts your score.
-            </p>
-          </div>
-          <ol className="divide-y">
-            {weak.map((d, i) => (
-              <li key={d.id} className="flex gap-4 py-3">
-                <span className="font-mono text-xs text-muted-foreground">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <div className="flex-1">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-sm font-medium">{d.name}</p>
-                    <span className="font-mono text-xs text-muted-foreground">
-                      {d.score} · weight {d.weight}%
-                    </span>
-                  </div>
-                  <p className="mt-0.5 text-sm text-muted-foreground">{d.tip}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-          <p className="text-xs text-muted-foreground">
-            Use “Fix & rescore” below to add these lines and see your score update.
-          </p>
-        </Card>
-      )}
     </div>
   );
 }

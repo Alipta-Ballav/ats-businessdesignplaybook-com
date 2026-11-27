@@ -14,6 +14,7 @@ import { ResumeNameDialog } from "@/components/ResumeNameDialog";
 import { ResumePreview } from "@/components/ResumePreview";
 import { LiveEditor } from "@/components/LiveEditor";
 import { FtiReport } from "@/components/FtiReport";
+import { openPriorityQueue } from "@/components/ReportTabs";
 import { q, must } from "@/lib/db";
 import { supabase } from "@/integrations/supabase/client";
 import { careerQueries, saveVersion } from "@/lib/career/db";
@@ -143,7 +144,7 @@ function MyResumes() {
           <Button asChild className="mt-6"><Link to="/candidate">Open my resume checks</Link></Button>
         </div>
       ) : <>
-        {!editing && <div className="grid items-start gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+        <div className={`grid items-start gap-6 lg:grid-cols-[260px_minmax(0,1fr)] ${editing ? "hidden" : ""}`}>
           <aside className="min-w-0 space-y-6" aria-label="Saved resumes">
             <section className="space-y-2"><h2 className="text-xs font-medium uppercase text-muted-foreground">Master resume</h2>{master && resumeRow(master)}</section>
             <section className="space-y-2"><h2 className="text-xs font-medium uppercase text-muted-foreground">Role variants · {variants.length}</h2>{variants.map(resumeRow)}{!variants.length && <p className="py-2 text-sm text-muted-foreground">No role variants yet.</p>}</section>
@@ -165,7 +166,7 @@ function MyResumes() {
               <TabsContent value="preview" className="pt-3"><ResumePreview original={current.scored_text} draft={current.resume_text} /></TabsContent>
               <TabsContent value="focus" className="space-y-3 pt-3">
                 {current.resume_text !== current.scored_text && <p className="rounded-md border border-dashed px-3 py-2 text-xs text-muted-foreground">Showing the last scored version. Rescore your edits in the editor to update these dimensions.</p>}
-                <FtiReport c={current.candidate} />
+                <FtiReport c={current.candidate} onFix={() => { setEditing(true); openPriorityQueue(); }} />
               </TabsContent>
               <TabsContent value="compare" className="space-y-5 border-t pt-5">
                 <label className="block text-sm font-medium">Compare with
@@ -183,7 +184,7 @@ function MyResumes() {
               </TabsContent>
             </Tabs>
           </section>}
-        </div>}
+        </div>
         {current && <div className={editing ? "space-y-4" : "hidden"}>
           <LiveEditor versionId={current.id} onSessionChange={(session) => { drafts.current[current.id] = session; }} onActiveVersionChange={setSelected} onBackToList={() => setEditing(false)} job={current.job} cand={current.candidate} resume={current.scored_text} initialDraft={current.resume_text} scoringLevel={current.level} />
         </div>}

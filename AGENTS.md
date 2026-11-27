@@ -58,3 +58,4 @@ use the editor.
 - Rubric weighting lenses (src/lib/weights.ts: role archetypes + Low/Standard/High emphasis, normalised to 100 by largest remainder) only change dimension weights, never evidence; the level-weight score stays the shown baseline — users can tune focus without altering verified evidence or comparisons.
 - FTI dimension scores use dimensionEvidenceScore (70% strongest competency, 30% breadth) so one missed extraction tag cannot zero a dimension.
 - Every 8-dimension score in the Gap band (<45) becomes a Critical priority-queue item via dimensionGaps() in fixer.ts — talent-profile findings must always translate into actions.
+- Benchmark controls preserve level/preset/emphasis math; queue navigation switches the report tab or saved-resume editor and focuses Critical actions without applying edits, so findings have a non-destructive next step.

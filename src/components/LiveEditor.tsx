@@ -106,6 +106,11 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
   const [wall, setWall] = useState<string | null>(null);
   const [justDone, setJustDone] = useState<string | null>(null);
   const [tier, setTier] = useState<Tier | null>(null);
+  useEffect(() => {
+    const openQueue = () => { setTier("critical"); setShowAll(true); };
+    window.addEventListener("ft-open-priority-queue", openQueue);
+    return () => window.removeEventListener("ft-open-priority-queue", openQueue);
+  }, []);
   const [showAll, setShowAll] = useState(false);
   const [lastResult, setLastResult] = useState<{ from: number; to: number; fixes: number } | null>(null);
   const rewriteCache = useRef(createRewriteCache());
@@ -435,7 +440,7 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
         </div>
         <p className="text-[11px] text-muted-foreground">
           {counts.critical > 0
-            ? `${counts.critical} critical gap${counts.critical === 1 ? "" : "s"} from the job posting · fix these first`
+            ? `${counts.critical} critical gap${counts.critical === 1 ? "" : "s"} in resume evidence${job.description.trim() ? " or job requirements" : ""} · fix these first`
             : `${open.length} recommendation${open.length === 1 ? "" : "s"} left · ${fixes.length} applied`}
           {" "}· target is a guide, not an employer cutoff
         </p>
@@ -443,7 +448,7 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
 
       <Card className="overflow-hidden p-0">
         <div className="flex items-center justify-between border-b px-4 py-3">
-          <h3 className="text-sm font-semibold">Priority queue</h3>
+          <h3 data-priority-queue tabIndex={-1} className="scroll-mt-24 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-ring">Priority queue</h3>
           <span className="text-xs text-muted-foreground">
             {fixes.length}/{total} done
           </span>

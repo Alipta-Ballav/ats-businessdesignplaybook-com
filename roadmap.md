@@ -1,4 +1,5 @@
 # Roadmap
+- [x] Clarify benchmark settings without removing level, presets, custom weighting or reset; signed-in default/custom/reset/queue/return verified at 1280px and 390px without saving edits, no overflow or runtime errors; all 137 tests pass.
 - [x] Simplify My resumes presentation without changing saved data, scoring or plan rules; signed-in list, comparison, variant creation, draft retention, save/reload, exits, calendar and deletion verified; 124 tests pass, desktop/mobile checked and test copy removed.
 - [x] Add clear back-to-list navigation and save-and-return; signed-in save/reload and both exits verified, failed saves retain the editor in regression tests; 9 tests pass, mobile has no overflow.
 - [x] Correct per-tab queue badges, chronological completed steps, and pass-limit messaging; signed-in tab switching, expansion, apply, skip, restore and undo verified without saving changes; 119 tests pass
