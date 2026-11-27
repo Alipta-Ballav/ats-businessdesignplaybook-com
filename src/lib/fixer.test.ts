@@ -82,3 +82,21 @@ describe("priority queue", () => {
     if (job.mandatory.length) expect(q[0]?.tier).toBe("critical");
   });
 });
+
+import { dimensionGaps } from "./fixer";
+describe("dimension gaps reach the priority queue", () => {
+  const job = { ...SEED_JOBS[0]!, mandatory: [], description: "" };
+  const c = { ...SEED_CANDIDATES[0]!, mandatory: {}, competencies: {} };
+  it("turns every 8-dimension score under 45 into a critical item", () => {
+    const gaps = dimensionGaps(c, "Senior Product Designer");
+    expect(gaps).toHaveLength(8);
+    expect(gaps.every((g) => g.tier === "critical")).toBe(true);
+    expect(buildQueue(job, c, "- Worked on designs.")[0]?.id.startsWith("g:")).toBe(true);
+  });
+  it("adds nothing for dimensions at or above the gap line", () => {
+    const strong = Object.fromEntries(
+      ["functional","domain","execution","relevance","outcomes","ai","systems","learning","flexibility","problem","creative","strategic","social","decision","growth"].map((id) => [id, { proficiency: 5, level: 4, transferable: false, quote: "q", source: "s" }]),
+    );
+    expect(dimensionGaps({ ...c, competencies: strong } as never, "Senior Product Designer")).toHaveLength(0);
+  });
+});

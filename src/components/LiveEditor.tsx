@@ -118,7 +118,7 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
     if (initialSession) onRescored?.(initialSession.official.cand);
   }, []);
 
-  const queue = useMemo(() => buildQueue(job, official.cand, official.text), [job, official]);
+  const queue = useMemo(() => buildQueue(job, official.cand, official.text, level), [job, official, level]);
   const doneIds = fixes.map((f) => f.id);
   // A saved draft may already have rewritten a line from the scored text; hide fixes whose line is gone.
   const open = queue.filter((s) => !doneIds.includes(s.id) && !skipped.includes(s.id) && (s.kind !== "rewrite" || !s.original || draft.includes(s.original)));

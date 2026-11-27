@@ -57,3 +57,4 @@ use the editor.
 - My resumes groups the existing oldest master separately from variants, defaults to document preview, and discloses comparison and secondary actions on demand; focused editing keeps the editor mounted and uses one back control to preserve draft sessions.
 - Rubric weighting lenses (src/lib/weights.ts: role archetypes + Low/Standard/High emphasis, normalised to 100 by largest remainder) only change dimension weights, never evidence; the level-weight score stays the shown baseline — users can tune focus without altering verified evidence or comparisons.
 - FTI dimension scores use dimensionEvidenceScore (70% strongest competency, 30% breadth) so one missed extraction tag cannot zero a dimension.
+- Every 8-dimension score in the Gap band (<45) becomes a Critical priority-queue item via dimensionGaps() in fixer.ts — talent-profile findings must always translate into actions.

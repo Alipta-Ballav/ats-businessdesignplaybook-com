@@ -47,7 +47,25 @@ const withPlaybook = (s: Suggestion): Suggestion => {
 export const ADDED_HEADING = "Additional evidence";
 
 /** Ordered queue: vague bullets to rewrite first, then missing/weak evidence to add. */
-export function buildQueue(job: Job, c: Candidate, resume: string): Suggestion[] {
+/** Band where an 8-dimension score is shown as "Gap" in the talent profile. */
+export const GAP_BELOW = 45;
+
+/** Every dimension shown as a Gap becomes a Critical action, so findings always reach the queue. */
+export function dimensionGaps(c: Candidate, level?: Level): Suggestion[] {
+  const lvl = level ?? inferLevel(c.years ?? 0, c.role ?? "");
+  return futureTalentIndex(c, lvl)
+    .dims.filter((d) => d.score < GAP_BELOW)
+    .sort((a, b) => b.weight * (GAP_BELOW - b.score) - a.weight * (GAP_BELOW - a.score))
+    .map((d) => ({
+      id: `g:${d.id}`,
+      kind: "add" as const,
+      title: `Close your ${d.name} gap`,
+      detail: `Scored ${d.score} (Gap) · weight ${d.weight}%. ${d.tip} Skills checked: ${d.skills.slice(0, 4).join(", ")}.`,
+      tier: "critical" as const,
+    }));
+}
+
+export function buildQueue(job: Job, c: Candidate, resume: string, level?: Level): Suggestion[] {
   const rewrites: Suggestion[] = inspectBullets(resume).map((f) => ({
     id: `r:${f.original}`,
     kind: "rewrite",
@@ -64,7 +82,7 @@ export function buildQueue(job: Job, c: Candidate, resume: string): Suggestion[]
     tier: t.kind === "requirement" ? "critical" : t.kind === "missing" ? "impact" : "polish",
   }));
   const rank: Record<Tier, number> = { critical: 0, impact: 1, polish: 2 };
-  return [...rewrites, ...adds]
+  return [...dimensionGaps(c, level), ...rewrites, ...adds]
     .map(withPlaybook)
     .sort((a, b) => rank[a.tier ?? "polish"] - rank[b.tier ?? "polish"]);
 }
