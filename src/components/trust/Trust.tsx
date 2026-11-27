@@ -122,19 +122,7 @@ export function Footer() {
         <div>
           <Logo tagline={null} />
           <p className="mt-1 text-xs font-medium text-primary">An initiative by Design shots</p>
-          <p className="mt-2">
-            The ATS check built only for Product & UX designers. By Design Shots, creators
-            of the{" "}
-            <a
-              href="https://businessdesignplaybook.com/"
-              target="_blank"
-              rel="noreferrer"
-              className="underline"
-            >
-              Business Design Playbook
-            </a>
-            .
-          </p>
+          <p className="mt-2">The ATS check built only for Product & UX designers. By Design Shots.</p>
         </div>
         <div className="flex flex-col gap-1.5">
           <p className="font-medium text-foreground">Trust</p>
