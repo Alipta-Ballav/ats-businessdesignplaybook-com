@@ -67,7 +67,33 @@ export function ResumeWorkspace({ seed, versionId, onSessionChange, onActiveVers
     setUpsell(false);
     setDialog(mode);
   };
-  const toolbar = <div className="space-y-3 border-y py-4">
+  const saveNew = async (name: string) => {
+      if (!me) return;
+      const active = sessions.current[selected];
+      try {
+        const row = await saveVersion(me.id, name, active?.draft ?? value.initialDraft ?? value.resume, active?.official.cand ?? value.cand, value.job, active?.official.text ?? value.resume, value.scoringLevel ?? inferLevel(value.cand.years, value.cand.role));
+        if (!row) throw new Error("Resume could not be saved. Try again.");
+        if (active) sessions.current[row.id] = active;
+        await client.invalidateQueries({ queryKey: ["resume-versions", me.id] });
+        setSelected(row.id);
+        onActiveVersionChange?.(row.id);
+        toast.success(dialog === "master" ? "Master resume saved" : `New role variant saved — ${label} unchanged`);
+      } catch (error) { toast.error((error as Error).message); throw error; }
+    };
+  const scanMode = !versionId && !onBackToList;
+  const scanBar = <div className="space-y-3 border-y py-4">
+    {!me
+      ? <div className="flex flex-wrap items-center justify-between gap-3 text-sm"><span className="min-w-0 text-muted-foreground">Want to keep this resume? Saving one master resume is free with an account.</span><Button asChild variant="outline"><Link to="/auth" search={{ mode: "signup", as: "candidate", redirect: "/candidate" }}><Save />Sign up to save</Link></Button></div>
+      : isPending || power === null
+        ? <p className="text-sm text-muted-foreground">Checking your plan…</p>
+        : !versions.length
+          ? <div className="flex flex-wrap items-center justify-between gap-3 text-sm"><span className="min-w-0 text-muted-foreground">Save this as your master resume. It's free and stays in My resumes.</span><Button onClick={() => openSave("master")}><Save />Save master resume</Button></div>
+          : power
+            ? <div className="flex flex-wrap items-center justify-between gap-3 text-sm"><span className="min-w-0 text-muted-foreground">Save this as a role variant. Your master resume stays unchanged.</span><div className="flex gap-2"><Button onClick={() => openSave("variant")}><Copy />Save as role variant</Button><Button asChild variant="ghost"><Link to="/my-resumes"><Layers />My resumes</Link></Button></div></div>
+            : <VariantUpsell saved />}
+    <ResumeNameDialog takenNames={versions.map((version) => version.name)} open={!!me && !!dialog} onOpenChange={(open) => { if (!open) setDialog(""); }} title={dialog === "master" ? "Save master resume" : "Save as new role variant"} sourceName={dialog === "master" ? "" : label} onSave={(name) => saveNew(name)} />
+  </div>;
+  const toolbar = scanMode ? scanBar : <div className="space-y-3 border-y py-4">
     {onBackToList && <Button variant="ghost" className="px-0" disabled={saving} onClick={onBackToList}><ArrowLeft />Back to resumes</Button>}
     <div className="flex flex-wrap items-end gap-3">
       <div className="min-w-0 flex-1 basis-60 space-y-1.5">
@@ -96,19 +122,7 @@ export function ResumeWorkspace({ seed, versionId, onSessionChange, onActiveVers
       <span className="ml-auto">{current ? (current.id === master?.id ? "Master resume" : "Role variant") : "Unsaved draft"}</span>
     </div>
     {upsell && <VariantUpsell />}
-    <ResumeNameDialog takenNames={versions.map((version) => version.name)} open={!!me && !!dialog} onOpenChange={(open) => { if (!open) setDialog(""); }} title={dialog === "master" ? "Save master resume" : "Save as new role variant"} sourceName={dialog === "master" ? "" : label} onSave={async (name) => {
-      if (!me) return;
-      const active = sessions.current[selected];
-      try {
-        const row = await saveVersion(me.id, name, active?.draft ?? value.initialDraft ?? value.resume, active?.official.cand ?? value.cand, value.job, active?.official.text ?? value.resume, value.scoringLevel ?? inferLevel(value.cand.years, value.cand.role));
-        if (!row) throw new Error("Resume could not be saved. Try again.");
-        if (active) sessions.current[row.id] = active;
-        await client.invalidateQueries({ queryKey: ["resume-versions", me.id] });
-        setSelected(row.id);
-        onActiveVersionChange?.(row.id);
-        toast.success(dialog === "master" ? "Master resume saved" : `New role variant saved — ${label} unchanged`);
-      } catch (error) { toast.error((error as Error).message); throw error; }
-    }} />
+    <ResumeNameDialog takenNames={versions.map((version) => version.name)} open={!!me && !!dialog} onOpenChange={(open) => { if (!open) setDialog(""); }} title={dialog === "master" ? "Save master resume" : "Save as new role variant"} sourceName={dialog === "master" ? "" : label} onSave={(name) => saveNew(name)} />
     {!me && dialog && <div className="flex flex-wrap items-center gap-2 text-sm">Sign in to keep your resumes.<Button asChild size="sm"><Link to="/auth" search={{ mode: "signup", as: "candidate", redirect: "/candidate" }}>Sign in to save</Link></Button></div>}
   </div>;
   return children({ ...value, initialSession: sessions.current[selected] ?? value.initialSession, editorKey: selected, onSessionChange: sessionChanged, toolbar, isOriginal: selected === "current" || selected === versionId });
