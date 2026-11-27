@@ -56,7 +56,7 @@ const PILLARS = [
     icon: GraduationCap,
     fear: "“Who wrote this rubric?”",
     title: "Built by design educators",
-    body: "Created by The Finishing School, makers of the Business Design Playbook, from real Lead, Staff and Director hiring criteria.",
+    body: "Created by Design Shots, makers of the Business Design Playbook, from real Lead, Staff and Director hiring criteria.",
   },
   {
     icon: Quote,
@@ -123,7 +123,7 @@ export function Footer() {
           <Logo tagline={null} />
           <p className="mt-1 text-xs font-medium text-primary">An initiative by Design shots</p>
           <p className="mt-2">
-            The ATS check built only for Product & UX designers. By The Finishing School, creators
+            The ATS check built only for Product & UX designers. By Design Shots, creators
             of the{" "}
             <a
               href="https://businessdesignplaybook.com/"
@@ -144,7 +144,7 @@ export function Footer() {
         </div>
       </div>
       <p className="pb-6 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} The Finishing School. Payments secured by Razorpay.
+        © {new Date().getFullYear()} Design Shots. Payments secured by Razorpay.
       </p>
     </footer>
   );

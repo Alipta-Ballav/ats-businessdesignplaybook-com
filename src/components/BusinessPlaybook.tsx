@@ -17,7 +17,7 @@ export function BusinessPlaybook(_: { resume?: string }) {
         </span>
         <div className="space-y-1">
           <p className="font-mono text-[10px] uppercase tracking-widest text-primary">
-            Recommended course · The Finishing School
+            Recommended course · Design Shots
           </p>
           <p className="font-display text-xl">Business Design Playbook</p>
           <p className="max-w-xl text-sm text-muted-foreground">
