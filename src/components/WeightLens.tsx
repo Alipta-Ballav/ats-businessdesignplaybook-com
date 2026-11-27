@@ -1,5 +1,5 @@
 import { ChevronDown, RotateCcw } from "lucide-react";
-import { FTI_DIMENSIONS, type Level } from "@/lib/scoring";
+import { FTI_DIMENSIONS, LEVELS, type Level } from "@/lib/scoring";
 import { ARCHETYPES, type ArchetypeId, type Emphasis, type WeightMap } from "@/lib/weights";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,9 @@ const TIERS: { id: Emphasis; label: string }[] = [
 
 export function WeightLens({
   level,
+  onLevel,
+  detected,
+  readAs,
   lens,
   onLens,
   emphasis,
@@ -42,6 +45,9 @@ export function WeightLens({
   total,
 }: {
   level: Level;
+  onLevel: (l: Level) => void;
+  detected: Level;
+  readAs: string;
   lens: Lens;
   onLens: (l: Lens) => void;
   emphasis: Partial<Record<string, Emphasis>>;
@@ -54,21 +60,21 @@ export function WeightLens({
   const custom = lens !== "level" || tuned;
   const delta = total - baseline;
   const options: { id: Lens; name: string; blurb: string }[] = [
-    { id: "level", name: "Match my level", blurb: `Standard weights for a ${level}.` },
+    { id: "level", name: "Match seniority", blurb: `Standard weights for a ${level}.` },
     ...ARCHETYPES,
   ];
   const current = options.find((o) => o.id === lens);
   const ordered = [...FTI_DIMENSIONS].sort((a, b) => (weights[b.id] ?? 0) - (weights[a.id] ?? 0));
 
   return (
-    <section aria-label="Scoring focus" className="space-y-4 border-t p-6">
+    <section aria-label="Target role" className="space-y-4 border-t p-6">
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
         <div className="min-w-0">
           <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-            Scoring focus
+            Target role
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Weight the 8 dimensions for the role you want. Your evidence stays the same.
+            Pick the level you're aiming for, then the kind of role. Your evidence stays the same.
           </p>
         </div>
         <p
@@ -81,11 +87,36 @@ export function WeightLens({
                 : "bg-destructive/10 text-destructive"
           }`}
         >
-          {custom ? `${baseline} → ${total} (${delta > 0 ? "+" : ""}${delta})` : `${total} at level weights`}
+          {custom ? `${baseline} → ${total} (${delta > 0 ? "+" : ""}${delta})` : `${total} · standard weights`}
         </p>
       </div>
 
-      <div role="radiogroup" aria-label="Role focus" className="flex flex-wrap gap-2">
+      <div className="space-y-1.5">
+        <label htmlFor="fti-level" className="text-sm font-medium">
+          1. Seniority <span className="font-normal text-muted-foreground">— sets what's expected at that level</span>
+        </label>
+        <select
+          id="fti-level"
+          className="h-10 w-full max-w-sm rounded-md border bg-background px-3 text-sm"
+          value={level}
+          onChange={(e) => onLevel(e.target.value as Level)}
+        >
+          {LEVELS.map((l) => (
+            <option key={l} value={l}>
+              {l}
+              {l === detected ? " (detected)" : ""}
+            </option>
+          ))}
+        </select>
+        <p className="text-xs text-muted-foreground">
+          We read you as {readAs} → {detected}.
+        </p>
+      </div>
+
+      <p className="text-sm font-medium">
+        2. Focus <span className="font-normal text-muted-foreground">— which dimensions count most</span>
+      </p>
+      <div role="radiogroup" aria-label="Role focus" className="-mt-2 flex flex-wrap gap-2">
         {options.map((o) => (
           <button
             key={o.id}
@@ -141,7 +172,7 @@ export function WeightLens({
                 onEmphasis({});
               }}
             >
-              <RotateCcw className="size-3.5" /> Reset to my level
+              <RotateCcw className="size-3.5" /> Reset focus
             </Button>
           )}
         </div>

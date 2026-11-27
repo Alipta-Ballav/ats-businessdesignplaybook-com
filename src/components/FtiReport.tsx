@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { futureTalentIndex, inferLevel, LEVELS, type Candidate, type Level } from "@/lib/scoring";
+import { futureTalentIndex, inferLevel, type Candidate, type Level } from "@/lib/scoring";
 import { Card, ScoreRing } from "@/components/ui-bits";
 import { WeightLens, type Lens } from "@/components/WeightLens";
 import { applyEmphasis, baseWeights, type Emphasis } from "@/lib/weights";
@@ -65,32 +65,14 @@ export function FtiReport({
             <span className="inline-flex rounded-full border px-3 py-1 text-xs font-medium">
               {tier(total)}
             </span>
-            <div className="rounded-md border bg-muted/40 p-3 text-xs">
-              <p className="text-muted-foreground">
-                We read you as: {c.years ? `${c.years} years` : "experience not stated"}
-                {c.role ? ` · ${c.role}` : ""} → <b className="text-foreground">{detected}</b>
-              </p>
-              <label className="mt-2 flex flex-wrap items-center gap-2 font-medium">
-                Scored as
-                <select
-                  className="rounded-md border bg-background px-2 py-1 font-normal"
-                  value={level}
-                  onChange={(e) => setLevel(e.target.value as Level)}
-                >
-                  {LEVELS.map((l) => (
-                    <option key={l}>{l}</option>
-                  ))}
-                </select>
-              </label>
-              <p className="mt-1 text-muted-foreground">
-                Change it to see how you score at the level you're aiming for.
-              </p>
-            </div>
           </div>
           <ScoreRing value={total} label="FTI score" tone="ink" />
         </div>
         <WeightLens
           level={level}
+          onLevel={setLevel}
+          detected={detected}
+          readAs={`${c.years ? `${c.years} yrs` : "Experience not stated"}${c.role ? ` · ${c.role}` : ""}`}
           lens={lens}
           onLens={setLens}
           emphasis={emphasis}

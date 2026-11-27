@@ -161,7 +161,7 @@ function MyResumes() {
               </div>
             </div>
             <Tabs key={current.id} defaultValue="preview">
-              <TabsList aria-label="Resume inspection"><TabsTrigger value="preview">Preview</TabsTrigger><TabsTrigger value="focus">Scoring focus</TabsTrigger><TabsTrigger value="compare">Compare</TabsTrigger></TabsList>
+              <TabsList aria-label="Resume inspection"><TabsTrigger value="preview">Preview</TabsTrigger><TabsTrigger value="focus">Target role</TabsTrigger><TabsTrigger value="compare">Compare</TabsTrigger></TabsList>
               <TabsContent value="preview" className="pt-3"><ResumePreview original={current.scored_text} draft={current.resume_text} /></TabsContent>
               <TabsContent value="focus" className="space-y-3 pt-3">
                 {current.resume_text !== current.scored_text && <p className="rounded-md border border-dashed px-3 py-2 text-xs text-muted-foreground">Showing the last scored version. Rescore your edits in the editor to update these dimensions.</p>}
