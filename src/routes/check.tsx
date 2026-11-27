@@ -470,7 +470,7 @@ function CheckPage() {
                   : `Get my score · ${left} scans left`
               : used < FREE_SCANS
                 ? "Get my free score"
-                : "Get my score · ₹99 pass"}
+                : "Get my score"}
         </Button>
       </div>
       {busy && (

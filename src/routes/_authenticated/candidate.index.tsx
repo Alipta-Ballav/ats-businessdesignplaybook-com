@@ -312,7 +312,7 @@ function CandidateHome() {
                 ? "Get my score · 0 scans left"
                 : pro || used < FREE_SCANS
                   ? "Get my score"
-                  : "Get my score · ₹99 pass"}
+                  : "Get my score"}
           </Button>
         </div>
         {busy && (
