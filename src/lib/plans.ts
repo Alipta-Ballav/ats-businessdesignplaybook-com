@@ -124,3 +124,13 @@ export function hasPowerAccess(payments: AccessPayment[], now = Date.now()) {
 export function canCreateVariant(power: boolean, saved: number) {
   return power || saved < MASTER_RESUMES;
 }
+
+export type PassTier = "power" | "job_hunt" | "lifetime" | "expired" | "none";
+/** Which pass a user is on right now and when access ends (latest expiry across stacked passes). */
+export function passSummary(payments: AccessPayment[], now = Date.now()): { tier: PassTier; endsAt: number | null; daysLeft: number | null } {
+  const active = payments.filter((p) => hasPaidAccess(p, now));
+  if (active.some((p) => p.plan === "single")) return { tier: "lifetime", endsAt: null, daysLeft: null };
+  if (!active.length) return { tier: payments.some((p) => p.status === "completed") ? "expired" : "none", endsAt: null, daysLeft: null };
+  const endsAt = Math.max(...active.map((p) => passEndsAt(p)));
+  return { tier: active.some((p) => p.plan === "power_60") ? "power" : "job_hunt", endsAt, daysLeft: Math.max(1, Math.ceil((endsAt - now) / 864e5)) };
+}

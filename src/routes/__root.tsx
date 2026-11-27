@@ -14,6 +14,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { PlanBadge } from "@/components/PassStatus";
 import { Footer } from "@/components/trust/Trust";
 import { supabase } from "@/integrations/supabase/client";
 import { q } from "@/lib/db";
@@ -211,6 +212,7 @@ function Header() {
         <div className="order-4 flex items-center gap-1.5 sm:border-l sm:pl-3 sm:gap-2">
           {me ? (
             <>
+              <PlanBadge />
               <Link to="/account" className={navLink}>
                 <span className="hidden sm:inline">{me.name || me.email} · </span>Account
               </Link>

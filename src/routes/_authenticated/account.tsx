@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { DeleteAccount } from "@/components/DeleteAccount";
+import { PassCard } from "@/components/PassStatus";
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
@@ -22,8 +23,9 @@ function AccountPage() {
   return (
     <main className="mx-auto max-w-2xl space-y-6 px-6 py-10">
       <h1 className="font-display text-3xl">Account</h1>
+      <PassCard />
       <p className="text-sm text-muted-foreground">
-        See your pass and payments on the{" "}
+        Past payments are on the{" "}
         <Link to="/pass" className="underline">
           Pass page
         </Link>

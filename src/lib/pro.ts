@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { hasPaidAccess, hasPowerAccess, passScansLeft } from "@/lib/plans";
+import { hasPaidAccess, hasPowerAccess, passScansLeft, passSummary } from "@/lib/plans";
 
 /** A paid scan unlocks every Pro feature for the report it produced (this browser tab). */
 const UNLOCK_KEY = "ft-report-unlocked";
@@ -138,4 +138,28 @@ export function usePowerPass(): boolean | null {
     };
   }, []);
   return power;
+}
+
+export type PassStatus = { tier: import("@/lib/plans").PassTier | "admin"; left: number | null; endsAt: number | null; daysLeft: number | null };
+/** Signed-in user's current pass, scans left and expiry; null while loading or signed out. */
+export function usePassStatus(): PassStatus | null {
+  const [status, setStatus] = useState<PassStatus | null>(null);
+  useEffect(() => {
+    let live = true;
+    const load = async () => {
+      const { data: s } = await supabase.auth.getSession();
+      const uid = s.session?.user.id;
+      if (!uid) return live && setStatus(null);
+      if (await isAdmin()) return live && setStatus({ tier: "admin", left: null, endsAt: null, daysLeft: null });
+      const { data } = await supabase.from("payments").select("plan, amount, status, paid_at").eq("user_id", uid).eq("status", "completed");
+      const summary = passSummary(data ?? []);
+      const left = summary.tier === "power" || summary.tier === "job_hunt" ? await passAllowance() : null;
+      if (live) setStatus({ ...summary, left });
+    };
+    void load();
+    window.addEventListener(PRO_EVENT, load);
+    const { data: sub } = supabase.auth.onAuthStateChange(() => void load());
+    return () => { live = false; window.removeEventListener(PRO_EVENT, load); sub.subscription.unsubscribe(); };
+  }, []);
+  return status;
 }
