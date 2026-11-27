@@ -145,7 +145,7 @@ export function WeightLens({
             </Button>
           )}
         </div>
-        <CollapsibleContent className="mt-2 space-y-1">
+        <CollapsibleContent className="mt-2 max-w-2xl space-y-1">
           <p className="pb-2 text-xs text-muted-foreground">
             Set what matters more or less. High counts double, Low counts half; we keep the total at 100%.
           </p>

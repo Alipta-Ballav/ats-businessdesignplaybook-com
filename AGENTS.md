@@ -55,3 +55,5 @@ use the editor.
 - Editor step numbers use numberSteps on filtered display order and chronological fix history, never source queue indices — keeps badges consecutive across tabs, skips and undo.
 - Editor list navigation uses an explicit exit callback within My resumes; save-and-return exits only after a successful in-place save — same-route links must not leave edit mode stuck or hide failed saves.
 - My resumes groups the existing oldest master separately from variants, defaults to document preview, and discloses comparison and secondary actions on demand; focused editing keeps the editor mounted and uses one back control to preserve draft sessions.
+- Rubric weighting lenses (src/lib/weights.ts: role archetypes + Low/Standard/High emphasis, normalised to 100 by largest remainder) only change dimension weights, never evidence; the level-weight score stays the shown baseline — users can tune focus without altering verified evidence or comparisons.
+- FTI dimension scores use dimensionEvidenceScore (70% strongest competency, 30% breadth) so one missed extraction tag cannot zero a dimension.

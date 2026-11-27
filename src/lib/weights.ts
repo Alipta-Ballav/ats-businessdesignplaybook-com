@@ -4,7 +4,8 @@ export type WeightMap = Record<string, number>;
 export type Emphasis = "low" | "standard" | "high";
 export const EMPHASIS_FACTOR: Record<Emphasis, number> = { low: 0.5, standard: 1, high: 2 };
 
-export const ARCHETYPES = [
+export type ArchetypeId = "product" | "research" | "systems" | "leader";
+export const ARCHETYPES: { id: ArchetypeId; name: string; blurb: string; weights: WeightMap }[] = [
   {
     id: "product",
     name: "Product Designer",
@@ -29,8 +30,7 @@ export const ARCHETYPES = [
     blurb: "People, strategy and organisational influence.",
     weights: { craft: 5, research: 5, product: 25, systems: 5, ai: 5, critical: 15, leadership: 35, learning: 5 },
   },
-] as const satisfies readonly { id: string; name: string; blurb: string; weights: WeightMap }[];
-export type ArchetypeId = (typeof ARCHETYPES)[number]["id"];
+];
 
 /** "level" = the seniority-based default weights. */
 export function baseWeights(lens: ArchetypeId | "level", level: Level): WeightMap {
