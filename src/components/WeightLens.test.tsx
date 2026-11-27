@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { WeightLens, type Lens } from "./WeightLens";
 import { applyEmphasis, baseWeights, type Emphasis } from "@/lib/weights";
@@ -22,23 +22,20 @@ describe("Benchmark control state", () => {
   it("presets change weights without changing evidence or dimension scores", () => {
     render(<Harness />);
     const original = result();
-    fireEvent.change(screen.getByLabelText("Type of design role"), { target: { value: "research" } });
+    fireEvent.change(screen.getByLabelText("Target role"), { target: { value: "research" } });
     expect(result().weights["research"]).toBe(35);
     expect(result().scores).toEqual(original.scores);
     expect(result().quotes).toEqual(original.quotes);
   });
-  it("custom adjustments are reversible without discarding the selected preset", () => {
+  it("reset returns to the current role type", () => {
     render(<Harness />);
-    fireEvent.change(screen.getByLabelText("Type of design role"), { target: { value: "research" } });
-    fireEvent.click(screen.getByRole("button", { name: "Fine-tune what matters (advanced)" }));
-    fireEvent.click(within(screen.getByRole("radiogroup", { name: "Research & Human Understanding emphasis" })).getByRole("radio", { name: "More" }));
-    expect(result().weights["research"]).toBe(52);
-    expect(result().emphasis["research"]).toBe("high");
-    fireEvent.click(screen.getByRole("button", { name: "Reset adjustments" }));
-    expect(result().lens).toBe("research");
-    expect(result().weights["research"]).toBe(35);
+    fireEvent.change(screen.getByLabelText("Target role"), { target: { value: "research" } });
     fireEvent.click(screen.getByRole("button", { name: "Reset" }));
     expect(result().lens).toBe("level");
     expect(result().weights["research"]).toBe(15);
+  });
+  it("no manual weight fine-tuning is offered", () => {
+    render(<Harness />);
+    expect(screen.queryByText(/Fine-tune/)).toBeNull();
   });
 });
