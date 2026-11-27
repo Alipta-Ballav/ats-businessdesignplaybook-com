@@ -128,19 +128,7 @@ function CheckPage() {
   }, []);
 
   const run = async () => {
-    const allowance = pro ? await passAllowance() : 0;
-    const freeLeft = scansUsed() < FREE_SCANS;
-    const paidOk = pro && (allowance === null || allowance > 0);
-    if (pro && !paidOk && !freeLeft) {
-      setRenew(true);
-      setWall(true);
-      return;
-    }
-    if (!canScan(scansUsed(), pro)) {
-      window.__lovableEvents?.track?.("project.paywall_shown", { trigger: "scan" });
-      setWall(true);
-      return;
-    }
+    // Getting a score is always free; the pass gates only AI rescoring and Word export.
     setBusy(true);
     try {
       const prof = mode === "profile";
@@ -166,10 +154,6 @@ function CheckPage() {
         createdAt: new Date().toISOString(),
       };
       saveGuestScan(g);
-      if (pro && !freeLeft && allowance !== null) {
-        await recordPassScan();
-        setLeft(await passAllowance());
-      }
       countScan();
       setUsed(scansUsed());
       setResult(g);
@@ -417,40 +401,10 @@ function CheckPage() {
       <div className="flex flex-col-reverse justify-between gap-3 sm:flex-row sm:items-center">
         <div className="space-y-1">
           <p className="text-xs font-medium">
-            {pro ? (
-              left === null ? (
-                "No score limit on this account"
-              ) : left === 0 ? (
-                <>
-                  Pass used up ·{" "}
-                  <Link
-                    to="/pass"
-                    className="font-semibold text-primary underline underline-offset-2"
-                  >
-                    Renew pass · ₹99 for 5 more scans
-                  </Link>
-                </>
-              ) : (
-                `${left} verified scores left`
-              )
-            ) : used < FREE_SCANS ? (
-              "1 free scan · No credit card required"
-            ) : (
-              <>
-                ₹99 Job Hunt Pass · All features for 30 days ·{" "}
-                <Link
-                  to="/pass"
-                  className="font-semibold text-primary underline underline-offset-2"
-                >
-                  Buy or renew
-                </Link>
-              </>
-            )}
+            Getting your score is always free · No credit card required
           </p>
           <p className="text-xs text-muted-foreground">
-            {pro
-              ? "5 verified scores (new resumes or rescores) · AI rewrites · Word exports"
-              : "Then ₹99: 5 verified scores (new resumes or rescores) for 30 days · No auto-renewal"}
+            Edit with the recommendations for free · A pass is needed only to rescore your edits or download Word
           </p>
         </div>
         <Button
@@ -460,17 +414,7 @@ function CheckPage() {
           className="w-full shrink-0 sm:w-auto"
         >
           {busy ? <Loader2 className="animate-spin" /> : <ArrowRight />}
-          {busy
-            ? "Reading your resume…"
-            : pro
-              ? left === null
-                ? "Get my score"
-                : left === 0
-                  ? "Get my score · 0 scans left"
-                  : `Get my score · ${left} scans left`
-              : used < FREE_SCANS
-                ? "Get my free score"
-                : "Get my score"}
+          {busy ? "Reading your resume…" : "Get my free score"}
         </Button>
       </div>
       {busy && (

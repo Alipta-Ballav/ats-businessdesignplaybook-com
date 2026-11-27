@@ -134,17 +134,6 @@ function CandidateHome() {
   }, [pro]);
   const run = async () => {
     if (!me) return;
-    const allowance = pro ? await passAllowance() : 0;
-    const freeLeft = scansUsed() < FREE_SCANS;
-    if (pro && !(allowance === null || allowance > 0) && !freeLeft) {
-      setRenew(true);
-      setWall(true);
-      return;
-    }
-    if (!canScan(scansUsed(), pro)) {
-      setWall(true);
-      return;
-    }
     setBusy(true);
     try {
       const reqs = mode === "profile" ? [] : (picked?.job.mandatory ?? []);
@@ -167,7 +156,6 @@ function CandidateHome() {
           .single(),
       );
       if (!r) throw new Error("The report could not be saved. Please try again.");
-      if (pro && !freeLeft && allowance !== null) await recordPassScan();
       countScan();
       nav({ to: "/candidate/scans/$scanId", params: { scanId: r.id } });
     } catch (e) {
@@ -257,40 +245,10 @@ function CandidateHome() {
         <div className="flex flex-col-reverse justify-between gap-3 sm:flex-row sm:items-center">
           <div className="space-y-1">
             <p className="text-xs font-medium">
-              {pro ? (
-                left === null ? (
-                  "No score limit on this account"
-                ) : left === 0 ? (
-                  <>
-                    Pass used up ·{" "}
-                    <Link
-                      to="/pass"
-                      className="font-semibold text-primary underline underline-offset-2"
-                    >
-                      Renew pass · ₹99 for 5 more scans
-                    </Link>
-                  </>
-                ) : (
-                  `${left} verified scores left`
-                )
-              ) : used < FREE_SCANS ? (
-                "1 free scan · No credit card required"
-              ) : (
-                <>
-                  ₹99 Job Hunt Pass · All features for 30 days ·{" "}
-                  <Link
-                    to="/pass"
-                    className="font-semibold text-primary underline underline-offset-2"
-                  >
-                    Buy or renew
-                  </Link>
-                </>
-              )}
+              Getting your score is always free · No credit card required
             </p>
             <p className="text-xs text-muted-foreground">
-              {pro
-                ? "AI rewrites, verified rescoring and Word exports included"
-                : "Then ₹99 for 30 days · No auto-renewal"}
+              Edit with the recommendations for free · A pass is needed only to rescore your edits or download Word
             </p>
           </div>
           <Button
@@ -306,13 +264,7 @@ function CandidateHome() {
             className="w-full shrink-0 sm:w-auto"
           >
             {busy ? <Loader2 className="animate-spin" /> : <ArrowRight />}
-            {busy
-              ? "Reading your resume…"
-              : pro && left === 0
-                ? "Get my score · 0 scans left"
-                : pro || used < FREE_SCANS
-                  ? "Get my score"
-                  : "Get my score"}
+            {busy ? "Reading your resume…" : "Get my free score"}
           </Button>
         </div>
         {busy && (
