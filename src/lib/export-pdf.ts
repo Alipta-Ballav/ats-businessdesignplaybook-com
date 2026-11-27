@@ -1,5 +1,6 @@
 import { RESUME_PAGE, inlineRuns, resumeBlocks } from "./export-docx";
 import type { jsPDF } from "jspdf";
+import { getResumeLinks, linkSegments, type ResumeLinks } from "./resume-links";
 
 export const PDF_PAGE = {
   width: RESUME_PAGE.width / 20,
@@ -8,7 +9,7 @@ export const PDF_PAGE = {
 };
 
 /** Selectable text; fixed A4 geometry; no screenshots or rasterized resume text. */
-export function renderResumePdf(pdf: jsPDF, text: string) {
+export function renderResumePdf(pdf: jsPDF, text: string, links: ResumeLinks = {}) {
   const { width, height, margin } = PDF_PAGE;
   const bottom = height - margin;
   let y = margin;
@@ -33,6 +34,12 @@ export function renderResumePdf(pdf: jsPDF, text: string) {
       if (y + leading > bottom) newPage();
       if (block.kind === "bullet" && lineIndex === 0) pdf.text("•", margin + 6, y + size);
       pdf.text(line, margin + indent, y + size);
+      let x = margin + indent;
+      for (const seg of linkSegments(line, links)) {
+        const w = pdf.getTextWidth(seg.text);
+        if (seg.url) pdf.link(x, y, w, leading, { url: seg.url });
+        x += w;
+      }
       y += leading;
     });
     y += after;
@@ -53,5 +60,5 @@ export async function downloadResumePdf(text: string) {
     pdf.addFont(`${weight}.ttf`, "NotoSans", weight === "Bold" ? "bold" : "normal");
   }));
   pdf.setProperties({ title: "Revised resume", creator: "FutureTalent AI" });
-  renderResumePdf(pdf, text).save("resume-revised.pdf");
+  renderResumePdf(pdf, text, getResumeLinks()).save("resume-revised.pdf");
 }

@@ -12,7 +12,9 @@ import {
   Packer,
   Paragraph,
   TextRun,
+  ExternalHyperlink,
 } from "docx";
+import { getResumeLinks, linkSegments, type ResumeLinks } from "@/lib/resume-links";
 import {
   HEADSHOT_BOX,
   VISUAL_BOX,
@@ -69,17 +71,20 @@ export function inlineRuns(t: string): { text: string; bold?: boolean; italic?: 
   if (last < t.length) out.push({ text: t.slice(last) });
   return out;
 }
+let activeLinks: ResumeLinks = {};
 const runs = (t: string, o: { bold?: boolean; size?: number; color?: string } = {}) =>
-  inlineRuns(t).map(
-    (r) =>
-      new TextRun({
-        text: r.text,
+  inlineRuns(t).flatMap((r) =>
+    linkSegments(r.text, activeLinks).map((seg) => {
+      const run = new TextRun({
+        text: seg.text,
         font: "Calibri",
         bold: !!(o.bold || r.bold),
         italics: !!r.italic,
         ...(o.size ? { size: o.size } : {}),
-        ...(o.color ? { color: o.color } : {}),
-      }),
+        ...(seg.url ? { color: "1F4E9E", underline: {} } : o.color ? { color: o.color } : {}),
+      });
+      return seg.url ? new ExternalHyperlink({ link: seg.url, children: [run] }) : run;
+    }),
   );
 const plain = (t: string) =>
   inlineRuns(t)
@@ -163,7 +168,8 @@ export function resumeBlocks(text: string): ResumeBlock[] {
 }
 
 /** Turns plain resume text into an ATS-safe single-column Word document: name, section rules, real bullets. */
-export function resumeToDocx(text: string, images?: ResumeImages): Document {
+export function resumeToDocx(text: string, images?: ResumeImages, links: ResumeLinks = {}): Document {
+  activeLinks = links;
   const blocks = resumeBlocks(text);
   const kids: Paragraph[] = [];
   let headerEnd = -1; // number of paragraphs before the first section heading
@@ -359,7 +365,7 @@ export function resumeToDocx(text: string, images?: ResumeImages): Document {
 }
 
 export async function downloadResumeDocx(text: string, filename = "resume-revised.docx") {
-  const blob = await Packer.toBlob(resumeToDocx(text, getResumeImages()));
+  const blob = await Packer.toBlob(resumeToDocx(text, getResumeImages(), getResumeLinks()));
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;

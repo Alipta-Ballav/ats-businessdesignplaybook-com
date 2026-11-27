@@ -101,6 +101,8 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
   const [writingManually, setWritingManually] = useState(initialSession?.writingManually ?? false);
   const [placement, setPlacement] = useState(initialSession?.placement ?? "");
   const [undoneId, setUndoneId] = useState<string | null>(null);
+  type Parked = Pick<EditorSession, "fields" | "aiDraft" | "proposal" | "writingManually" | "placement">;
+  const [parked, setParked] = useState<Record<string, Parked>>(initialSession?.parked ?? {});
   const [showFacts, setShowFacts] = useState(false);
   const [busy, setBusy] = useState<"" | "ai" | "score">("");
   const [wall, setWall] = useState<string | null>(null);
@@ -117,8 +119,8 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
   const sessionCallback = useRef(onSessionChange);
   sessionCallback.current = onSessionChange;
   useEffect(() => {
-    sessionCallback.current?.({ draft, history, official, fixes, skipped, openId, fields, aiDraft, proposal, writingManually, placement });
-  }, [draft, history, official, fixes, skipped, openId, fields, aiDraft, proposal, writingManually, placement]);
+    sessionCallback.current?.({ draft, history, official, fixes, skipped, openId, fields, aiDraft, proposal, writingManually, placement, parked });
+  }, [draft, history, official, fixes, skipped, openId, fields, aiDraft, proposal, writingManually, placement, parked]);
   useEffect(() => {
     if (initialSession) onRescored?.(initialSession.official.cand);
   }, []);
@@ -142,7 +144,6 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
     setTier(tierOf(s));
     if (!tabOpen.slice(0, 3).includes(s)) setShowAll(true);
     setOpenId(s.id);
-    reset();
     setJustDone(null);
   };
   const estimate = headlineScore(job, estimateCandidate(official.cand, draft), level);
@@ -178,6 +179,25 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
     setPlacement("");
     setUndoneId(null);
   };
+  // Unapplied work is kept per recommendation: leaving an item parks it, returning restores it.
+  const prevActive = useRef(active?.id);
+  useEffect(() => {
+    const from = prevActive.current;
+    const to = active?.id;
+    if (from === to) return;
+    prevActive.current = to;
+    const mine: Parked = { fields, aiDraft, proposal, writingManually, placement };
+    const empty = !proposal.trim() && !aiDraft && !placement && !Object.values(fields).some(Boolean);
+    const next = { ...parked };
+    if (from && !doneIds.includes(from)) { if (empty) delete next[from]; else next[from] = mine; }
+    const back = to ? next[to] : undefined;
+    if (to) delete next[to];
+    setParked(next);
+    if (back) {
+      setFields(back.fields); setAiDraft(back.aiDraft); setProposal(back.proposal);
+      setWritingManually(back.writingManually); setPlacement(back.placement); setUndoneId(null);
+    } else reset();
+  }, [active?.id]);
   const facts = [fields.action, fields.constraint, fields.outcome, fields.text]
     .filter(Boolean)
     .join("; ");
@@ -395,10 +415,16 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
     }
   };
 
-  const pending = active && proposal.trim() && placementReady ? applySuggestion(draft, active, proposal, location?.insertAt) : draft;
   const flags = proposalFlags(proposal, [...(aiDraft?.sources ?? []), facts], aiDraft ? "ai" : "manual");
   const immediateFeedback = inspectBullets(proposal || active?.original || "")[0]?.issues ?? [];
 
+  // Each tier numbers its own items in queue order; numbers stay put as items are applied, skipped or undone.
+  const stepOf = new Map(TIERS.flatMap((t) => queue.filter((q) => tierOf(q) === t.id).map((q, i) => [q.id, i + 1] as const)));
+  const tierStats = (id: Tier) => {
+    const all = queue.filter((q) => tierOf(q) === id);
+    return { done: all.filter((q) => doneIds.includes(q.id)).length, total: all.length };
+  };
+  const tierLabel = (id: Tier) => TIERS.find((t) => t.id === id)?.label ?? id;
   const left = (
     <div className="space-y-4">
       <Card className="space-y-3 p-4">
@@ -463,7 +489,6 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
                 setTier(t.id);
                 setShowAll(false);
                 setOpenId(null);
-                reset();
               }}
               className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${tab === t.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
             >
@@ -471,7 +496,7 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
                 className={`h-1.5 w-1.5 rounded-full ${t.id === "critical" ? "bg-destructive" : t.id === "impact" ? "bg-warning" : "bg-success"}`}
               />
               {t.label}
-              <span className="tabular-nums opacity-80">{counts[t.id]}</span>
+              <span className="tabular-nums opacity-80">{tierStats(t.id).done}/{tierStats(t.id).total} done</span>
             </button>
           ))}
         </div>
@@ -491,13 +516,14 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
           )
         )}
         <ul className="divide-y">
-          {numberSteps(queue
+          {queue
             .filter(
               (q) =>
                 !skipped.includes(q.id) &&
                 tierOf(q) === tab &&
                 (doneIds.includes(q.id) || visibleOpen.includes(q)),
-            ))
+            )
+            .map((item) => ({ item, step: stepOf.get(item.id) ?? 0 }))
             .map(({ item: s, step }) => {
               const f = fixes.find((x) => x.id === s.id);
               if (f)
@@ -515,7 +541,8 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
                         {s.title}
                       </p>
                       <p className="text-xs text-success">
-                        {justDone === f.id ? "Just applied ✓ · " : "Applied · "}
+                        <span className="mr-1 rounded bg-success/20 px-1.5 py-0.5 font-semibold">{tierLabel(tab)} · done</span>
+                        {justDone === f.id ? "Just applied · " : ""}
                         {f.source === "ai" ? "AI" : "Manual"} · highlighted in preview
                       </p>
                     </div>
@@ -532,7 +559,6 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
                     className="flex w-full items-start gap-3 px-4 py-3 text-left"
                     onClick={() => {
                       setOpenId(s.id);
-                      reset();
                       setJustDone(null);
                     }}
                   >
@@ -599,7 +625,7 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
                       ) : (
                         <div className="space-y-2">
                           <p className="font-mono text-[10px] uppercase tracking-wider text-primary">
-                            After · edit freely · preview updates on the right
+                            After · edit freely · the resume changes only when you apply
                           </p>
                           <textarea
                             aria-label="Suggested resume bullet"
@@ -888,7 +914,7 @@ function EditorContent({ job, cand, resume, initialDraft, scoringLevel, onRescor
     <div className="space-y-3 md:sticky md:top-20 md:self-start">
       <ResumePreview
         original={resume}
-        draft={pending}
+        draft={draft}
         withImages
         focus={active?.original}
         targets={open.flatMap((q) => (q.original ? [q.original] : []))}

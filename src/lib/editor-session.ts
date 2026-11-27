@@ -12,6 +12,8 @@ export type EditorSession = EditorSnapshot & {
   proposal: string;
   writingManually: boolean;
   placement: string;
+  /** Unapplied work per recommendation id, kept while switching items or tabs. */
+  parked?: Record<string, Pick<EditorSession, "fields" | "aiDraft" | "proposal" | "writingManually" | "placement">>;
 };
 
 /** Temporary, same-tab handoff only; never a general resume autosave. */

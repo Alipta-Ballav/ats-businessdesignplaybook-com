@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { CheckCircle2, FileText, Loader2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PrivacySeal } from "@/components/trust/Trust";
+import { linksFromHtml, setResumeLinks, type ResumeLinks } from "@/lib/resume-links";
 import { classifyImages, extractDocxImages, extractPdfImages, setResumeImages } from "@/lib/resume-images";
 const input = "w-full rounded-md border bg-background px-3 py-2 text-sm";
 
@@ -30,6 +31,20 @@ async function readFile(f: File): Promise<string> {
     extractPdfImages(pdfjs, doc)
       .then((r) => setResumeImages(classifyImages(r)))
       .catch(() => setResumeImages(null));
+    const found: ResumeLinks = {};
+    for (let i = 1; i <= doc.numPages; i++) {
+      const page = await doc.getPage(i);
+      const [notes, tc] = await Promise.all([page.getAnnotations(), page.getTextContent()]);
+      for (const a of notes as { subtype?: string; url?: string; rect?: number[] }[]) {
+        if (a.subtype !== "Link" || !a.url || !a.rect) continue;
+        const [x1 = 0, y1 = 0, x2 = 0, y2 = 0] = a.rect;
+        const label = (tc.items as { str?: string; transform?: number[] }[])
+          .filter((it) => { const tx = it.transform?.[4] ?? -1, ty = it.transform?.[5] ?? -1; return tx >= x1 - 2 && tx <= x2 && ty >= y1 - 4 && ty <= y2 + 2; })
+          .map((it) => it.str ?? "").join("").trim();
+        if (label) found[label] = a.url;
+      }
+    }
+    setResumeLinks(found);
     return pages.join("\n\n");
   }
   if (name.endsWith(".docx")) {
@@ -38,10 +53,14 @@ async function readFile(f: File): Promise<string> {
     extractDocxImages(buf.slice(0))
       .then((r) => setResumeImages(classifyImages(r)))
       .catch(() => setResumeImages(null));
+    mammoth.convertToHtml({ arrayBuffer: buf.slice(0) })
+      .then((r) => setResumeLinks(linksFromHtml(r.value)))
+      .catch(() => setResumeLinks(null));
     return (await mammoth.extractRawText({ arrayBuffer: buf })).value;
   }
   if (name.endsWith(".doc"))
     throw new Error("Old .doc files aren't supported. Save as .docx or PDF.");
+  setResumeLinks(null);
   return f.text();
 }
 

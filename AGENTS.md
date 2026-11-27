@@ -52,7 +52,9 @@ use the editor.
 - Resume insertion uses explicit source-line locations; undo snapshots include draft and applied-fix state, and per-fix reversals retain exact before/after text to preserve unrelated edits.
 
 - ResumeWorkspace wraps every LiveEditor with a shared active-resume selector and keeps each variant’s draft/undo session only in React memory; "Save changes" updates only the active saved resume and new variants are inserts, so switching never overwrites a master or another variant.
-- Editor step numbers use numberSteps on filtered display order and chronological fix history, never source queue indices — keeps badges consecutive across tabs, skips and undo.
+- Priority-queue numbers are per tier (Critical/High/Polish) in fixed queue order and never renumber on apply/skip/undo; done rows say "<Tier> · done".
+- The live preview shows only applied changes; unapplied proposals are parked per recommendation id in the editor session.
+- Exports keep hyperlinks: written URLs/emails plus label→URL pairs captured at upload (src/lib/resume-links.ts) become clickable in Word and PDF; visible text unchanged.
 - Editor list navigation uses an explicit exit callback within My resumes; save-and-return exits only after a successful in-place save — same-route links must not leave edit mode stuck or hide failed saves.
 - My resumes groups the existing oldest master separately from variants, defaults to document preview, and discloses comparison and secondary actions on demand; focused editing keeps the editor mounted and uses one back control to preserve draft sessions.
 - Rubric weighting lenses (src/lib/weights.ts: role archetypes + Low/Standard/High emphasis, normalised to 100 by largest remainder) only change dimension weights, never evidence; the level-weight score stays the shown baseline — users can tune focus without altering verified evidence or comparisons.
