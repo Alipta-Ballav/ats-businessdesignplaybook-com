@@ -47,7 +47,7 @@ export function setParaText(p: string, text: string): string {
   });
 }
 
-type Op = { kind: "keep" | "del"; o: number } | { kind: "add"; text: string };
+type Op = { kind: "keep"; o: number } | { kind: "del"; o: number } | { kind: "add"; text: string };
 function diff(a: string[], b: string[]): Op[] {
   const A = a.map(norm), B = b.map(norm);
   const L = Array.from({ length: A.length + 1 }, () => new Array<number>(B.length + 1).fill(0));
