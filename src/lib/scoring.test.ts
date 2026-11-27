@@ -130,3 +130,31 @@ describe("Seniority levels", () => {
     expect(inferLevel(13, "")).toBe("Head / Director of Design");
   });
 });
+
+import { dimensionEvidenceScore } from "./scoring";
+import { ARCHETYPES, applyEmphasis, baseWeights } from "./weights";
+describe("Rubric weighting", () => {
+  it("one strong competency no longer zeroes a dimension", () => {
+    expect(dimensionEvidenceScore([80, 0, 0])).toBe(64);
+    expect(dimensionEvidenceScore([])).toBe(0);
+  });
+  it("every archetype covers 8 dimensions and sums to 100", () => {
+    for (const a of ARCHETYPES) {
+      expect(Object.keys(a.weights)).toHaveLength(8);
+      expect(Object.values(a.weights).reduce((x, y) => x + y, 0)).toBe(100);
+    }
+  });
+  it("High emphasis doubles before rescaling and still sums to 100", () => {
+    const w = applyEmphasis(baseWeights("level", "Senior Product Designer"), { research: "high" });
+    expect(Object.values(w).reduce((a, b) => a + b, 0)).toBe(100);
+    expect(w["research"]).toBe(26); // 30 / 115
+    expect(applyEmphasis(baseWeights("leader", "Senior Product Designer"), {})["leadership"]).toBe(35);
+  });
+  it("custom weights change the total deterministically", () => {
+    const c = { competencies: { growth: { proficiency: 5, level: 4 as const, quote: "x", source: "" } } };
+    const lead = futureTalentIndex(c, undefined, baseWeights("leader", "Senior Product Designer")).total;
+    const res = futureTalentIndex(c, undefined, baseWeights("research", "Senior Product Designer")).total;
+    expect(lead).toBeGreaterThan(res);
+    expect(futureTalentIndex(c, undefined, baseWeights("leader", "Senior Product Designer")).total).toBe(lead);
+  });
+});

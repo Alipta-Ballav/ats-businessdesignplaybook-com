@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { futureTalentIndex, inferLevel, LEVELS, type Candidate, type Level } from "@/lib/scoring";
 import { Card, ScoreRing } from "@/components/ui-bits";
+import { WeightLens, type Lens } from "@/components/WeightLens";
+import { applyEmphasis, baseWeights, type Emphasis } from "@/lib/weights";
 
 const GROUPS: { name: string; ids: string[] }[] = [
   { name: "Craft & research", ids: ["craft", "research"] },
@@ -32,7 +34,11 @@ export function FtiReport({
 }) {
   const detected = inferLevel(c.years ?? 0, c.role ?? "");
   const [level, setLevel] = useState<Level>(detected);
-  const { total, dims } = futureTalentIndex(c, level);
+  const [lens, setLens] = useState<Lens>("level");
+  const [emphasis, setEmphasis] = useState<Partial<Record<string, Emphasis>>>({});
+  const weights = applyEmphasis(baseWeights(lens, level), emphasis);
+  const baseline = futureTalentIndex(c, level).total;
+  const { total, dims } = futureTalentIndex(c, level, weights);
   const sorted = [...dims].sort((a, b) => b.score - a.score);
   const strongest = sorted[0];
   const weak = [...dims]
@@ -83,6 +89,16 @@ export function FtiReport({
           </div>
           <ScoreRing value={total} label="FTI score" tone="ink" />
         </div>
+        <WeightLens
+          level={level}
+          lens={lens}
+          onLens={setLens}
+          emphasis={emphasis}
+          onEmphasis={setEmphasis}
+          weights={weights}
+          baseline={baseline}
+          total={total}
+        />
         <div className="grid grid-cols-1 divide-y border-t bg-muted/40 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
           <Stat k="Verified dimensions" v={`${verified} / 8`} />
           <Stat k="Strongest pillar" v={strongest?.name ?? "—"} />

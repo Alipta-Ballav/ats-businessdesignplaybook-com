@@ -13,6 +13,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ResumeNameDialog } from "@/components/ResumeNameDialog";
 import { ResumePreview } from "@/components/ResumePreview";
 import { LiveEditor } from "@/components/LiveEditor";
+import { FtiReport } from "@/components/FtiReport";
 import { q, must } from "@/lib/db";
 import { supabase } from "@/integrations/supabase/client";
 import { careerQueries, saveVersion } from "@/lib/career/db";
@@ -160,8 +161,12 @@ function MyResumes() {
               </div>
             </div>
             <Tabs key={current.id} defaultValue="preview">
-              <TabsList aria-label="Resume inspection"><TabsTrigger value="preview">Preview</TabsTrigger><TabsTrigger value="compare">Compare</TabsTrigger></TabsList>
+              <TabsList aria-label="Resume inspection"><TabsTrigger value="preview">Preview</TabsTrigger><TabsTrigger value="focus">Scoring focus</TabsTrigger><TabsTrigger value="compare">Compare</TabsTrigger></TabsList>
               <TabsContent value="preview" className="pt-3"><ResumePreview original={current.scored_text} draft={current.resume_text} /></TabsContent>
+              <TabsContent value="focus" className="space-y-3 pt-3">
+                {current.resume_text !== current.scored_text && <p className="rounded-md border border-dashed px-3 py-2 text-xs text-muted-foreground">Showing the last scored version. Rescore your edits in the editor to update these dimensions.</p>}
+                <FtiReport c={current.candidate} />
+              </TabsContent>
               <TabsContent value="compare" className="space-y-5 border-t pt-5">
                 <label className="block text-sm font-medium">Compare with
                   <select aria-label="Compare with" className="mt-2 block w-full rounded-md border bg-card p-2 text-sm text-foreground" value={comparison} onChange={(e) => setComparison(e.target.value)}>

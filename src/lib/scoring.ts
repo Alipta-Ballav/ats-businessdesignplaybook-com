@@ -551,11 +551,22 @@ export function inferLevel(years: number, role: string): Level {
 }
 
 /** Neutral (flexibility 50) scoring; a dimension with no evidence scores 0. With a level, weights follow LEVEL_WEIGHTS. */
-export function futureTalentIndex(c: Pick<Candidate, "competencies">, level?: Level) {
-  const lw = level ? LEVEL_WEIGHTS[level] : undefined;
+/** Strongest verified evidence carries 70%, breadth across the dimension's competencies 30%, so one missed tag can't zero a strong dimension. */
+export function dimensionEvidenceScore(vals: number[]) {
+  if (!vals.length) return 0;
+  const best = Math.max(...vals);
+  const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
+  return Math.round(best * 0.7 + mean * 0.3);
+}
+export function futureTalentIndex(
+  c: Pick<Candidate, "competencies">,
+  level?: Level,
+  weights?: Record<string, number>,
+) {
+  const lw = weights ?? (level ? LEVEL_WEIGHTS[level] : undefined);
   const dims = FTI_DIMENSIONS.map((d) => {
     const vals = d.comps.map((id) => competencyScore(c.competencies[id], 50) ?? 0);
-    const score = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
+    const score = dimensionEvidenceScore(vals);
     const quotes = d.comps.map((id) => c.competencies[id]?.quote).filter((q): q is string => !!q);
     return { ...d, weight: lw?.[d.id] ?? d.weight, score, quotes };
   });

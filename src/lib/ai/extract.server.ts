@@ -29,7 +29,8 @@ export type RawExtraction = z.infer<typeof schema>;
 const INSTRUCTIONS = `You extract hiring evidence from a resume. You never score or rank — you only report evidence.
 Competencies (id: meaning): ${COMPETENCIES.map((c) => `${c.id}: ${c.name}`).join("; ")}.
 This tool evaluates Product & UX designers only. Map evidence using these 8 design dimensions and their sub-skills: ${FTI_DIMENSIONS.map((d) => `${d.name} [competencies: ${d.comps.join(", ")}] = ${d.skills.join(", ")}`).join(" | ")}.
-For each competency with evidence, return ONE entry: an exact verbatim quote copied character-for-character from the resume (8-200 chars), the resume section as source, proficiency 1-5, and evidence level:
+One resume line may support several competencies: return it under each one it genuinely evidences (e.g. usability testing supports flexibility and problem; design tokens support systems and execution; AI prototyping supports ai and creative), so every dimension is checked against all relevant lines.
+For each competency with evidence, return ONE entry (its strongest line): an exact verbatim quote copied character-for-character from the resume (8-200 chars), the resume section as source, proficiency 1-5, and evidence level:
 1 Claimed (listed/stated only), 2 Applied (used in work), 3 Demonstrated (concrete example/project), 4 Impact (measurable outcome), 5 Transfer (applied successfully in a different domain).
 Set transferable=true when the evidence comes from an adjacent role/domain rather than direct experience for this job. Omit competencies with no evidence — never invent.
 requirements: if the recruiter gave must-haves, return them unchanged; otherwise extract up to 6 must-have requirements from the job description, essential=true only for certifications, licences, legal or safety requirements.
