@@ -62,3 +62,4 @@ use the editor.
 - FTI dimension scores use dimensionEvidenceScore (70% strongest competency, 30% breadth) so one missed extraction tag cannot zero a dimension.
 - Every 8-dimension score in the Gap band (<45) becomes a Critical priority-queue item via dimensionGaps() in fixer.ts — talent-profile findings must always translate into actions.
 - Benchmark controls preserve level/preset/emphasis math; queue navigation switches the report tab or saved-resume editor and focuses Critical actions without applying edits, so findings have a non-destructive next step.
+- Uploaded .docx files are kept in same-tab memory (docx-patch.ts) and Word download patches applied text into the original document.xml (in-place runs, cloned neighbour paragraphs for inserts); the rebuilt ATS layout is only a fallback when lines can't be matched — any uploaded formatting must survive download unchanged.

@@ -15,6 +15,7 @@ import {
   ExternalHyperlink,
 } from "docx";
 import { DEFAULT_STYLE, getResumeStyle, type ResumeStyle } from "@/lib/resume-style";
+import { getResumeSource, patchedDocx } from "@/lib/docx-patch";
 import { getResumeLinks, linkSegments, type ResumeLinks } from "@/lib/resume-links";
 import {
   HEADSHOT_BOX,
@@ -385,7 +386,11 @@ export function resumeToDocx(text: string, images?: ResumeImages, links: ResumeL
 }
 
 export async function downloadResumeDocx(text: string, filename = "resume-revised.docx") {
-  const blob = await Packer.toBlob(resumeToDocx(text, getResumeImages(), getResumeLinks(), getResumeStyle()));
+  // An uploaded Word file is edited in place so its formatting stays exactly the same.
+  const kept = await patchedDocx(text).catch(() => null);
+  const src = getResumeSource();
+  if (kept && src) filename = src.name.replace(/\.docx$/i, "") + "-revised.docx";
+  const blob = kept ?? (await Packer.toBlob(resumeToDocx(text, getResumeImages(), getResumeLinks(), getResumeStyle())));
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;

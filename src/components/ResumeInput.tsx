@@ -3,6 +3,7 @@ import { CheckCircle2, FileText, Loader2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PrivacySeal } from "@/components/trust/Trust";
 import { extractDocxStyle, htmlToResumeText, setResumeStyle } from "@/lib/resume-style";
+import { setResumeSource } from "@/lib/docx-patch";
 import { linksFromHtml, setResumeLinks, type ResumeLinks } from "@/lib/resume-links";
 import { classifyImages, extractDocxImages, extractPdfImages, setResumeImages } from "@/lib/resume-images";
 const input = "w-full rounded-md border bg-background px-3 py-2 text-sm";
@@ -86,6 +87,7 @@ export function ResumeInput({
   const words = value.trim() ? value.trim().split(/\s+/).length : 0;
   const load = async (f: File) => {
     setResumeImages(null);
+    setResumeSource(null);
     setBusy(true);
     setErr("");
     try {
@@ -94,6 +96,7 @@ export function ResumeInput({
         throw new Error(
           "We couldn't find text in that file. It may be a scanned image — try exporting a text PDF.",
         );
+      if (f.name.toLowerCase().endsWith(".docx")) setResumeSource({ buf: await f.arrayBuffer(), text: t, name: f.name });
       onChange(t);
       setFile(f.name);
       setPaste(false);
